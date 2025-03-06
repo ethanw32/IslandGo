@@ -1,0 +1,19 @@
+.btn-hover {
+  background-color: #FFFBFB; /* Keeps the white background */
+  border-radius: 8px;
+  transition: transform 0.2s ease-in-out;
+  padding: 7px 0; /* Adjust padding if needed */
+}
+
+.btn-hover:hover {
+  transform: scale(1.05);
+}
+
+.stars i {
+  font-size: 1.4rem; /* Adjust size as needed */
+}
+
+.fa-star {
+  font-size: 24px;
+  transition: color 0.2s ease; /* Smooth transition for color change */
+}
