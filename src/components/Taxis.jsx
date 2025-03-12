@@ -23,7 +23,7 @@ const Taxis = () => {
 
   return (
     <div className="h-fit w-full pt-10 relative">
-      {/* Taxis and Rentals Tabs */}
+      {/* Taxis and Rentals Tabs */} 
       <div className="rounded-3xl font-medium bg-white text-lg h-10 w-40 m-auto">
         <div className="flex h-full">
           {/* Taxis Button */}

@@ -34,6 +34,7 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-lg">
         <h2 className="text-2xl font-bold text-center text-gray-900">Log in</h2>
+
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-medium text-gray-700">
@@ -75,7 +76,8 @@ export default function Login() {
           </button>
         </form>
 
-        <p className="text-sm text-center text-gray-500">
+       
+        <p className="text-sm text-center text-gray-500 mt-4">
           Don't have an account?{" "}
           <a href="/signup" className="text-blue-600 hover:underline">
             Sign up

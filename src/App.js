@@ -13,6 +13,9 @@ import Contact from './components/contact';
 import Footer from './components/footer';
 import Login from './components/logIn';
 import SignUp from './components/signUp';
+import BsignUP from './components/bsignUp';
+import Bfront from './components/bfront';
+import Myprofile from './components/myprofile';
 
 
 
@@ -30,9 +33,13 @@ function App() {
         <Route path="/contact" element={<><Header/><Contact/><Footer/></>} />
         <Route path="/signup" element={<><Header/><SignUp/><Footer/></>} />
         <Route path="/login" element={<><Header/><Login/><Footer/></>} />
+        <Route path="/bsignUP" element={<><Header/><BsignUP/><Footer/></>} />
+        <Route path="/bfront" element={<><Header/><Bfront/><Footer/></>} />
+        <Route path="/myprofile" element={<><Header/><Myprofile/><Footer/></>} />
       </Routes>
     </Router>
   );
+  
 }
 
 export default App;
