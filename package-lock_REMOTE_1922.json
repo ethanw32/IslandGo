@@ -16189,8 +16189,6 @@
         "is-typedarray": "^1.0.0"
       }
     },
-<<<<<<< HEAD
-=======
     "node_modules/typescript": {
       "version": "4.9.5",
       "resolved": "https://registry.npmjs.org/typescript/-/typescript-4.9.5.tgz",
@@ -16205,7 +16203,6 @@
         "node": ">=4.2.0"
       }
     },
->>>>>>> ed8687a9e021dbef140c5499dd2112523cae9499
     "node_modules/unbox-primitive": {
       "version": "1.1.0",
       "resolved": "https://registry.npmjs.org/unbox-primitive/-/unbox-primitive-1.1.0.tgz",
