@@ -53,15 +53,6 @@ export default function Bpf() {
           <iframe src="https://www.google.com/maps/embed?pb=!1m40!1m12!1m3!1d70543.23724980126!2d-61.71691894757121!3d12.111569611229527!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m25!3e0!4m5!1s0x8c38226ed8b4f8fb%3A0x52071e95925e0951!2sAnnandale%20Waterfall%20%26%20Forest%20Park%2C%20Willis%2C%20Grenada!3m2!1d12.0874375!2d-61.7170625!4m5!1s0x8c3818809654c4df%3A0x2cb59720acc88566!2sGrand%20Etang%20Lake%2C%20Grenada!3m2!1d12.0973369!2d-61.695449999999994!4m5!1s0x8c38198bf344664d%3A0x663da6f68a7671cb!2sSeven%20Sisters%20Waterfalls%2C%20St%20Andrew&#39;s%2C%20Grenada!3m2!1d12.095045299999999!2d-61.6804862!4m5!1s0x8c3817ed93503547%3A0x7c429ec6d7b52328!2sGolden%20Falls%2C%20Mount%20Horne%2C%20Grenada!3m2!1d12.142906799999999!2d-61.6465001!5e1!3m2!1sen!2s!4v1741742835138!5m2!1sen!2s" width="100%" height="250"></iframe>
         </div>
     </div>
-
-
-
-    <div className='flex  mt-5'>
-    <img className='my-10 mx-5 max-sm:h-[100px] max-sm:mt-16' src="images/nutmeg tour.png" alt="" />
-    <div className='float-right mt-10'><h1 className='font-bold text-xl'>Nutmeg Tour</h1> <p className='max-sm:text-sm'>Our taxi tour service offers guided island tours, showcasing scenic spots, historical landmarks, and local attraction, providing  a personalized,  comfortable and informative tours.</p></div>
-    </div>
-
-
     </div>
   </div>
   

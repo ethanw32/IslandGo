@@ -2,7 +2,7 @@ import React from 'react';
 
 function Footer() {
   return (
-    <footer className="flex flex-row items-center text-3xl bg-[#D9D9D9] h-24 w-full px-10 ">
+    <footer className="flex flex-row items-center text-3xl bg-[#D9D9D9] h-24 w-full px-10 mt-auto">
       {/* Left Section */}
       <div className="font-bold text-black max-sm:text-2xl">IslandGo</div>
 
@@ -13,8 +13,7 @@ function Footer() {
         <span className='hover:underline cursor-pointer max-sm:text-sm'>IslandGo@gmail.com</span>
         <br />
         <span className='hover:underline cursor-pointer'>1(473)123-4567</span>
-        </div>
-      
+      </div>
     </footer>
   );
 }

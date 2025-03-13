@@ -24,8 +24,10 @@ function Header() {
           />
         ) : (
           // Show Log In/Sign Up when not logged in
-          <Link to="/login">Log In/Sign Up</Link>
+          <Link to="/login">Log In</Link>
         )}
+<Link to="/signUp">Sign Up</Link>
+
       </div>
     </div>
   );

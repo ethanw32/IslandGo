@@ -1,6 +1,6 @@
 import React from 'react';
 import './index.css';
-import './App.css'
+import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; 
 import Header from './components/header';
 import Taxis from './components/Taxis';
@@ -17,33 +17,37 @@ import Bpfp from './components/bpfp';
 import Addtour from './components/addtour';
 import BsignUP from './components/bsignUp';
 import Bfront from './components/bfront';
-import Myprofile from './components/myprofile';
 
-
-
+function Layout({ children }) {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-grow">{children}</main>
+      <Footer />
+    </div>
+  );
+}
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<><Header/><Taxis/><Footer/></>} />
-        <Route path="/rentals" element={<><Header/><Rentals/><Footer/></>} />
-        <Route path="/bpf" element={<><Header/><Bpf/><Footer/></>} />
-        <Route path="/inbox" element={<><Header/><Inbox/><Footer/></>} />
-        <Route path="/rpf" element={<><Header/><Rpf/><Footer/></>} />
-        <Route path="/bpfp" element={<><Header/><Bpfp/><Footer/></>} />
-        <Route path="/addtour" element={<><Header/><Addtour/><Footer/></>} />
-        <Route path="/requirements" element={<><Header/><Requirements/><Footer/></>} />
-        <Route path="/contact" element={<><Header/><Contact/><Footer/></>} />
-        <Route path="/signup" element={<><Header/><SignUp/><Footer/></>} />
-        <Route path="/login" element={<><Header/><Login/><Footer/></>} />
-        <Route path="/bsignUP" element={<><Header/><BsignUP/><Footer/></>} />
-        <Route path="/bfront" element={<><Header/><Bfront/><Footer/></>} />
-        <Route path="/myprofile" element={<><Header/><Myprofile/><Footer/></>} />
+        <Route path="/" element={<Layout><Taxis /></Layout>} />
+        <Route path="/rentals" element={<Layout><Rentals /></Layout>} />
+        <Route path="/bpf" element={<Layout><Bpf /></Layout>} />
+        <Route path="/inbox" element={<Layout><Inbox /></Layout>} />
+        <Route path="/rpf" element={<Layout><Rpf /></Layout>} />
+        <Route path="/bpfp" element={<Layout><Bpfp /></Layout>} />
+        <Route path="/addtour" element={<Layout><Addtour /></Layout>} />
+        <Route path="/requirements" element={<Layout><Requirements /></Layout>} />
+        <Route path="/contact" element={<Layout><Contact /></Layout>} />
+        <Route path="/signup" element={<Layout><SignUp /></Layout>} />
+        <Route path="/login" element={<Layout><Login /></Layout>} />
+        <Route path="/bsignUP" element={<Layout><BsignUP /></Layout>} />
+        <Route path="/bfront" element={<Layout><Bfront /></Layout>} />
       </Routes>
     </Router>
   );
-  
 }
 
 export default App;

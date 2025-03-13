@@ -96,21 +96,6 @@ export default function SignUp() {
             />
           </div>
 
-          {activeTab === "business" && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Business Name</label>
-              <input
-                type="text"
-                name="Bname"
-                value={formData.Bname}
-                onChange={handleChange}
-                className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter your business name"
-                required
-              />
-            </div>
-          )}
-
           <div>
             <label className="block text-sm font-medium text-gray-700">Email</label>
             <input

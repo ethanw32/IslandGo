@@ -3,12 +3,19 @@ import { useNavigate } from 'react-router-dom';
 
 const AddTourForm = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("client");
 
   // State to manage form inputs
   const [tourName, setTourName] = useState('');
   const [tourDescription, setTourDescription] = useState('');
   const [tourImage, setTourImage] = useState('');
   const [spots, setSpots] = useState([{ name: '', description: '' }]);
+
+  // Handle tab click
+  const handleClick = (tab, path) => {
+    setActiveTab(tab);
+    navigate(path);
+  };
 
   // Handle adding a new spot
   const handleAddSpot = () => {
@@ -17,8 +24,7 @@ const AddTourForm = () => {
 
   // Handle removing a spot
   const handleRemoveSpot = (index) => {
-    const updatedSpots = spots.filter((_, i) => i !== index);
-    setSpots(updatedSpots);
+    setSpots(spots.filter((_, i) => i !== index));
   };
 
   // Handle form submission
@@ -30,7 +36,7 @@ const AddTourForm = () => {
       name: tourName,
       description: tourDescription,
       image: tourImage,
-      spots: spots.filter((spot) => spot.name && spot.description), // Filter out empty spots
+      spots: spots.filter((spot) => spot.name && spot.description), // Remove empty spots
     };
 
     // Save the tour to local storage (or send it to an API)
@@ -43,6 +49,36 @@ const AddTourForm = () => {
 
   return (
     <div className="p-10 max-w-4xl mx-auto">
+      {/* Client and Business Tabs */}
+      <div className="rounded-3xl font-medium bg-white text-lg h-10 w-40 m-auto mb-5">
+        <div className="flex h-full">
+          {/* Tours Tab */}
+          <div
+            onClick={() => handleClick("client", "/addtour")}
+            className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${
+              activeTab === "client"
+                ? "bg-black text-white rounded-3xl"
+                : "bg-white hover:bg-gray-200 rounded-3xl"
+            } transition-all`}
+          >
+            Tours
+          </div>
+
+          {/* Rentals Tab */}
+          <div
+            onClick={() => handleClick("business", "/bfront")}
+            className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${
+              activeTab === "business"
+                ? "bg-black text-white rounded-3xl"
+                : "bg-white hover:bg-gray-200 rounded-3xl"
+            } transition-all`}
+          >
+            Rentals
+          </div>
+        </div>
+      </div>
+
+      {/* Form Section */}
       <h1 className="text-3xl font-bold mb-5">Create a New Tour</h1>
       <form onSubmit={handleSubmit}>
         {/* Tour Name */}
@@ -81,48 +117,47 @@ const AddTourForm = () => {
           />
         </div>
 
-        {/* Spots */}
+        {/* Spots Section */}
         <div className="mb-5">
           <label className="block text-lg font-medium mb-2">Spots</label>
           {spots.map((spot, index) => (
-            <div key={index} className="mb-4">
-              <div className="flex gap-4">
-                <input
-                  type="text"
-                  placeholder="Spot Name"
-                  value={spot.name}
-                  onChange={(e) => {
-                    const updatedSpots = [...spots];
-                    updatedSpots[index].name = e.target.value;
-                    setSpots(updatedSpots);
-                  }}
-                  className="w-1/2 p-2 border border-gray-300 rounded-md"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Spot Description"
-                  value={spot.description}
-                  onChange={(e) => {
-                    const updatedSpots = [...spots];
-                    updatedSpots[index].description = e.target.value;
-                    setSpots(updatedSpots);
-                  }}
-                  className="w-1/2 p-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </div>
+            <div key={index} className="flex gap-4 mb-4 items-center">
+              <input
+                type="text"
+                placeholder="Spot Name"
+                value={spot.name}
+                onChange={(e) => {
+                  const updatedSpots = [...spots];
+                  updatedSpots[index].name = e.target.value;
+                  setSpots(updatedSpots);
+                }}
+                className="w-1/2 p-2 border border-gray-300 rounded-md"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Spot Description"
+                value={spot.description}
+                onChange={(e) => {
+                  const updatedSpots = [...spots];
+                  updatedSpots[index].description = e.target.value;
+                  setSpots(updatedSpots);
+                }}
+                className="w-1/2 p-2 border border-gray-300 rounded-md"
+                required
+              />
               {spots.length > 1 && (
                 <button
                   type="button"
                   onClick={() => handleRemoveSpot(index)}
-                  className="mt-2 text-red-500 hover:text-red-700"
+                  className="text-red-500 hover:text-red-700 ml-2"
                 >
-                  Remove Spot
+                  ❌
                 </button>
               )}
             </div>
           ))}
+          {/* Add Another Spot Button */}
           <button
             type="button"
             onClick={handleAddSpot}

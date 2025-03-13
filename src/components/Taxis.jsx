@@ -18,8 +18,6 @@ const Taxis = () => {
     { id: 4, name: "Prestige Taxi Tours", image: "images/prestige.jpg", description: "Airport pick-up, Day tours, fish Friday trips.", rating: 5 },
     { id: 5, name: "Amazing Grenada Taxi & Tours", image: "images/amazing taxi tours.jpg", description: "Safe, reliable, and dependable service.", rating: 4 },
     { id: 6, name: "Burris Taxi & Tours", image: "images/burris.png", description: "Airport transfers, day tours, customized excursions.", rating: 2 },
-    { id: 7, name: "Budget Taxi Service", image: "images/budget.jpg", description: "Affordable taxi service for budget travelers.", rating: 1 },
-    { id: 8, name: "Island Hopper Taxis", image: "images/islandhopper.jpg", description: "Quick and convenient taxi service.", rating: 3 },
   ];
 
   useEffect(() => {
@@ -83,6 +81,7 @@ const Taxis = () => {
                   <p className="text-sm text-gray-600 w-[400px]">{taxi.description}</p>
                   <StarRating rating={taxi.rating} />
                 </div>
+                
               </div>
             </div>
           </Link>
