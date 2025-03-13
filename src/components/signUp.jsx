@@ -33,7 +33,7 @@ export default function SignUp() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!formData.fname || !formData.Bname || !formData.email || !formData.password) {
+    if (!formData.fname || !formData.email || !formData.password) {
       setError("All fields are required.");
       return;
     }
@@ -43,7 +43,7 @@ export default function SignUp() {
     console.log("Form submitted:", formData);
 
     // Redirect to the front page after successful submission
-    navigate("/bfront");
+    navigate("/");
   };
 
   return (
