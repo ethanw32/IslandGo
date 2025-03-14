@@ -8,7 +8,7 @@ function Header() {
   return (
 <div className="flex flex-row items-center bg-black text-white text-3xl h-24 px-10">
   {/* Left Section */}
-  <div className="font-boldg max-sm:text-2xl">
+  <div className="font-bold max-sm:text-2xl">
     <Link to='/'>IslandGo</Link>
   </div>
 

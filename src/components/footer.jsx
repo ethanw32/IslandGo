@@ -2,9 +2,9 @@ import React from 'react';
 
 function Footer() {
   return (
-    <footer className="flex flex-row items-center text-3xl bg-[#D9D9D9] h-24 w-full px-10 mt-auto">
+    <footer className="flex flex-row items-center text-3xl text-white bg-black h-24 w-full px-10 ">
       {/* Left Section */}
-      <div className="font-bold text-black max-sm:text-2xl">IslandGo</div>
+      <div className="font-bold max-sm:text-2xl">IslandGo</div>
 
       {/* Right Section */}
       <div className="ml-auto text-base space-x-4">

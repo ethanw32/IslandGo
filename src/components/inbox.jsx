@@ -2,32 +2,21 @@ import { useLocation } from 'react-router-dom';
 
 function Inbox() {
   const location = useLocation();
-  const { name, imageUrl,description } = location.state || {
-    name: 'Default Name',
-    imageUrl: 'default.jpg',
-    description: 'Default description about the business.',
+  const { name, image} = location.state || {
   };
 
   return (
     <div>
-      {/* Header */}
-      <div className="bg-black text-white text-3xl text-center h-16 flex items-center justify-center">
-        Business Inbox
-      </div>
-
       {/* Main Content */}
       <div className="h-screen w-full relative pb-10">
         {/* Business Information */}
         <div className="flex py-6 items-center">
-          <img className="h-16 max-sm:h-12 ml-5 rounded-full" src={imageUrl} alt={`${name} logo`} />
+          <img
+            className="h-16 max-sm:h-12 ml-5 rounded-full"
+            src={image} // Use the `image` from state
+            alt={name} // Use the `name` from state as alt text
+          />
           <h1 className="text-3xl max-sm:text-2xl ml-10">{name}</h1>
-        </div>
-
-        {/* Business Description */}
-        <div className="p-5 rounded-lg flex my-5 m-auto w-[600px] max-sm:w-[360px]">
-          <p>
-          {description}
-          </p>
         </div>
 
         {/* Message Form */}
@@ -52,4 +41,4 @@ function Inbox() {
   );
 }
 
-export default Inbox
+export default Inbox;

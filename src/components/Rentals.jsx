@@ -34,8 +34,7 @@ const Rentals = () => {
   const sortedRentals = [...filteredRentals].sort((a, b) => sortOrder === "a-z" ? a.name.localeCompare(b.name) : sortOrder === "z-a" ? b.name.localeCompare(a.name) : 0);
 
   return (
-    <div className="h-fit w-full pt-10 relative">
-      {/* Tab Buttons */}
+    <div className="h-screen w-full pt-10 relative">
       <div className="rounded-3xl font-medium bg-white text-lg h-10 w-40 m-auto">
         <div className="flex h-full">
           <div onClick={() => handleClick("taxis", "/")} className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${activeTab === "taxis" ? "bg-black text-white rounded-3xl" : "bg-white hover:bg-gray-200 rounded-3xl"} transition-all`}>Taxis</div>
@@ -43,7 +42,6 @@ const Rentals = () => {
         </div>
       </div>
 
-      {/* Filters and Sorting */}
       <div className="flex justify-center gap-4 mt-8">
         <div className="bg-[#D9D9D9] w-28 h-7 rounded-2xl text-center relative cursor-pointer" onMouseEnter={() => setIsHoveredFilter(true)} onMouseLeave={() => setIsHoveredFilter(false)}>
           <span>Filters</span><i className="fa fa-search pl-4"></i>
@@ -67,16 +65,15 @@ const Rentals = () => {
         </div>
       </div>
 
-      {/* Rental Listings Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-10 px-4">
         {sortedRentals.map(rental => (
-          <Link to="/rpf" key={rental.id} state={{ imageUrl: rental.image, title: rental.name }}>
+          <Link to="/rpf" key={rental.id} state={{ rental }}>
             <div className="flex flex-col border rounded-lg p-4 h-[180px] shadow-md">
               <div className="flex">
                 <img className="w-24 h-24 rounded-full object-cover" src={rental.image} alt={rental.name} />
                 <div className="ml-4 flex flex-col justify-between flex-grow">
-                  <h1 className="font-bold text-xl">{rental.name}</h1>
-                  <p className="text-sm text-gray-600 w-[400px]">{rental.description}</p>
+                  <h1 className="font-bold text-xl max-sm:text-lg">{rental.name}</h1>
+                  <p className="text-sm text-gray-600 w-full lg:w-[400px] max-sm:text-xs">{rental.description}</p>
                   <StarRating rating={rental.rating} />
                 </div>
               </div>

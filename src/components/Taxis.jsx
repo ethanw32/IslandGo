@@ -69,19 +69,15 @@ const Taxis = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-10">
         {sortedTaxis.map(taxi => (
-          <Link
-            to= "/bpf"state={{image: taxi.image, name: taxi.name }}
-            key={taxi.id}
-          >
+          <Link to="/bpf" state={{ image: taxi.image, name: taxi.name }} key={taxi.id}>
             <div className="flex flex-col border rounded-lg p-4 h-[180px] shadow-md">
               <div className="flex">
                 <img className="w-24 h-24 rounded-full object-cover" src={taxi.image} alt="Taxi" />
                 <div className="ml-4 flex flex-col justify-between flex-grow">
                   <h1 className="font-bold text-xl">{taxi.name}</h1>
-                  <p className="text-sm text-gray-600 w-[400px]">{taxi.description}</p>
+                  <p className="text-sm text-gray-600 w-full md:w-[400px]">{taxi.description}</p>
                   <StarRating rating={taxi.rating} />
                 </div>
-                
               </div>
             </div>
           </Link>
