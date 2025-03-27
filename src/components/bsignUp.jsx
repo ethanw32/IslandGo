@@ -1,9 +1,15 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom"; // Added useLocation for path detection
+import { useNavigate, useLocation } from "react-router-dom";
+import { auth, db } from "../config/firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { setDoc, doc } from "firebase/firestore";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
 
 export default function SignUp() {
   const navigate = useNavigate();
-  const location = useLocation(); // Get current path
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("taxis");
 
   const [formData, setFormData] = useState({
@@ -11,15 +17,18 @@ export default function SignUp() {
     Bname: "",
     email: "",
     password: "",
+    confirmPassword: "", // Add confirm password field
   });
 
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // Toggle password visibility
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Toggle confirm password visibility
 
   useEffect(() => {
     if (location.pathname === "/bsignUp") {
       setActiveTab("bsignUp");
     } else if (location.pathname === "/signUp") {
-      setActiveTab("clientt");
+      setActiveTab("client");
     }
   }, [location.pathname]);
 
@@ -32,19 +41,61 @@ export default function SignUp() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.fname || !formData.Bname || !formData.email || !formData.password) {
+
+    // Validate form fields
+    if (!formData.fname || !formData.Bname || !formData.email || !formData.password || !formData.confirmPassword) {
       setError("All fields are required.");
       return;
     }
 
-    setError(""); // Clear error if valid
+    // Password validation
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return;
+    }
 
-    console.log("Form submitted:", formData);
+    // Confirm password validation
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
 
-    // Redirect to the front page after successful submission
-    navigate("/bfront");
+    try {
+      // Create user with Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+      const user = userCredential.user;
+
+      // Save business data to Firestore
+      await setDoc(doc(db, "businesses", user.uid), {
+        name: formData.fname,
+        businessName: formData.Bname,
+        email: formData.email,
+        role: "business", // Add role for business
+        createdAt: new Date().toISOString(),
+      });
+
+      // Show success message
+      toast.success("Business account created successfully!", { position: "top-center" });
+
+      // Redirect to the business front page
+      navigate("/bsetup");
+    } catch (error) {
+      // Handle Firebase errors
+      let errorMessage = "An error occurred during registration.";
+      if (error.code === "auth/email-already-in-use") {
+        errorMessage = "Email is already in use.";
+      } else if (error.code === "auth/weak-password") {
+        errorMessage = "Password is too weak.";
+      }
+      setError(errorMessage);
+      toast.error(errorMessage, { position: "bottom-center" });
+    }
   };
 
   return (
@@ -56,7 +107,6 @@ export default function SignUp() {
         <div className="h-fit w-full pt-10 relative">
           <div className="rounded-3xl font-medium bg-white text-lg h-10 w-40 m-auto">
             <div className="flex h-full">
-
               {/* Taxis Button */}
               <div
                 onClick={() => handleClick("client", "/signUp")}
@@ -87,7 +137,7 @@ export default function SignUp() {
         <form className="space-y-4" onSubmit={handleSubmit}>
           {/* First Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">First Name</label>
+            <label className="block text-sm font-medium text-gray-700">Name</label>
             <input
               type="text"
               name="fname"
@@ -130,15 +180,49 @@ export default function SignUp() {
           {/* Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Enter your password"
-              required
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"} // Toggle input type
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter your password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)} // Toggle visibility
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />} {/* Toggle eye icon */}
+              </button>
+            </div>
+          </div>
+
+          {/* Confirm Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"} // Toggle input type
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Confirm your password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)} // Toggle visibility
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer"
+                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+              >
+                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />} {/* Toggle eye icon */}
+              </button>
+            </div>
           </div>
 
           {/* Error Message */}
@@ -161,6 +245,7 @@ export default function SignUp() {
           </a>
         </p>
       </div>
+      <ToastContainer position="top-center" autoClose={3000} />
     </div>
   );
 }

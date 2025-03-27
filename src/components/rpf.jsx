@@ -1,114 +1,156 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { db } from "../config/firebase";
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import { getAuth } from "firebase/auth";
+import { collection, query, where, onSnapshot, deleteDoc, doc } from "firebase/firestore";
 
 function Rpf() {
   const location = useLocation();
-  const { rental } = location.state || {};
-  const [companies, setCompanies] = useState(() => JSON.parse(localStorage.getItem("companies")) || [
-    {
-      id: 1,
-      name: 'Drive Grenada',
-      imageUrl: 'images/Drive.png',
-      address: "Grand Anse, St. George's",
-      phone: "+1 (473) 421-3333",
-      email: "contact@drivegrenada.com",
-      operatingHours: "Open 24 hours",
-      vehicles: [
-        {
-          id: 1,
-          image: 'images/rental car.png',
-          model: 'Toyota Camry',
-          capacity: '28 Miles per gallon',
-          color: 'Silver',
-          mileage: '50000m',
-          class: 'Sedan',
-        },
-        {
-          id: 2,
-          image: 'images/jeep.jpg',
-          model: 'Jeep Wrangler',
-          capacity: '20 Miles per gallon',
-          color: 'Red',
-          mileage: '15000m',
-          class: 'SUV',
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: 'On point Rental',
-      imageUrl: 'images/onpoint.jpg',
-      address: "Lance Aux Epines, St George's, Grenada",
-      phone: "+1 (473) 534-3900",
-      email: "onpointautorentals.com",
-      operatingHours: "Open 24 hours",
-      vehicles: [
-        {
-          id: 3,
-          image: 'images/toyota.png',
-          model: 'Toyota Sienna',
-          capacity: '36 Miles per gallon',
-          color: 'Silver',
-          mileage: '100000m',
-          class: 'Van',
-        },
-      ],
-    },
-  ]);
-  const [selectedCompany, setSelectedCompany] = useState(companies.find((company) => company.id === rental?.id) || companies[0]);
+  const [isOwner, setIsOwner] = useState(false);
+  const [vehicles, setVehicles] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [vehicleToDelete, setVehicleToDelete] = useState(null);
+  const navigate = useNavigate();
+
+  const {
+    businessImage,
+    businessName,
+    businessId,
+    ownerId, // ownerId is now used to fetch the vehicles
+  } = location.state || {};
+
+  const auth = getAuth();
+  const currentUser = auth.currentUser;
 
   useEffect(() => {
-    if (rental) {
-      const company = companies.find((company) => company.id === rental.id);
-      if (company) setSelectedCompany(company);
+    if (currentUser && ownerId) {
+      setIsOwner(currentUser.uid === ownerId);
     }
-  }, [rental]);
+  }, [currentUser, ownerId]);
+
+  // Fetch vehicles by OwnerId instead of BusinessId
+  useEffect(() => {
+    if (ownerId) {
+      const rentalsRef = collection(db, "rentals");
+      const q = query(rentalsRef, where("ownerId", "==", ownerId)); // Change query to filter by OwnerId
+      
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const vehicleList = [];
+        querySnapshot.forEach((doc) => {
+          vehicleList.push({ id: doc.id, ...doc.data() });
+        });
+        console.log("Fetched vehicles: ", vehicleList); // Add logging
+        setVehicles(vehicleList);
+      });
+      
+      return () => unsubscribe();
+    }
+  }, [ownerId]);
+
+  const handleOpenModal = (vehicleId) => {
+    setVehicleToDelete(vehicleId);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setVehicleToDelete(null);
+  };
+
+  const handleDelete = async () => {
+    if (vehicleToDelete) {
+      try {
+        await deleteDoc(doc(db, "rentals", vehicleToDelete));
+        handleCloseModal();
+      } catch (error) {
+        console.error("Error deleting vehicle: ", error);
+      }
+    }
+  };
+
+  const handleEditVehicle = (vehicle) => {
+    navigate("/bfront", { state: { businessId, ownerId: ownerId, businessImage, businessName, vehicleToEdit: vehicle } });
+  };
 
   return (
     <div className="h-fit w-full relative pb-10">
-      <div className="flex py-6 items-center max-sm:flex-col max-sm:text-center">
-        <img className="h-16 max-sm:h-12 ml-5 rounded-full max-sm:mx-auto" src={selectedCompany.imageUrl} alt={selectedCompany.name} />
-        <h1 className="text-3xl ml-10 max-sm:text-2xl max-sm:ml-0 max-sm:mt-2">{selectedCompany.name}</h1>
-        <div className="flex items-center ml-auto max-sm:mx-auto max-sm:mt-4">
-          
-        <Link to="/contact" state={{ imageUrl: selectedCompany.imageUrl, title: selectedCompany.name, address: selectedCompany.address, email: selectedCompany.email, phone: selectedCompany.phone, operatingHours: selectedCompany.operatingHours }}>
-          <div className="p-3 text-white text-center mr-5 bg-black w-[150px] rounded-xl">
-              <h1 className="font-medium text-lg m-0">Contact Info</h1>
-          </div> </Link>
-          <Link to="/requirements" state={{ imageUrl: selectedCompany.imageUrl, title: selectedCompany.name }}>
-          <div className="p-3 text-white text-center bg-black w-[150px] rounded-xl">
-              <h1 className="cursor-pointer font-medium text-lg m-0">Requirements</h1>   
-          </div></Link>
-        </div>
-        <Link className="text-4xl max-sm:text-3xl ml-20 mr-10 cursor-pointer max-sm:ml-0 max-sm:mt-4" to="/inbox" state={{ name: selectedCompany.name, image: selectedCompany.imageUrl }}>
-          <i className="fa fa-commenting"></i>
+      <div className="flex py-6 items-center max-sm:flex-col max-sm:text-center mx-5">
+        <Link to="/contact">
+          {businessImage && (
+            <img className="h-16 w-16 ml-5 rounded-full max-sm:mx-auto" src={businessImage} alt={businessName} />
+          )}
         </Link>
+        <h1 className="text-3xl ml-10 max-sm:text-2xl max-sm:ml-0 max-sm:mt-2">{businessName}</h1>
+
+        <div className="flex items-center ml-auto">
+          {isOwner && (
+            <button
+              onClick={() => navigate("/bfront", { state: { businessId, ownerId: ownerId, businessImage, businessName } })}
+              className="bg-blue-500 text-white text-2xl px-4 py-2 rounded-full hover:bg-blue-600 transition-colors ml-auto mr-4"
+            >
+              +
+            </button>
+          )}
+          <div className="mb-2.5 ml-auto">
+              <Link className="text-4xl ml-5 cursor-pointer" to="/inbox">
+                <i className="fa fa-commenting"></i>
+              </Link>
+          </div>
+        </div>
       </div>
 
-      <div className="flex gap-4 my-6 px-4 max-sm:flex-col max-sm:items-center">
-        {companies.map((company) => (
-          <button key={company.id} onClick={() => setSelectedCompany(company)} className={`p-2 rounded-lg ${selectedCompany.id === company.id ? 'bg-black text-white' : 'bg-gray-200 text-black'}`}>
-            {company.name}
-          </button>
-        ))}
+      <div className="mt-10">
+        {vehicles.length > 0 ? (
+          <div className="flex ml-5">
+            {vehicles.map((vehicle) => {
+              return (
+                <div key={vehicle.id} className="w-[300px] ml-10 rounded-lg p-5 shadow-md">
+                  <img 
+                    src={vehicle.vehicle.image || "/default-image.jpg"} 
+                    alt="" 
+                    className="w-[250px] h-[150px] object-cover rounded-md mb-4" 
+                  />
+                  <h2 className="text-xl font-semibold">{vehicle.vehicle.model}</h2>
+                  <p className="text-sm text-gray-600">Capacity: {vehicle.vehicle.capacity}</p>
+                  <p className="text-sm text-gray-600">Color: {vehicle.vehicle.color}</p>
+                  <p className="text-sm text-gray-600">Mileage: {vehicle.vehicle.mileage}</p>
+                  <p className="text-sm text-gray-600">Class: {vehicle.vehicle.class}</p>
+                  <p className={`text-lg font-bold text-right ${vehicle.vehicle.availability === "Available" ? "text-blue-600" : "text-red-600"}`}>
+                    {vehicle.vehicle.availability}</p>
+
+                    {isOwner && (
+                  <div className="mt-4 flex justify-between">
+                    <button
+                      onClick={() => handleEditVehicle(vehicle)}
+                      className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                    >
+                      Edit
+                    </button>
+                    <button onClick={() => handleOpenModal(vehicle.id)} className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
+                      Delete
+                    </button>
+                  </div>
+                    )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center text-lg text-gray-600 mt-10">No vehicles added yet.</div>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 my-10 px-4">
-        {selectedCompany.vehicles.map((vehicle) => (
-          <div key={vehicle.id} className="flex border text-wrap rounded-lg p-4 shadow-md max-sm:flex-col">
-            <img className="w-60 h-40 object-cover rounded-lg max-sm:w-full" src={vehicle.image} alt={vehicle.model} />
-            <div className="mt-4 ml-4 max-sm:ml-0">
-              <h2 className="font-bold text-xl">{vehicle.model}</h2>
-              <p className="text-sm text-gray-600">
-                Capacity: {vehicle.capacity} <br />
-                Color: {vehicle.color} <br />
-                Mileage: {vehicle.mileage} <br />
-                Class: {vehicle.class}
-              </p>
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg w-1/3">
+            <h2 className="text-xl font-semibold mb-4">Are you sure you want to delete this vehicle?</h2>
+            <div className="flex justify-between">
+              <button onClick={handleDelete} className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">Delete</button>
+              <button onClick={handleCloseModal} className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400">Cancel</button>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,17 +1,60 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { auth, db } from "../config/firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { setDoc, doc } from "firebase/firestore";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Signinwithgoogle from "./signinwithgoogle";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-export default function SignUp() {
-  const navigate = useNavigate(); // Hook for navigation
-  const [formData, setFormData] = useState({
-    fname: "",
-    Bname: "",
-    email: "",
-    password: "",
-  });
-
-  const [error, setError] = useState("");
+function SignUp() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("client");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Password validation
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters long", { position: "bottom-center" });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match", { position: "bottom-center" });
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      await setDoc(doc(db, "users", user.uid), {
+        name: name,
+        email: user.email,
+        role: activeTab, // Add role (client or business)
+        createdAt: new Date().toISOString(),
+      });
+
+      toast.success("User Registered Successfully", { position: "top-center" });
+      navigate("/");
+    } catch (error) {
+      let errorMessage = "An error occurred during registration.";
+      if (error.code === "auth/email-already-in-use") {
+        errorMessage = "Email is already in use.";
+      } else if (error.code === "auth/weak-password") {
+        errorMessage = "Password is too weak.";
+      }
+      toast.error(errorMessage, { position: "bottom-center" });
+    }
+  };
 
   useEffect(() => {
     if (window.location.pathname === "/signUp") {
@@ -21,30 +64,31 @@ export default function SignUp() {
     }
   }, [window.location.pathname]);
 
-  const handleClick = (tab, path) => {
+  const handleTabClick = (tab, path) => {
     setActiveTab(tab);
     navigate(path);
   };
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!formData.fname || !formData.email || !formData.password) {
-      setError("All fields are required.");
-      return;
-    }
-
-    setError(""); // Clear error if valid
-
-    console.log("Form submitted:", formData);
-
-    // Redirect to the front page after successful submission
-    navigate("/");
-  };
+  const PasswordInput = ({ value, onChange, showPassword, toggleVisibility, placeholder }) => (
+    <div className="relative">
+      <input
+        type={showPassword ? "text" : "password"}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        required
+      />
+      <button
+        type="button"
+        onClick={toggleVisibility}
+        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer"
+        aria-label={showPassword ? "Hide password" : "Show password"}
+      >
+        {showPassword ? <FaEyeSlash /> : <FaEye />}
+      </button>
+    </div>
+  );
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
@@ -55,9 +99,8 @@ export default function SignUp() {
         <div className="h-fit w-full pt-10 relative">
           <div className="rounded-3xl font-medium bg-white text-lg h-10 w-40 m-auto">
             <div className="flex h-full">
-              {/* Client Button */}
               <div
-                onClick={() => handleClick("client", "/signUp")}
+                onClick={() => handleTabClick("client", "/signUp")}
                 className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${
                   activeTab === "client"
                     ? "bg-black text-white rounded-3xl"
@@ -66,10 +109,8 @@ export default function SignUp() {
               >
                 Client
               </div>
-
-              {/* Business Button */}
               <div
-                onClick={() => handleClick("business", "/bsignUp")}
+                onClick={() => handleTabClick("business", "/bsignUp")}
                 className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${
                   activeTab === "business"
                     ? "bg-black text-white rounded-3xl"
@@ -84,14 +125,13 @@ export default function SignUp() {
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-sm font-medium text-gray-700">First Name</label>
+            <label className="block text-sm font-medium text-gray-700">Name</label>
             <input
               type="text"
-              name="fname"
-              value={formData.fname}
-              onChange={handleChange}
+              placeholder="Enter your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Enter your first name"
               required
             />
           </div>
@@ -100,29 +140,35 @@ export default function SignUp() {
             <label className="block text-sm font-medium text-gray-700">Email</label>
             <input
               type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            <PasswordInput
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              showPassword={showPassword}
+              toggleVisibility={() => setShowPassword(!showPassword)}
               placeholder="Enter your password"
-              required
             />
           </div>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+            <PasswordInput
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              showPassword={showConfirmPassword}
+              toggleVisibility={() => setShowConfirmPassword(!showConfirmPassword)}
+              placeholder="Confirm your password"
+            />
+          </div>
 
           <button
             type="submit"
@@ -130,6 +176,8 @@ export default function SignUp() {
           >
             Sign up
           </button>
+
+          <Signinwithgoogle />
         </form>
 
         <p className="text-sm text-center text-gray-500">
@@ -139,6 +187,9 @@ export default function SignUp() {
           </a>
         </p>
       </div>
+      <ToastContainer position="top-center" autoClose={3000} />
     </div>
   );
 }
+
+export default SignUp;
