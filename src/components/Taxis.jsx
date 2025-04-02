@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../config/firebase";
+import { db } from "./config/firebase";
 import StarRating from "./star.js";
 
 const Taxis = () => {

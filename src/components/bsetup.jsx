@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "../config/firebase";
+import { auth, db } from "./config/firebase";
 import { useNavigate } from "react-router-dom";
 
 const BusinessSetup = () => {
@@ -106,7 +106,7 @@ const BusinessSetup = () => {
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
-              <option value=""></option>
+              <option value="">Select</option>
               <option value="Rental">Retail</option>
               <option value="Taxi">Taxi</option>
             </select>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { db } from "../config/firebase";
+import { db } from "./config/firebase";
 import { collection, getDocs, doc, deleteDoc, query, where } from "firebase/firestore";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
@@ -76,18 +76,29 @@ const BPF = () => {
   };
 
   const handleAddTour = () => {
-    navigate("/addtour", { state: { businessId, ownerId: OwnerId, image: businessImage,
-      name: businessName, } });
+    navigate("/addtour", { state: { businessId, ownerId: OwnerId, image: businessImage,name: businessName, } });
   };
+
+  const handleNavigateToChat = () => {
+    navigate('/chat', { 
+      state: {businessId,businessName,businessImage
+      }
+    });
+  };
+
 
   return (
     <div className="h-fit pb-10  w-full relative">
       <div className="flex py-6 mx-5 items-center max-sm:flex-col max-sm:text-center">
-        <img
-          className="h-16 w-16 ml-2.5 rounded-full max-sm:mx-auto max-sm:h-12"
-          src={businessImage}
-          alt="Business"
-        />
+          {businessImage && (
+            <Link to={`/profile?businessId=${businessId}`}>
+              <img 
+                className="h-16 w-16 ml-5 rounded-full max-sm:mx-auto" 
+                src={businessImage} 
+                alt={businessName} 
+              />
+            </Link>
+          )}
         <h1 className="text-3xl ml-5 max-sm:text-xl max-sm:ml-0 max-sm:mt-2">
           {businessName}
         </h1>
@@ -101,11 +112,16 @@ const BPF = () => {
               +
             </button>
           )}
-          <div className="mb-2.5">
-            <Link className="text-4xl cursor-pointer" to="/inbox">
-              <i className="fa fa-commenting"></i>
-            </Link>
-          </div>
+          {!isOwner && (
+            <div className="mb-2.5">
+              <button 
+                className="text-4xl cursor-pointer" 
+                onClick={handleNavigateToChat}
+              >
+                <i className="fa fa-commenting"></i>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

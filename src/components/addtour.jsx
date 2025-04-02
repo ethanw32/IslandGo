@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { db } from "../config/firebase";
+import { db } from "./config/firebase";
 import { doc, setDoc, updateDoc, collection } from "firebase/firestore";
 
 const AddTour = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { tourToEdit, businessId, ownerId } = location.state || {}; // ✅ Extract businessId
+  const { tourToEdit, businessId, ownerId } = location.state || {};
 
   // State for form fields
   const [name, setName] = useState("");
@@ -15,7 +15,8 @@ const AddTour = () => {
   const [tourImageFile, setTourImageFile] = useState(null);
   const [routeEmbedLink, setRouteEmbedLink] = useState("");
   const [spots, setSpots] = useState([]);
-  const [isUploading, setIsUploading] = useState(false); 
+  const [isUploading, setIsUploading] = useState(false);
+  const [showMapInstructions, setShowMapInstructions] = useState(false);
 
   // Pre-fill the form if tourToEdit exists
   useEffect(() => {
@@ -81,8 +82,8 @@ const AddTour = () => {
         image,
         routeEmbedLink: decodedRouteEmbedLink,
         spots,
-        businessId, // ✅ Attach the businessId
-        ownerId, // ✅ Attach the ownerId
+        businessId,
+        ownerId,
       };
 
       if (tourToEdit) {
@@ -95,13 +96,18 @@ const AddTour = () => {
         console.log("Tour added successfully!");
       }
 
-      navigate("/bpf", { state: { businessId, ownerId, image: businessImage,
-        name: businessName, } }); // ✅ Pass state back
+      navigate("/bpf", { state: { businessId, ownerId, image: businessImage, name: businessName } });
     } catch (error) {
       console.error("Error saving tour: ", error);
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const removeSpot = (index) => {
+    const newSpots = [...spots];
+    newSpots.splice(index, 1);
+    setSpots(newSpots);
   };
 
   return (
@@ -153,7 +159,31 @@ const AddTour = () => {
 
         {/* Route Embed Link Field */}
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Route Embed Link</label>
+          <div className="flex justify-between items-center">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Route Embed Link</label>
+            <button 
+              type="button" 
+              onClick={() => setShowMapInstructions(!showMapInstructions)}
+              className="text-blue-500 text-sm hover:underline"
+            >
+              {showMapInstructions ? "Hide Instructions" : "How to get this?"}
+            </button>
+          </div>
+          
+          {showMapInstructions && (
+            <div className="bg-blue-50 p-4 rounded-lg mb-4 text-sm">
+              <p className="font-bold mb-2">How to get the embed link from Google Maps:</p>
+              <ol className="list-decimal pl-5 space-y-1">
+                <li>Go to Google Maps and create your route</li>
+                <li>Click the three-dot menu next to the route name</li>
+                <li>Select "Share or embed map"</li>
+                <li>Choose the "Embed map" tab</li>
+                <li>Copy the entire iframe code (starts with &lt;iframe)</li>
+                <li>Paste it in the field below</li>
+              </ol>
+            </div>
+          )}
+          
           <input
             type="text"
             value={routeEmbedLink}
@@ -168,7 +198,15 @@ const AddTour = () => {
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2">Spots</label>
           {spots.map((spot, index) => (
-            <div key={index} className="mb-2">
+            <div key={index} className="mb-4 p-3 border rounded-lg relative">
+              <button
+                type="button"
+                onClick={() => removeSpot(index)}
+                className="absolute top-1 right-1 text-red-500 hover:text-red-700"
+                title="Remove spot"
+              >
+                ×
+              </button>
               <input
                 type="text"
                 value={spot.name}

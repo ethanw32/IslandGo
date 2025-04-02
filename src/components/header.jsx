@@ -1,67 +1,163 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import useAuth from "./useAuth";
+import { FaBars, FaTimes, FaEnvelope } from "react-icons/fa";
+import { useHasUnreadMessages } from './hooks/unreadmessages';
 
 function Header() {
   const { userDetails, logout } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const hasUnread = useHasUnreadMessages();
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   return (
-    <div className="flex flex-row items-center bg-black text-white text-3xl h-24 px-10">
-      <div className="font-bold max-sm:text-2xl">
-        <Link to="/">IslandGo</Link>
-      </div>
+    <header className="flex items-center justify-between bg-black text-white h-24 px-6 md:px-10 sticky top-0 z-50">
+      {/* Mobile menu button */}
+      <button
+        onClick={toggleMenu}
+        className="md:hidden text-white focus:outline-none"
+        aria-label="Toggle menu"
+      >
+        <FaBars className="h-6 w-6" />
+      </button>
 
-      {/* Right Section */}
-      <div className="ml-auto text-xl relative group flex space-x-4 items-center">
+      {/* Logo */}
+      <Link to="/" className="text-3xl font-bold">
+        IslandGo
+      </Link>
 
-        
-        {userDetails ? ( // Check if userDetails exists (user is logged in)
+      {/* Desktop Navigation */}
+      <div className="hidden md:flex items-center space-x-6">
+        {userDetails ? (
           <>
-            <div className="relative">
-              {/* Display business photo if type is "business", otherwise display user photo */}
-              <img
-                src={
-                  userDetails.type === "business"
-                    ? userDetails.businessImage || "/images/defaultpfp.jpg" // Use businessImage for businesses
-                    : userDetails.photo || userDetails.photoURL || "/images/defaultpfp.jpg" // Use photo or photoURL for users
-                }
-                alt="Profile"
-                className="w-12 h-12 rounded-full cursor-pointer"
-                onError={(e) => {
-                  e.target.src = "/images/defaultpfp.jpg"; // Fallback to default image
-                }}
-              />
+            <Link to="/chat" className="relative p-2">
+              <FaEnvelope className="h-6 w-6 text-white" />
+              {hasUnread && (
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+              )}
+            </Link>
 
-              {/* Dropdown Menu */}
-              <div className="absolute -right-10 top-12 w-32 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-300 z-10 focus:opacity-100 focus:visible">
-                <ul className="py-2 text-left text-lg">
-                  <Link to="/profile">
-                    <li className="w-full px-4 py-2 cursor-pointer text-gray-700 hover:bg-gray-100">
-                      Profile
-                      <i className="fa fa-user ml-2" aria-hidden="true"></i>
-                    </li>
-                  </Link>
-
-                  <li
-                    onClick={logout} // Use the logout function from useAuth
-                    className="w-full px-4 py-2 cursor-pointer text-gray-700 hover:bg-gray-100"
-                  >
-                    Log out
-                    <i className="fa fa-sign-out ml-2" aria-hidden="true"></i>
-                  </li>
-                </ul>
+            {/* Profile dropdown */}
+            <div className="relative group">
+              <button className="flex items-center focus:outline-none">
+                <img
+                  src={
+                    userDetails.type === "business"
+                      ? userDetails.businessImage
+                      : userDetails.photo || userDetails.photoURL || "/images/defaultpfp.jpg"
+                  }
+                  alt="Profile"
+                  className="h-10 w-10 rounded-full object-cover border-2 border-white"
+                  onError={(e) => {
+                    e.target.src = "/images/defaultpfp.jpg";
+                  }}
+                />
+              </button>
+              <div className="absolute -right-10 w-28 bg-white rounded-lg shadow-lg py-1 z-50 font-semibold hidden group-hover:block">
+                <Link
+                  to="/profile"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Profile
+                </Link>
+                <button
+                  onClick={logout}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Sign out
+                </button>
               </div>
             </div>
           </>
         ) : (
-          <>
-            <Link to="/login" className="hover:text-gray-400">
-              Log In
-            </Link>
-          </>
+          <Link
+            to="/login"
+            className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+          >
+            Log In
+          </Link>
         )}
       </div>
-    </div>
+
+      {/* Mobile menu */}
+      <div
+        className={`fixed inset-0 bg-black bg-opacity-75 z-40 transform ${
+          isMenuOpen ? "translate-x-0" : "-translate-x-full"
+        } transition-transform duration-300 ease-in-out md:hidden`}
+      >
+        <div className="w-64 h-full bg-black text-white p-4">
+          <div className="flex items-center justify-between border-b border-gray-700 pb-4">
+            <span className="text-xl font-bold">IslandGo</span>
+            <button onClick={toggleMenu} className="text-white">
+              <FaTimes className="h-6 w-6" />
+            </button>
+          </div>
+          <nav className="mt-3">
+            <ul className="space-y-4">
+              <li>
+                <Link
+                  to="/"
+                  onClick={toggleMenu}
+                  className="block py-2 hover:text-gray-300"
+                >
+                  Home
+                </Link>
+              </li>
+              {userDetails && (
+                <>
+                  <li>
+                    <Link
+                      to="/profile"
+                      onClick={toggleMenu}
+                      className="block py-2 hover:text-gray-300"
+                    >
+                      Profile
+                    </Link>
+                  </li>
+                  <li className="relative">
+                    <Link
+                      to="/chat"
+                      onClick={toggleMenu}
+                      className="flex items-center py-2 hover:text-gray-300"
+                    >
+                      Messages
+                      {hasUnread && (
+                        <span className="ml-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                      )}
+                    </Link>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => {
+                        logout();
+                        toggleMenu();
+                      }}
+                      className="block py-2 hover:text-gray-300"
+                    >
+                      Sign Out
+                    </button>
+                  </li>
+                </>
+              )}
+              {!userDetails && (
+                <li>
+                  <Link
+                    to="/login"
+                    onClick={toggleMenu}
+                    className="block py-2 hover:text-gray-300"
+                  >
+                    Log In
+                  </Link>
+                </li>
+              )}
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </header>
   );
 }
 

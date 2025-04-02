@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { collection, addDoc, doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "../config/firebase"; // Firestore instance
+import { db } from "./config/firebase"; // Firestore instance
 import { getAuth } from "firebase/auth";
 import { toast } from "react-toastify";
 
@@ -205,7 +205,7 @@ const AddEditListing = () => {
               onChange={handleInputChange}
               className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value=""></option>
+              <option value="">Select</option>
               <option value="Available">Available</option>
               <option value="Unavailable">Unavailable</option>
             </select>

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState,useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth, db } from "../config/firebase";
+import { auth, db } from "./config/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { setDoc, doc } from "firebase/firestore";
 import { toast, ToastContainer } from "react-toastify";
@@ -39,7 +39,7 @@ function SignUp() {
       await setDoc(doc(db, "users", user.uid), {
         name: name,
         email: user.email,
-        role: activeTab, // Add role (client or business)
+        type: activeTab, 
         createdAt: new Date().toISOString(),
       });
 
@@ -69,26 +69,14 @@ function SignUp() {
     navigate(path);
   };
 
-  const PasswordInput = ({ value, onChange, showPassword, toggleVisibility, placeholder }) => (
-    <div className="relative">
-      <input
-        type={showPassword ? "text" : "password"}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        required
-      />
-      <button
-        type="button"
-        onClick={toggleVisibility}
-        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer"
-        aria-label={showPassword ? "Hide password" : "Show password"}
-      >
-        {showPassword ? <FaEyeSlash /> : <FaEye />}
-      </button>
-    </div>
-  );
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
@@ -124,61 +112,83 @@ function SignUp() {
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Name</label>
-            <input
-              type="text"
-              placeholder="Enter your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
-          </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Name</label>
+        <input
+          type="text"
+          placeholder="Enter your name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          required
+        />
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
-          </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Email</label>
+        <input
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          required
+        />
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Password</label>
-            <PasswordInput
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              showPassword={showPassword}
-              toggleVisibility={() => setShowPassword(!showPassword)}
-              placeholder="Enter your password"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
-            <PasswordInput
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              showPassword={showConfirmPassword}
-              toggleVisibility={() => setShowConfirmPassword(!showConfirmPassword)}
-              placeholder="Confirm your password"
-            />
-          </div>
-
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Password</label>
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter password"
+            className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            required
+          />
           <button
-            type="submit"
-            className="w-full block text-center p-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+            type="button"
+            onClick={togglePasswordVisibility}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer"
+            aria-label={showPassword ? "Hide password" : "Show password"}
           >
-            Sign up
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
           </button>
+        </div>
+      </div>
 
-          <Signinwithgoogle />
-        </form>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+        <div className="relative">
+          <input
+            type={showConfirmPassword ? "text" : "password"}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Confirm password"
+            className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            required
+          />
+          <button
+            type="button"
+            onClick={toggleConfirmPasswordVisibility}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer"
+            aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+          >
+            {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+          </button>
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        className="w-full block text-center p-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+      >
+        Sign up
+      </button>
+
+      <Signinwithgoogle />
+    </form>
 
         <p className="text-sm text-center text-gray-500">
           Already have an account?{" "}

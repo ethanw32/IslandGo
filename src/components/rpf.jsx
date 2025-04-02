@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { db } from "../config/firebase";
+import { db } from "./config/firebase";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { collection, query, where, onSnapshot, deleteDoc, doc } from "firebase/firestore";
@@ -13,10 +13,10 @@ function Rpf() {
   const navigate = useNavigate();
 
   const {
-    businessImage,
-    businessName,
-    businessId,
-    ownerId, // ownerId is now used to fetch the vehicles
+    businessImage: businessImage,
+    businessName: businessName,
+    ownerId: ownerId,
+    id: businessId,
   } = location.state || {};
 
   const auth = getAuth();
@@ -28,18 +28,17 @@ function Rpf() {
     }
   }, [currentUser, ownerId]);
 
-  // Fetch vehicles by OwnerId instead of BusinessId
+  // Fetch vehicles by OwnerId
   useEffect(() => {
     if (ownerId) {
       const rentalsRef = collection(db, "rentals");
-      const q = query(rentalsRef, where("ownerId", "==", ownerId)); // Change query to filter by OwnerId
+      const q = query(rentalsRef, where("ownerId", "==", ownerId));
       
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const vehicleList = [];
         querySnapshot.forEach((doc) => {
           vehicleList.push({ id: doc.id, ...doc.data() });
         });
-        console.log("Fetched vehicles: ", vehicleList); // Add logging
         setVehicles(vehicleList);
       });
       
@@ -72,14 +71,36 @@ function Rpf() {
     navigate("/bfront", { state: { businessId, ownerId: ownerId, businessImage, businessName, vehicleToEdit: vehicle } });
   };
 
+  const handleNavigateToChat = () => {
+    navigate('/chat', { 
+      state: {businessId, businessName, businessImage}
+    });
+  };
+
+  const handleBookVehicle = (vehicle) => {
+    navigate('/book', { 
+      state: {
+        vehicle,
+        businessId,
+        businessName,
+        businessImage,
+        ownerId
+      }
+    });
+  };
+
   return (
     <div className="h-fit w-full relative pb-10">
       <div className="flex py-6 items-center max-sm:flex-col max-sm:text-center mx-5">
-        <Link to="/contact">
           {businessImage && (
-            <img className="h-16 w-16 ml-5 rounded-full max-sm:mx-auto" src={businessImage} alt={businessName} />
+            <Link to={`/profile?businessId=${businessId}`}>
+              <img 
+                className="h-16 w-16 ml-5 rounded-full max-sm:mx-auto" 
+                src={businessImage} 
+                alt={businessName} 
+              />
+            </Link>
           )}
-        </Link>
         <h1 className="text-3xl ml-10 max-sm:text-2xl max-sm:ml-0 max-sm:mt-2">{businessName}</h1>
 
         <div className="flex items-center ml-auto">
@@ -91,20 +112,25 @@ function Rpf() {
               +
             </button>
           )}
-          <div className="mb-2.5 ml-auto">
-              <Link className="text-4xl ml-5 cursor-pointer" to="/inbox">
+          {!isOwner && (
+            <div className="mb-2.5">
+              <button 
+                className="text-4xl cursor-pointer" 
+                onClick={handleNavigateToChat}
+              >
                 <i className="fa fa-commenting"></i>
-              </Link>
-          </div>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       <div className="mt-10">
         {vehicles.length > 0 ? (
-          <div className="flex ml-5">
+          <div className="flex flex-wrap ml-5">
             {vehicles.map((vehicle) => {
               return (
-                <div key={vehicle.id} className="w-[300px] ml-10 rounded-lg p-5 shadow-md">
+                <div key={vehicle.id} className="w-[300px] ml-10 mb-10 rounded-lg p-5 shadow-md">
                   <img 
                     src={vehicle.vehicle.image || "/default-image.jpg"} 
                     alt="" 
@@ -118,19 +144,32 @@ function Rpf() {
                   <p className={`text-lg font-bold text-right ${vehicle.vehicle.availability === "Available" ? "text-blue-600" : "text-red-600"}`}>
                     {vehicle.vehicle.availability}</p>
 
-                    {isOwner && (
                   <div className="mt-4 flex justify-between">
-                    <button
-                      onClick={() => handleEditVehicle(vehicle)}
-                      className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-                    >
-                      Edit
-                    </button>
-                    <button onClick={() => handleOpenModal(vehicle.id)} className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
-                      Delete
-                    </button>
-                  </div>
+                    {isOwner ? (
+                      <>
+                        <button
+                          onClick={() => handleEditVehicle(vehicle)}
+                          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          onClick={() => handleOpenModal(vehicle.id)} 
+                          className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => handleBookVehicle(vehicle)}
+                        className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 w-full"
+                        disabled={vehicle.vehicle.availability !== "Available"}
+                      >
+                        {vehicle.vehicle.availability === "Available" ? "Book Now" : "Not Available"}
+                      </button>
                     )}
+                  </div>
                 </div>
               );
             })}
