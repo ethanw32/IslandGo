@@ -1,0 +1,23 @@
+import React from "react";
+import Header from "./header";
+import Footer from "./footer";
+
+const Layout = ({ children, darkMode, toggleDarkMode}) => {
+  return (
+    <div className="flex flex-col min-h-screen">
+       <div className="min-h-screen bg-gray-100 dark:bg-black dark:text-white transition-colors duration-300">
+            <button 
+        onClick={toggleDarkMode}
+        className="fixed bottom-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 shadow-lg"
+      >
+        {darkMode ? '☀️' : '🌙'}
+      </button>
+      <Header /> 
+      <main className="flex-grow">{children}</main>
+      
+    </div>
+    </div>
+  );
+};
+
+export default Layout;

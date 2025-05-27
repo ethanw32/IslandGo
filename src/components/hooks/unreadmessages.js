@@ -1,7 +1,7 @@
 // hooks/useHasUnreadMessages.js
 import { useEffect, useState } from 'react';
 import { auth, db } from '../config/firebase';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, or } from 'firebase/firestore';
 
 export function useHasUnreadMessages() {
   const [hasUnread, setHasUnread] = useState(false);
@@ -9,27 +9,32 @@ export function useHasUnreadMessages() {
   useEffect(() => {
     if (!auth.currentUser?.uid) return;
 
-    let unsubscribeConversations = () => {};
-    const unsubscribeCallbacks = [];
+    let unsubscribeConversations = () => { };
 
     const checkUnreadMessages = async () => {
       const conversationsRef = collection(db, 'conversations');
       const q = query(
         conversationsRef,
-        where('participants', 'array-contains', auth.currentUser.uid)
+        or(
+          where('participant1', '==', auth.currentUser.uid),
+          where('participant2', '==', auth.currentUser.uid)
+        )
       );
 
       unsubscribeConversations = onSnapshot(q, async (snapshot) => {
         let unreadFound = false;
-        
+
         // Check each conversation
         for (const doc of snapshot.docs) {
           const data = doc.data();
           const lastRead = data[`lastRead_${auth.currentUser.uid}`]?.toDate() || new Date(0);
-          
+          const updatedAt = data.updatedAt?.toDate();
+
+          // Skip if no updatedAt timestamp
+          if (!updatedAt) continue;
+
           // If last message is from someone else and is unread
-          if (data.lastMessageUid !== auth.currentUser.uid && 
-              data.updatedAt?.toDate() > lastRead) {
+          if (data.lastMessageUid !== auth.currentUser.uid && updatedAt > lastRead) {
             unreadFound = true;
             break; // No need to check further if we found one
           }
@@ -45,7 +50,6 @@ export function useHasUnreadMessages() {
 
     return () => {
       unsubscribeConversations();
-      unsubscribeCallbacks.forEach(unsub => unsub());
     };
   }, [auth.currentUser?.uid]);
 

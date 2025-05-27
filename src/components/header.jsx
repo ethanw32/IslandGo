@@ -1,8 +1,17 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import useAuth from "./useAuth";
-import { FaBars, FaTimes, FaEnvelope } from "react-icons/fa";
+import {
+  FaBars,
+  FaTimes,
+  FaEnvelope,
+  FaHome,
+  FaUser,
+  FaSignOutAlt,
+  FaSignInAlt
+} from "react-icons/fa";
 import { useHasUnreadMessages } from './hooks/unreadmessages';
+import UserAvatar from "./UserAvatar";
 
 function Header() {
   const { userDetails, logout } = useAuth();
@@ -18,10 +27,13 @@ function Header() {
       {/* Mobile menu button */}
       <button
         onClick={toggleMenu}
-        className="md:hidden text-white focus:outline-none"
+        className="md:hidden text-white focus:outline-none relative"
         aria-label="Toggle menu"
       >
         <FaBars className="h-6 w-6" />
+        {hasUnread && (
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+        )}
       </button>
 
       {/* Logo */}
@@ -43,18 +55,7 @@ function Header() {
             {/* Profile dropdown */}
             <div className="relative group">
               <button className="flex items-center focus:outline-none">
-                <img
-                  src={
-                    userDetails.type === "business"
-                      ? userDetails.businessImage
-                      : userDetails.photo || userDetails.photoURL || "/images/defaultpfp.jpg"
-                  }
-                  alt="Profile"
-                  className="h-10 w-10 rounded-full object-cover border-2 border-white"
-                  onError={(e) => {
-                    e.target.src = "/images/defaultpfp.jpg";
-                  }}
-                />
+                <UserAvatar user={userDetails} size="md" />
               </button>
               <div className="absolute -right-10 w-28 bg-white rounded-lg shadow-lg py-1 z-50 font-semibold hidden group-hover:block">
                 <Link
@@ -84,16 +85,18 @@ function Header() {
 
       {/* Mobile menu */}
       <div
-        className={`fixed inset-0 bg-black bg-opacity-75 z-40 transform ${
-          isMenuOpen ? "translate-x-0" : "-translate-x-full"
-        } transition-transform duration-300 ease-in-out md:hidden`}
+        className={`fixed inset-0 bg-black bg-opacity-75 z-40 transform ${isMenuOpen ? "translate-x-0" : "-translate-x-full"
+          } transition-transform duration-300 ease-in-out md:hidden`}
+        onClick={toggleMenu}
       >
-        <div className="w-64 h-full bg-black text-white p-4">
+        <div className="w-64 h-full bg-black text-white p-4" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between border-b border-gray-700 pb-4">
             <span className="text-xl font-bold">IslandGo</span>
-            <button onClick={toggleMenu} className="text-white">
-              <FaTimes className="h-6 w-6" />
-            </button>
+            <div className="flex items-center">
+              <button onClick={toggleMenu} className="text-white">
+                <FaTimes className="h-6 w-6" />
+              </button>
+            </div>
           </div>
           <nav className="mt-3">
             <ul className="space-y-4">
@@ -101,8 +104,9 @@ function Header() {
                 <Link
                   to="/"
                   onClick={toggleMenu}
-                  className="block py-2 hover:text-gray-300"
+                  className="flex items-center py-2 hover:text-gray-300"
                 >
+                  <FaHome className="h-5 w-5 mr-2" />
                   Home
                 </Link>
               </li>
@@ -112,8 +116,9 @@ function Header() {
                     <Link
                       to="/profile"
                       onClick={toggleMenu}
-                      className="block py-2 hover:text-gray-300"
+                      className="flex items-center py-2 hover:text-gray-300"
                     >
+                      <FaUser className="h-5 w-5 mr-2" />
                       Profile
                     </Link>
                   </li>
@@ -123,10 +128,13 @@ function Header() {
                       onClick={toggleMenu}
                       className="flex items-center py-2 hover:text-gray-300"
                     >
-                      Messages
-                      {hasUnread && (
-                        <span className="ml-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                      )}
+                      <div className="flex items-center">
+                        <FaEnvelope className="h-5 w-5 mr-2" />
+                        Messages
+                        {hasUnread && (
+                          <span className="ml-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                        )}
+                      </div>
                     </Link>
                   </li>
                   <li>
@@ -135,8 +143,9 @@ function Header() {
                         logout();
                         toggleMenu();
                       }}
-                      className="block py-2 hover:text-gray-300"
+                      className="flex items-center py-2 hover:text-gray-300 w-full text-left"
                     >
+                      <FaSignOutAlt className="h-5 w-5 mr-2" />
                       Sign Out
                     </button>
                   </li>
@@ -147,8 +156,9 @@ function Header() {
                   <Link
                     to="/login"
                     onClick={toggleMenu}
-                    className="block py-2 hover:text-gray-300"
+                    className="flex items-center py-2 hover:text-gray-300"
                   >
+                    <FaSignInAlt className="h-5 w-5 mr-2" />
                     Log In
                   </Link>
                 </li>

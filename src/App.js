@@ -3,7 +3,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import './index.css';
 import './App.css';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; 
+import { Routes, Route } from 'react-router-dom'; 
 import Taxis from './components/Taxis';
 import Rentals from './components/Rentals';
 import Bpf from './components/bpf';
@@ -27,26 +27,28 @@ function App() {
 
 
   return (
-    <Router>
+    <>
       <Routes>
-        <Route path="/" element={<Layout><Taxis /></Layout>} />
-        <Route path="/rentals" element={<Layout><Rentals /></Layout>} />
-        <Route path="/bpf" element={<Layout><Bpf /></Layout>} />
-        <Route path="/chat" element={<Layout><Chat /></Layout>} />
-        <Route path="/rpf" element={<Layout><Rpf /></Layout>} />
-        <Route path="/book" element={<Layout><Book /></Layout>} />
-        <Route path="/addtour" element={<Layout><Addtour /></Layout>} />
-        <Route path="/requirements" element={<Layout><Requirements /></Layout>} />
-        <Route path="/profile" element={<Layout><Profile /></Layout>} />
-        <Route path="/contact" element={<Layout><Contact /></Layout>} />
-        <Route path="/signup" element={<Layout><SignUp /></Layout>} />
-        <Route path="/login" element={<Layout><Login /></Layout>} />
-        <Route path="/bsignUP" element={<Layout><BsignUP /></Layout>} />
-        <Route path="/bfront" element={<Layout><Bfront /></Layout>} />
-        <Route path="/bsetup" element={<Layout><Bsetup /></Layout>} />
+        <Route element={<Layout />}>
+          <Route path="/" element={<Taxis />} />
+          <Route path="/rentals" element={<Rentals />} />
+          <Route path="/bpf" element={<Bpf />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/rpf" element={<Rpf />} />
+          <Route path="/book" element={<Book />} />
+          <Route path="/addtour" element={<Addtour />} />
+          <Route path="/requirements" element={<Requirements />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/bsignUP" element={<BsignUP />} />
+          <Route path="/bfront" element={<Bfront />} />
+          <Route path="/bsetup" element={<Bsetup />} />
+        </Route>
       </Routes>
-      <ToastContainer  />
-    </Router>
+      <ToastContainer />
+    </>
     
   );
 }

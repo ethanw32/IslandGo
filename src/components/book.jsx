@@ -22,9 +22,8 @@ function BookVehicle() {
   const [endDate, setEndDate] = useState(tomorrow);
   const [totalPrice, setTotalPrice] = useState(0);
   const [specialRequests, setSpecialRequests] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingError, setBookingError] = useState('');
+  const [bookingSuccess, setBookingSuccess] = useState(false);
 
   // Helper function to format date for datetime-local input
   const formatDateForInput = (date) => {
@@ -73,12 +72,10 @@ function BookVehicle() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setBookingError('');
 
     if (!currentUser) {
       setBookingError('Please sign in to book a vehicle');
-      setIsSubmitting(false);
       return;
     }
 
@@ -111,8 +108,6 @@ function BookVehicle() {
     } catch (error) {
       console.error('Booking error:', error);
       setBookingError('Failed to create booking. Please try again.');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -121,7 +116,7 @@ function BookVehicle() {
       <div className="flex justify-center items-center h-screen">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Vehicle Not Found</h2>
-          <button 
+          <button
             onClick={() => navigate(-1)}
             className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
           >
@@ -148,7 +143,7 @@ function BookVehicle() {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">Book {vehicle.vehicle.model}</h1>
-        
+
         <div className="flex flex-col md:flex-row gap-8">
           <div className="md:w-1/2">
             <div className="bg-white rounded-lg shadow-md p-6">
@@ -179,7 +174,7 @@ function BookVehicle() {
           <div className="md:w-1/2">
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold mb-4">Booking Details</h2>
-              
+
               <form onSubmit={handleSubmit}>
                 <div className="mb-4">
                   <label className="block text-gray-700 mb-2">Pickup Date</label>
@@ -226,12 +221,10 @@ function BookVehicle() {
 
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className={`w-full py-3 px-4 rounded-md text-white font-semibold ${
-                    isSubmitting ? 'bg-blue-400' : 'bg-blue-500 hover:bg-blue-600'
-                  }`}
+                  className={`w-full py-3 px-4 rounded-md text-white font-semibold ${'bg-blue-500 hover:bg-blue-600'
+                    }`}
                 >
-                  {isSubmitting ? 'Processing...' : 'Confirm Booking'}
+                  Confirm Booking
                 </button>
               </form>
             </div>
