@@ -1,0 +1,939 @@
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { db } from './config/firebase';
+import { getAuth } from 'firebase/auth';
+import { toast } from 'react-toastify';
+import useAuth from './useAuth';
+import {
+  Star,
+  MapPin,
+  Car,
+  Users,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  Share2,
+  Check,
+  X,
+  User,
+  Clock,
+  Fuel,
+  Gauge,
+  Settings as Gear,
+  Snowflake,
+  Wifi,
+  Music,
+  Phone,
+  Luggage,
+  Shield,
+  CarFront,
+  CarTaxiFront
+} from 'lucide-react';
+
+const VehicleDetails = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const params = useParams();
+  const { state } = location;
+
+  // State declarations
+  const [vehicle, setVehicle] = useState(state?.vehicle || null);
+  const [vehicleId, setVehicleId] = useState(state?.vehicle?.id || params.id || null); // Use params.id as fallback
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(!state?.vehicle);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [guestCount, setGuestCount] = useState(1);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [showReservationModal, setShowReservationModal] = useState(false);
+  const [isSubmittingReservation, setIsSubmittingReservation] = useState(false);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
+  const { userDetails } = useAuth();
+  const auth = getAuth();
+  const currentUser = auth.currentUser;
+
+  // Improved image URL handling
+  const getHighQualityImageUrl = (imageUrl) => {
+    if (!imageUrl) return '';
+    try {
+      const url = new URL(imageUrl);
+      if (url.hostname.includes('firebasestorage')) {
+        url.searchParams.set('quality', '95');
+        url.searchParams.set('w', '1200');
+        return url.toString();
+      }
+      return imageUrl;
+    } catch {
+      return imageUrl;
+    }
+  };
+
+  // Separate function to fetch reviews
+  const fetchReviews = async (vId) => {
+    try {
+      setReviewsLoading(true);
+
+      const reviewsQuery = query(
+        collection(db, "reviews"),
+        where("vehicleId", "==", vId)
+      );
+      const reviewsSnapshot = await getDocs(reviewsQuery);
+
+      const reviewsData = reviewsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          // Convert Firestore timestamp to JS Date
+          createdAt: data.createdAt?.toDate() || new Date()
+        };
+      });
+
+      // Sort reviews by date (newest first)
+      reviewsData.sort((a, b) => b.createdAt - a.createdAt);
+
+      setReviews(reviewsData);
+
+      // Calculate average rating and update vehicle state
+      if (reviewsData.length > 0) {
+        const avgRating = reviewsData.reduce((sum, review) => sum + review.rating, 0) / reviewsData.length;
+        setVehicle(prev => prev ? {
+          ...prev,
+          averageRating: avgRating.toFixed(1),
+          reviewCount: reviewsData.length
+        } : null);
+      } else {
+        setVehicle(prev => prev ? {
+          ...prev,
+          averageRating: 0,
+          reviewCount: 0
+        } : null);
+      }
+
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
+      // Don't set main error state for review fetching issues
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  // Main useEffect for fetching vehicle data
+  useEffect(() => {
+    // If we have vehicle data from state, use it but still fetch reviews
+    if (state?.vehicle && vehicleId) {
+      setVehicle(state.vehicle);
+      setVehicleId(state.vehicle.id);
+      setLoading(false);
+      fetchReviews(state.vehicle.id);
+      return;
+    }
+
+    // If no vehicleId, show error
+    if (!vehicleId) {
+      setError("Vehicle information not provided");
+      setLoading(false);
+      return;
+    }
+
+    // Fetch vehicle data from Firestore
+    const fetchVehicleData = async () => {
+      try {
+        setLoading(true);
+
+        const vehicleDoc = await getDoc(doc(db, "rentals", vehicleId));
+        if (!vehicleDoc.exists()) {
+          throw new Error("Vehicle not found");
+        }
+
+        const vehicleData = {
+          id: vehicleDoc.id,
+          ...vehicleDoc.data(),
+          // Ensure vehicle data is properly structured
+          vehicle: vehicleDoc.data().vehicle || vehicleDoc.data()
+        };
+
+        setVehicle(vehicleData);
+
+        // Fetch reviews after vehicle data is loaded
+        await fetchReviews(vehicleId);
+
+      } catch (err) {
+        console.error("Error fetching vehicle data:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVehicleData();
+  }, [vehicleId]); // Remove state?.vehicle from dependencies
+
+  const handleSubmitReview = async () => {
+    if (!currentUser) {
+      toast.error("Please login to submit a review");
+      navigate("/login");
+      return;
+    }
+
+    if (!reviewComment.trim()) {
+      toast.error("Please write your review");
+      return;
+    }
+
+    try {
+      setIsSubmittingReview(true);
+
+      const reviewData = {
+        vehicleId: vehicle.id,
+        userId: currentUser.uid,
+        userName: userDetails?.name || currentUser.email,
+        userPhotoURL: currentUser.photoURL || null,
+        rating: reviewRating,
+        comment: reviewComment,
+        createdAt: serverTimestamp(),
+        businessId: vehicle.ownerId,
+        type: "vehicle"
+      };
+
+      // Add the review to Firestore
+      const docRef = await addDoc(collection(db, 'reviews'), reviewData);
+
+      // Get the newly created review with its proper ID
+      const newReviewDoc = await getDoc(docRef);
+      const newReview = {
+        id: newReviewDoc.id,
+        ...newReviewDoc.data(),
+        createdAt: newReviewDoc.data().createdAt?.toDate() || new Date()
+      };
+
+      // Update the reviews state
+      setReviews(prev => [newReview, ...prev]);
+
+      // Update the average rating
+      const newAvgRating = [...reviews, newReview].reduce(
+        (sum, review) => sum + review.rating, 0
+      ) / (reviews.length + 1);
+
+      setVehicle(prev => ({
+        ...prev,
+        averageRating: newAvgRating.toFixed(1),
+        reviewCount: reviews.length + 1
+      }));
+
+      toast.success('Review submitted successfully!');
+      setReviewComment('');
+      setReviewRating(5);
+      setIsReviewOpen(false);
+
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      toast.error(`Failed to submit review: ${error.message}`);
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
+  const handleNextImage = () => {
+    if (vehicle?.vehicle?.images?.length > 1) {
+      setCurrentImageIndex((prev) => (prev + 1) % vehicle.vehicle.images.length);
+    }
+  };
+
+  const handlePrevImage = () => {
+    if (vehicle?.vehicle?.images?.length > 1) {
+      setCurrentImageIndex((prev) =>
+        prev === 0 ? vehicle.vehicle.images.length - 1 : prev - 1
+      );
+    }
+  };
+
+  const handleReservation = () => {
+    if (!userDetails || !currentUser) {
+      toast.error("Please login to book a vehicle");
+      return;
+    }
+
+    if (!startDate || !endDate) {
+      toast.error('Please select rental period');
+      return;
+    }
+
+    if (new Date(endDate) <= new Date(startDate)) {
+      toast.error('Return date must be after pickup date');
+      return;
+    }
+
+    setShowReservationModal(true);
+  };
+
+  const calculateRentalDays = () => {
+    if (!startDate || !endDate) return 0;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end - start);
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+  };
+
+  const calculateTotalPrice = () => {
+    const days = calculateRentalDays();
+    const price = parseFloat(vehicle?.vehicle?.price) || 99;
+    return (price * days) + 15; // Including service fee
+  };
+
+  const confirmReservation = async () => {
+    if (isSubmittingReservation) return;
+
+    if (!currentUser) {
+      toast.error("You must be logged in to book a vehicle");
+      return;
+    }
+
+    try {
+      setIsSubmittingReservation(true);
+
+      const reservationData = {
+        vehicleDetails: vehicle.vehicle,
+        vehicleId: vehicle.id,
+        hostId: vehicle.ownerId,
+        customerId: currentUser.uid,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        status: "confirmed",
+        createdAt: serverTimestamp(),
+        totalPrice: calculateTotalPrice(),
+        paymentStatus: "pending"
+      };
+
+      // Create the reservation
+      const docRef = await addDoc(collection(db, 'bookings'), reservationData);
+
+      // Update the vehicle's availability status
+      const vehicleRef = doc(db, 'rentals', vehicle.id);
+      await updateDoc(vehicleRef, {
+        'vehicle.availability': 'Unavailable'
+      });
+
+      // Update local state to reflect the change
+      setVehicle(prev => ({
+        ...prev,
+        vehicle: {
+          ...prev.vehicle,
+          availability: 'Unavailable'
+        }
+      }));
+
+      toast.success('Vehicle reserved successfully!');
+      setShowReservationModal(false);
+      setStartDate('');
+      setEndDate('');
+      setGuestCount(1);
+
+    } catch (error) {
+      console.error('Error saving reservation:', error);
+      toast.error(`Failed to reserve vehicle: ${error.message}`);
+    } finally {
+      setIsSubmittingReservation(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error || !vehicle) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="bg-red-50 p-6 rounded-lg shadow-lg">
+          <h2 className="text-red-800 text-xl font-semibold mb-2">Error</h2>
+          <p className="text-red-600">{error || 'Vehicle not found'}</p>
+          <button
+            onClick={() => navigate(-1)}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const images = vehicle.vehicle?.images || [vehicle.vehicle?.image].filter(Boolean);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Image Gallery Section */}
+      <div className="relative h-64 sm:h-80 md:h-[500px] overflow-hidden bg-black">
+        {images.length > 0 ? (
+          <>
+            <img
+              src={getHighQualityImageUrl(images[currentImageIndex])}
+              alt={`${vehicle.vehicle.make} ${vehicle.vehicle.model} - Image ${currentImageIndex + 1}`}
+              className="w-full h-full object-contain"
+              loading="eager"
+              style={{
+                imageRendering: 'high-quality',
+                objectFit: 'contain',
+                objectPosition: 'center'
+              }}
+            />
+
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={handlePrevImage}
+                  aria-label="Previous image"
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+
+                <button
+                  onClick={handleNextImage}
+                  aria-label="Next image"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                  {images.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      aria-label={`Go to image ${index + 1}`}
+                      className={`w-3 h-3 rounded-full transition-all duration-200 ${index === currentImageIndex
+                        ? 'bg-white scale-110'
+                        : 'bg-white/60 hover:bg-white/80'
+                        }`}
+                    />
+                  ))}
+                </div>
+
+                <div className="absolute top-4 left-4 px-3 py-1 bg-black/50 text-white text-sm rounded-full">
+                  {currentImageIndex + 1}/{images.length}
+                </div>
+              </>
+            )}
+
+            <div className="absolute top-4 right-4 flex space-x-2">
+              <button
+                onClick={() => setIsFavorite(!isFavorite)}
+                aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                className="p-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-full transition-colors"
+              >
+                <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+              </button>
+              <button
+                className="p-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-full transition-colors"
+                aria-label="Share this vehicle"
+              >
+                <Share2 className="h-5 w-5" />
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+            <Car className="h-24 w-24 text-gray-400" />
+          </div>
+        )}
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            {/* Vehicle Header */}
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                <span className="font-semibold">{vehicle.averageRating || "New"}</span>
+                <span className="text-gray-500">({vehicle.reviewCount || 0} Reviews)</span>
+                <button
+                  onClick={() => setIsReviewOpen(true)}
+                  className="ml-auto text-sm text-blue-500 hover:text-blue-700"
+                >
+                  Write a Review
+                </button>
+              </div>
+
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{vehicle.vehicle.brand} {vehicle.vehicle.model}</h1>
+              <h2 className="text-xl text-gray-600 mb-4">{vehicle.vehicle.year}</h2>
+
+              <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-4">
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  <span>{vehicle.location || 'Location not specified'}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Car className="h-4 w-4" />
+                  <span>{vehicle.vehicle.brand || 'Brand not specified'}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Users className="h-4 w-4" />
+                  <span>Seats: {vehicle.vehicle.seats || 4}</span>
+                </div>
+              </div>
+
+              <p className="text-gray-700 leading-relaxed mb-4">
+                {vehicle.vehicle.description || 'No description available'}
+              </p>
+
+              {/* Key Specifications */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <div className="flex items-center gap-2">
+                  <Fuel className="h-5 w-5 text-blue-500" />
+                  <div>
+                    <div className="text-sm text-gray-500">Fuel Type</div>
+                    <div className="font-medium">{vehicle.vehicle.fuel || 'Gasoline'}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Gauge className="h-5 w-5 text-blue-500" />
+                  <div>
+                    <div className="text-sm text-gray-500">Mileage</div>
+                    <div className="font-medium">
+                      {vehicle.vehicle.mileage ? `${vehicle.vehicle.mileage.toLocaleString()} km` : 'N/A'}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Gear className="h-5 w-5 text-blue-500" />
+                  <div>
+                    <div className="text-sm text-gray-500">Transmission</div>
+                    <div className="font-medium">{vehicle.vehicle.transmission || 'Automatic'}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Snowflake className="h-5 w-5 text-blue-500" />
+                  <div>
+                    <div className="text-sm text-gray-500">AC</div>
+                    <div className="font-medium">{vehicle.vehicle.hasAC ? 'No' : 'Yes'}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Features */}
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+              <h2 className="text-xl font-semibold mb-4">Features & Amenities</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {vehicle.vehicle.features?.length > 0 ? (
+                  vehicle.vehicle.features.map((feature, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-green-500" />
+                      <span className="text-gray-700">{feature}</span>
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-green-500" />
+                      <span className="text-gray-700">Air Conditioning</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-green-500" />
+                      <span className="text-gray-700">Bluetooth</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-green-500" />
+                      <span className="text-gray-700">Navigation System</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-green-500" />
+                      <span className="text-gray-700">USB Ports</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Rental Policies */}
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+              <h2 className="text-xl font-semibold mb-4">Rental Policies</h2>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <Shield className="h-5 w-5 text-blue-500 mt-0.5" />
+                  <div>
+                    <h3 className="font-medium">Insurance</h3>
+                    <p className="text-gray-600 text-sm">Comprehensive insurance included with every rental</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Clock className="h-5 w-5 text-blue-500 mt-0.5" />
+                  <div>
+                    <h3 className="font-medium">Cancellation</h3>
+                    <p className="text-gray-600 text-sm">Free cancellation up to 24 hours before pickup</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CarFront className="h-5 w-5 text-blue-500 mt-0.5" />
+                  <div>
+                    <h3 className="font-medium">Pickup & Return</h3>
+                    <p className="text-gray-600 text-sm">Vehicle must be returned with the same fuel level</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Reservation Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-4">
+              <div className="text-center mb-6">
+                <div className="text-3xl font-bold text-gray-900">
+                  ${vehicle.vehicle.price || 99}
+                  <span className="text-lg font-normal text-gray-500"> / day</span>
+                </div>
+                <div className="text-sm text-gray-500 mt-1">
+                  {vehicle.vehicle.availability === "Available" ? (
+                    <span className="text-green-500">Available now</span>
+                  ) : (
+                    <span className="text-red-500">Currently unavailable</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Calendar className="h-4 w-4 inline mr-1" />
+                    Pickup Date
+                  </label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Calendar className="h-4 w-4 inline mr-1" />
+                    Return Date
+                  </label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    min={startDate || new Date().toISOString().split('T')[0]}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Users className="h-4 w-4 inline mr-1" />
+                    Passengers
+                  </label>
+                  <select
+                    value={guestCount}
+                    onChange={(e) => setGuestCount(parseInt(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {[...Array(vehicle.vehicle.capacity || 5)].map((_, i) => (
+                      <option key={i + 1} value={i + 1}>
+                        {i + 1} {i + 1 === 1 ? 'Passenger' : 'Passengers'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="border-t pt-4 mb-4">
+                <div className="flex justify-between items-center text-gray-600 mb-1">
+                  <span>${vehicle.vehicle.price || 99} x {calculateRentalDays()} days</span>
+                  <span>${(vehicle.vehicle.price || 99) * calculateRentalDays()}</span>
+                </div>
+                <div className="flex justify-between items-center text-gray-600 mb-1">
+                  <span>Service fee</span>
+                  <span>$15.00</span>
+                </div>
+                <div className="flex justify-between items-center text-lg font-semibold mt-3 pt-3 border-t">
+                  <span>Total:</span>
+                  <span>${calculateTotalPrice()}</span>
+                </div>
+              </div>
+
+              <button
+                onClick={handleReservation}
+                disabled={vehicle.vehicle.availability !== "Available" || !startDate || !endDate}
+                className={`w-full ${vehicle.vehicle.availability === "Available"
+                  ? 'bg-green-500 hover:bg-green-600'
+                  : 'bg-gray-400 cursor-not-allowed'
+                  } text-white font-semibold py-3 px-4 rounded-lg transition-colors`}
+              >
+                {vehicle.vehicle.availability === "Available" ? 'Reserve Now' : 'Unavailable'}
+              </button>
+
+              <p className="text-xs text-gray-500 text-center mt-3">
+                Free cancellation up to 24 hours before pickup
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced Review Section */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mt-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Customer Reviews</h2>
+              <div className="flex items-center mt-2">
+                <div className="flex items-center mr-4">
+                  <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                  <span className="ml-1 font-semibold">{vehicle.averageRating || "0"}</span>
+                  <span className="mx-1">·</span>
+                  <span className="text-gray-600">{reviews.length} reviews</span>
+                </div>
+                {reviews.length > 0 && (
+                  <div className="hidden md:block">
+                    {[5, 4, 3, 2, 1].map((star) => {
+                      const count = reviews.filter(r => Math.round(r.rating) === star).length;
+                      return (
+                        <div key={star} className="flex items-center text-sm">
+                          <span className="w-8">{star} star</span>
+                          <div className="w-24 h-1.5 bg-gray-200 rounded-full mx-2">
+                            <div
+                              className="h-full bg-yellow-400 rounded-full"
+                              style={{ width: `${(count / reviews.length) * 100}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-gray-500">{count}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Review Form Modal */}
+          {isReviewOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-lg max-w-md w-full p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Write a Review</h3>
+                  <button
+                    onClick={() => setIsReviewOpen(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                    disabled={isSubmittingReview}
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                <div className="flex items-center mb-4">
+                  <span className="mr-2 text-gray-700">Rating:</span>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setReviewRating(star)}
+                      className="focus:outline-none"
+                      disabled={isSubmittingReview}
+                    >
+                      <Star
+                        className={`h-6 w-6 ${star <= reviewRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                      />
+                    </button>
+                  ))}
+                </div>
+
+                <textarea
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  placeholder="Share your experience with this vehicle..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"
+                  rows="4"
+                  disabled={isSubmittingReview}
+                />
+
+                <div className="flex space-x-3 mt-4">
+                  <button
+                    onClick={() => setIsReviewOpen(false)}
+                    disabled={isSubmittingReview}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSubmitReview}
+                    disabled={isSubmittingReview || !reviewComment.trim()}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {reviewsLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : reviews.length === 0 ? (
+            <div className="text-center py-8">
+              <Star className="mx-auto h-8 w-8 text-gray-300" />
+              <h3 className="mt-2 text-lg font-medium text-gray-900">No reviews yet</h3>
+              <p className="mt-1 text-gray-500">
+                {currentUser ? "Be the first to review this vehicle" : "Sign in to leave a review"}
+              </p>
+              {!currentUser && (
+                <button
+                  onClick={() => navigate("/login")}
+                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  Sign In
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {reviews.map((review) => (
+                <div key={review.id} className="border-b border-gray-100 pb-6 last:border-b-0">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                        {review.userPhotoURL ? (
+                          <img
+                            src={review.userPhotoURL}
+                            alt={review.userName}
+                            className="w-full h-full rounded-full object-cover"
+                          />
+                        ) : (
+                          <User className="h-5 w-5 text-gray-600" />
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium text-gray-900">{review.userName || 'Anonymous'}</h4>
+                          <div className="flex items-center mt-1">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-4 w-4 ${i < (review.rating || 5)
+                                  ? 'fill-yellow-400 text-yellow-400'
+                                  : 'text-gray-300'
+                                  }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          {review.createdAt.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                      <p className="mt-3 text-gray-700">{review.comment}</p>
+
+                      {review.response && (
+                        <div className="mt-4 pl-4 border-l-2 border-gray-200">
+                          <div className="text-sm font-medium text-gray-600">Owner's Response</div>
+                          <p className="mt-1 text-sm text-gray-600">{review.response}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Reservation Confirmation Modal */}
+      {showReservationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Confirm Reservation</h3>
+              <button
+                onClick={() => setShowReservationModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+                disabled={isSubmittingReservation}
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Vehicle:</span>
+                <span className="font-medium">{vehicle.vehicle.brand} {vehicle.vehicle.model}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Pickup:</span>
+                <span className="font-medium">
+                  {new Date(startDate).toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Return:</span>
+                <span className="font-medium">
+                  {new Date(endDate).toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Passengers:</span>
+                <span className="font-medium">{guestCount}</span>
+              </div>
+              <div className="flex justify-between text-lg font-semibold border-t pt-3">
+                <span>Total:</span>
+                <span>${calculateTotalPrice()}</span>
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowReservationModal(false)}
+                disabled={isSubmittingReservation}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmReservation}
+                disabled={isSubmittingReservation}
+                className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmittingReservation ? 'Saving...' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default VehicleDetails;

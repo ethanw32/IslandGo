@@ -13,10 +13,13 @@ const AddEditListing = () => {
     ownerId: "",
     vehicle: {
       model: "",
-      capacity: "",
+      seats: "",
+      transmission: "",
+      fuel: "",
       color: "",
       mileage: "",
-      class: "",
+      brand: "",
+      price: "",
       image: "",
       availability: "",
     },
@@ -42,10 +45,13 @@ const AddEditListing = () => {
           ...prevState,
           vehicle: {
             model: location.state.vehicleToEdit.vehicle.model || "",
-            capacity: location.state.vehicleToEdit.vehicle.capacity || "",
+            seats: location.state.vehicleToEdit.vehicle.seats || "",
+            transmission: location.state.vehicleToEdit.vehicle.transmission || "",
+            fuel: location.state.vehicleToEdit.vehicle.fuel || "",
             color: location.state.vehicleToEdit.vehicle.color || "",
             mileage: location.state.vehicleToEdit.vehicle.mileage || "",
-            class: location.state.vehicleToEdit.vehicle.class || "",
+            brand: location.state.vehicleToEdit.vehicle.brand || "",
+            price: location.state.vehicleToEdit.vehicle.price || "",
             image: location.state.vehicleToEdit.vehicle.image || "",
             availability: location.state.vehicleToEdit.vehicle.availability || "",
           }
@@ -100,6 +106,7 @@ const AddEditListing = () => {
     e.preventDefault();
   
     if (!formData.ownerId) {
+      toast.error("Owner ID is missing");
       return;
     }
   
@@ -111,6 +118,7 @@ const AddEditListing = () => {
           ownerId: formData.ownerId,
           vehicle: formData.vehicle,
         });
+        toast.success("Vehicle updated successfully!");
       } else {
         // Add new vehicle
         const rentalsRef = collection(db, "rentals");
@@ -118,6 +126,7 @@ const AddEditListing = () => {
           ownerId: formData.ownerId,
           vehicle: formData.vehicle,
         });
+        toast.success("Vehicle added successfully!");
       }
   
       navigate("/rpf", {
@@ -129,9 +138,11 @@ const AddEditListing = () => {
         },
       });
     } catch (error) {
-      
+      console.error("Error saving vehicle: ", error);
+      toast.error("Failed to save vehicle. Please try again.");
     }
   };
+
   return (
     <div className="h-fit w-full pt-10 relative">
       <div className="max-w-4xl mx-auto p-5 m-5 bg-white rounded-lg shadow-lg mt-6">
@@ -150,15 +161,46 @@ const AddEditListing = () => {
           </div>
 
           <div className="flex flex-col">
-            <label className="text-gray-600 font-medium mb-2">Capacity:</label>
+            <label className="text-gray-600 font-medium mb-2">Seats:</label>
             <input
               type="text"
-              name="capacity"
-              value={formData.vehicle.capacity}
+              name="seats"
+              value={formData.vehicle.seats}
               onChange={handleInputChange}
               required
               className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+          </div>
+
+          <div className="flex flex-col">
+            <label className="text-gray-600 font-medium mb-2">Transmission:</label>
+            <select
+              name="transmission"
+              value={formData.vehicle.transmission}
+              onChange={handleInputChange}
+              required
+              className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select</option>
+              <option value="Automatic">Automatic</option>
+              <option value="Manual">Manual</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col">
+            <label className="text-gray-600 font-medium mb-2">Fuel:</label>
+            <select
+              name="fuel"
+              value={formData.vehicle.fuel}
+              onChange={handleInputChange}
+              required
+              className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select</option>
+              <option value="Diesel">Diesel</option>
+              <option value="Gasoline">Gasoline</option>
+              <option value="Electric">Electric</option>
+            </select>
           </div>
 
           <div className="flex flex-col">
@@ -186,11 +228,23 @@ const AddEditListing = () => {
           </div>
 
           <div className="flex flex-col">
-            <label className="text-gray-600 font-medium mb-2">Class:</label>
+            <label className="text-gray-600 font-medium mb-2">Brand:</label>
             <input
               type="text"
-              name="class"
-              value={formData.vehicle.class}
+              name="brand"
+              value={formData.vehicle.brand}
+              onChange={handleInputChange}
+              required
+              className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <label className="text-gray-600 font-medium mb-2">Price per day:</label>
+            <input
+              type="number"
+              name="price"
+              value={formData.vehicle.price}
               onChange={handleInputChange}
               required
               className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"

@@ -23,18 +23,11 @@ function Profile() {
   const [tourReservations, setTourReservations] = useState([]);
   const [bookingToCancel, setBookingToCancel] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [isLoading, setIsLoading] = useState({
-    profile: false,
-    bookings: false,
-    cancelling: false,
-    tourReservations: false
-  });
   const businessId = searchParams.get("businessId");
 
   const fetchBusinessProfile = useCallback(async () => {
     if (!businessId) return;
     
-    setIsLoading(prev => ({...prev, profile: true}));
     try {
       const docRef = doc(db, "businesses", businessId);
       const docSnap = await getDoc(docRef);
@@ -47,57 +40,59 @@ function Profile() {
     } catch (error) {
       console.error("Error fetching business profile:", error);
       toast.error(`Failed to load business profile: ${error.message}`);
-    } finally {
-      setIsLoading(prev => ({...prev, profile: false}));
     }
   }, [businessId, navigate]);
 
-  const fetchBookings = useCallback(async () => {
-    if (!userDetails || businessId) return;
+const fetchBookings = useCallback(async () => {
+  if (!userDetails || businessId) return;
 
-    setIsLoading(prev => ({...prev, bookings: true}));
-    try {
-      let q;
-      if (userDetails.type === "business" && userDetails?.businessType === "Rental") {
-        q = query(
-          collection(db, "bookings"),
-          where("businessId", "==", auth.currentUser.uid)
-        );
-      } else if (userDetails.type === "user") {
-        q = query(
-          collection(db, "bookings"),
-          where("customerId", "==", auth.currentUser.uid)
-        );
-      } else {
-        return;
-      }
-
-      const querySnapshot = await getDocs(q);
-      const userBookings = [];
-
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        userBookings.push({
-          id: doc.id,
-          ...data,
-          startDate: data.startDate?.toDate(),
-          endDate: data.endDate?.toDate(),
-        });
-      });
-
-      setBookings(userBookings);
-    } catch (error) {
-      console.error("Error fetching bookings:", error);
-      toast.error(`Failed to load bookings: ${error.message}`);
-    } finally {
-      setIsLoading(prev => ({...prev, bookings: false}));
+  try {
+    let q;
+    if (userDetails.type === "business" && userDetails?.businessType === "Rental") {
+      q = query(
+        collection(db, "bookings"),
+        where("businessId", "==", auth.currentUser.uid)
+      );
+    } else if (userDetails.type === "user") {
+      q = query(
+        collection(db, "bookings"),
+        where("customerId", "==", auth.currentUser.uid)
+      );
+    } else {
+      return;
     }
-  }, [userDetails, businessId]);
+
+    const querySnapshot = await getDocs(q);
+    const userBookings = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      userBookings.push({
+        id: doc.id,
+        ...data,
+        startDate: data.startDate?.toDate(),
+        endDate: data.endDate?.toDate(),
+        // Ensure vehicleDetails exists with default values
+        vehicleDetails: data.vehicleDetails || {
+          model: 'Unknown model',
+          class: 'Unknown class',
+          color: 'Unknown color',
+          capacity: 'Unknown capacity'
+        }
+      });
+    });
+
+    setBookings(userBookings);
+  } catch (error) {
+    console.error("Error fetching bookings:", error);
+    toast.error(`Failed to load bookings: ${error.message}`);
+  }
+}, [userDetails, businessId]);
+
   
   const fetchTourReservations = useCallback(async () => {
     if (!userDetails || businessId || userDetails?.type !== "user") return;
     
-    setIsLoading(prev => ({...prev, tourReservations: true}));
     try {
       const q = query(
         collection(db, "tourReservations"),
@@ -121,8 +116,6 @@ function Profile() {
     } catch (error) {
       console.error("Error fetching tour reservations:", error);
       toast.error(`Failed to load tour reservations: ${error.message}`);
-    } finally {
-      setIsLoading(prev => ({...prev, tourReservations: false}));
     }
   }, [userDetails, businessId]);
 
@@ -214,80 +207,75 @@ function Profile() {
     });
   };
 
-  const handleCancelBooking = async (bookingId) => {
-    if (!bookingId) return;
+const handleCancelBooking = async (bookingId) => {
+  if (!bookingId) return;
 
-    setIsLoading(prev => ({...prev, cancelling: true}));
-    try {
-      // Get the booking document
-      const bookingRef = doc(db, "bookings", bookingId);
-      const bookingSnap = await getDoc(bookingRef);
-      
-      if (!bookingSnap.exists()) {
-        throw new Error("Booking not found");
-      }
-      
-      const bookingData = bookingSnap.data();
-      
-      // Update the booking status to cancelled
-      await updateDoc(bookingRef, {
-        status: 'cancelled'
-      });
-
-      // Update local state
-      setBookings(prevBookings => 
-        prevBookings.map(booking => 
-          booking.id === bookingId ? {...booking, status: 'cancelled'} : booking
-        )
-      );
-
-      toast.success("Booking cancelled successfully");
-    } catch (error) {
-      console.error("Error cancelling booking:", error);
-      toast.error(`Failed to cancel booking: ${error.message}`);
-    } finally {
-      setIsLoading(prev => ({...prev, cancelling: false}));
-      setShowCancelModal(false);
-      setBookingToCancel(null);
+  try {
+    const bookingRef = doc(db, "bookings", bookingId);
+    
+    // First check if the document exists and get its data
+    const bookingSnap = await getDoc(bookingRef);
+    if (!bookingSnap.exists()) {
+      throw new Error("Booking not found");
     }
-  };
+
+    const bookingData = bookingSnap.data();
+    
+    // 1. Delete the booking document
+    await deleteDoc(bookingRef);
+
+    // 2. Update the vehicle's availability if vehicleId exists in booking
+    if (bookingData.vehicleId) {
+      const vehicleRef = doc(db, "rentals", bookingData.vehicleId);
+      await updateDoc(vehicleRef, {
+        "vehicle.availability": "Available"
+      });
+    }
+
+    // 3. Remove from local state
+    setBookings(prevBookings => 
+      prevBookings.filter(booking => booking.id !== bookingId)
+    );
+
+    toast.success("Booking cancelled successfully. Vehicle is now available.");
+  } catch (error) {
+    console.error("Error cancelling booking:", error);
+    toast.error(`Failed to cancel booking: ${error.message}`);
+  } finally {
+    setShowCancelModal(false);
+    setBookingToCancel(null);
+  }
+};
   
-  const handleCancelTourReservation = async (reservationId) => {
-    if (!reservationId) return;
+const handleCancelTourReservation = async (reservationId) => {
+  if (!reservationId) return;
 
-    setIsLoading(prev => ({...prev, cancelling: true}));
-    try {
-      // Get the reservation document
-      const reservationRef = doc(db, "tourReservations", reservationId);
-      const reservationSnap = await getDoc(reservationRef);
-      
-      if (!reservationSnap.exists()) {
-        throw new Error("Tour reservation not found");
-      }
-      
-      // Update the reservation status to cancelled
-      await updateDoc(reservationRef, {
-        status: 'cancelled'
-      });
-
-      // Update local state
-      setTourReservations(prevReservations => 
-        prevReservations.map(reservation => 
-          reservation.id === reservationId ? {...reservation, status: 'cancelled'} : reservation
-        )
-      );
-
-      toast.success("Tour reservation cancelled successfully");
-    } catch (error) {
-      console.error("Error cancelling tour reservation:", error);
-      toast.error(`Failed to cancel tour reservation: ${error.message}`);
-    } finally {
-      setIsLoading(prev => ({...prev, cancelling: false}));
-      setShowCancelModal(false);
-      setBookingToCancel(null);
+  try {
+    const reservationRef = doc(db, "tourReservations", reservationId);
+    
+    // First check if the document exists
+    const reservationSnap = await getDoc(reservationRef);
+    if (!reservationSnap.exists()) {
+      throw new Error("Tour reservation not found");
     }
-  };
 
+    // Delete the reservation document completely
+    await deleteDoc(reservationRef);
+
+    // Remove from local state
+    setTourReservations(prevReservations => 
+      prevReservations.filter(reservation => reservation.id !== reservationId)
+    );
+
+    toast.success("Tour reservation cancelled and removed successfully");
+  } catch (error) {
+    console.error("Error cancelling tour reservation:", error);
+    toast.error(`Failed to cancel tour reservation: ${error.message}`);
+  } finally {
+    setShowCancelModal(false);
+    setBookingToCancel(null);
+  }
+};
 
 
   if (!userDetails) {
@@ -306,18 +294,10 @@ function Profile() {
     );
   }
 
-  if (isLoading.profile) {
-    return (
-      <div className="max-w-4xl mx-auto p-6 bg-black text-white shadow-lg m-10 rounded-lg">
-        <div className="flex justify-center items-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-black text-white shadow-lg m-10 rounded-lg">
+    <div className="max- mx-auto p-6 bg-black text-white shadow-lg m-10 rounded-lg">
       {businessId ? (
         viewedBusiness ? (
           <div>
@@ -388,9 +368,8 @@ function Profile() {
                 <button
                   onClick={() => setIsEditing(true)}
                   className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                  disabled={isLoading.profile}
                 >
-                  {isLoading.profile ? "Loading..." : "Edit Profile"}
+                  Edit Profile
                 </button>
               )}
               <button
@@ -449,9 +428,8 @@ function Profile() {
                     <button
                       type="submit"
                       className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                      disabled={isLoading.profile}
                     >
-                      {isLoading.profile ? "Saving..." : "Save Changes"}
+                      Save Changes
                     </button>
                     <button
                       type="button"
@@ -485,15 +463,8 @@ function Profile() {
             <div className="mt-8">
               <h2 className="text-xl font-bold mb-4">
                 {userDetails?.type === "business" ? "Your Rentals" : "Your Bookings"}
-                {isLoading.bookings && (
-                  <span className="ml-2 text-sm text-gray-400">Loading...</span>
-                )}
               </h2>
-              {isLoading.bookings ? (
-                <div className="flex justify-center items-center h-32">
-                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-                </div>
-              ) : bookings.length === 0 ? (
+              {bookings.length === 0 ? (
                 <p className="text-gray-400">No bookings found</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -552,7 +523,6 @@ function Profile() {
                               setShowCancelModal(true);
                             }}
                             className="w-full mt-4 bg-red-600/20 text-red-400 px-4 py-2 rounded-lg hover:bg-red-600/30 transition-colors flex items-center justify-center space-x-2"
-                            disabled={isLoading.cancelling}
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -573,11 +543,7 @@ function Profile() {
             <div className="bg-black/90 rounded-xl p-4 sm:p-6 shadow-lg mb-6">
               <h2 className="text-xl sm:text-2xl font-bold text-white mb-6">Your Tour Reservations</h2>
               
-              {isLoading.tourReservations ? (
-                <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
-                </div>
-              ) : tourReservations.length === 0 ? (
+              {tourReservations.length === 0 ? (
                 <div className="text-center py-8 bg-white/5 rounded-lg">
                   <p className="text-gray-300">You have no tour reservations yet.</p>
                 </div>
@@ -622,6 +588,11 @@ function Profile() {
                                 <span className="text-gray-400">Persons: </span>
                                 {reservation.persons}
                               </div>
+                                  <span className={`px-2 py-1 text-xs rounded-full ${
+                                    reservation.isPrivate ? 'bg-purple-500/20 text-purple-400' : 'bg-blue-500/20 text-blue-400'
+                                  }`}>
+                                    {reservation.isPrivate ? 'Private Tour' : 'Public Tour'}
+                                  </span>
                             </div>
                             
                             {reservation.specialRequests && (
@@ -638,7 +609,7 @@ function Profile() {
                                   setShowCancelModal(true);
                                 }}
                                 className="w-full mt-4 bg-red-600/20 text-red-400 px-4 py-2 rounded-lg hover:bg-red-600/30 transition-colors flex items-center justify-center space-x-2"
-                                disabled={isLoading.cancelling}
+
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -683,9 +654,8 @@ function Profile() {
                   }
                 }}
                 className="flex-1 bg-red-500 text-white px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
-                disabled={isLoading.cancelling}
               >
-                {isLoading.cancelling ? "Cancelling..." : `Cancel ${bookingToCancel && bookingToCancel.includes('tour') ? 'Reservation' : 'Booking'}`}
+                {`Cancel ${bookingToCancel && bookingToCancel.includes('tour') ? 'Reservation' : 'Booking'}`}
               </button>
               <button
                 onClick={() => {

@@ -2,31 +2,20 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { db } from "./config/firebase";
 import { doc, setDoc, updateDoc, collection } from "firebase/firestore";
-import { useLoadScript } from '@react-google-maps/api';
-import LocationInput from './LocationInput';
-import TourMap from './TourMap';
-
-// Define libraries array outside component to prevent recreation on each render
-const libraries = ["places"];
 
 const AddTour = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { tourToEdit, businessId, ownerId } = location.state || {};
 
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
-    libraries,
-  });
-
   // State for form fields
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [image, setImage] = useState("");
-  const [tourImageFile, setTourImageFile] = useState(null);
-  const [startLocation, setStartLocation] = useState("");
-  const [endLocation, setEndLocation] = useState("");
-  const [waypoints, setWaypoints] = useState([]);
+  const [duration, setDuration] = useState("");
+  const [maxpeople, setMaxpeople] = useState("");
+  const [price, setPrice] = useState("");
+  const [images, setImages] = useState([]);
+  const [tourImageFiles, setTourImageFiles] = useState([]);
   const [spots, setSpots] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -35,35 +24,48 @@ const AddTour = () => {
     if (tourToEdit) {
       setName(tourToEdit.name);
       setDescription(tourToEdit.description);
-      setImage(tourToEdit.image);
-      setStartLocation(tourToEdit.startLocation || "");
-      setEndLocation(tourToEdit.endLocation || "");
-      setWaypoints(tourToEdit.waypoints || []);
+      setDuration(tourToEdit.duration);
+      setMaxpeople(tourToEdit.maxpeople);
+      setPrice(tourToEdit.price);
+      setImages(tourToEdit.images || [tourToEdit.image].filter(Boolean));
       setSpots(tourToEdit.spots || []);
     }
   }, [tourToEdit]);
 
-  // Handle file input change
+  // Handle file input change for multiple images
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith("image/")) {
-      setTourImageFile(file);
+    const files = Array.from(e.target.files);
+    const validFiles = files.filter(file => file.type.startsWith("image/"));
+    
+    if (validFiles.length !== files.length) {
+      alert("Please upload only valid image files.");
+      return;
+    }
+
+    setTourImageFiles(prevFiles => [...prevFiles, ...validFiles]);
+
+    // Convert files to base64 for preview
+    validFiles.forEach(file => {
       const reader = new FileReader();
       reader.onload = () => {
-        setImage(reader.result);
+        setImages(prevImages => [...prevImages, reader.result]);
       };
       reader.readAsDataURL(file);
-    } else {
-      alert("Please upload a valid image file.");
-    }
+    });
+  };
+
+  // Remove image by index
+  const removeImage = (index) => {
+    setImages(prevImages => prevImages.filter((_, i) => i !== index));
+    setTourImageFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
   };
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!image && !tourToEdit) {
-      alert("Please upload an image for the tour.");
+    if (images.length === 0 && !tourToEdit) {
+      alert("Please upload at least one image for the tour.");
       return;
     }
 
@@ -72,8 +74,8 @@ const AddTour = () => {
       return;
     }
 
-    if (!startLocation || !endLocation) {
-      alert("Please provide both start and end locations.");
+    if (spots.length === 0) {
+      alert("Please add at least one spot to the tour.");
       return;
     }
 
@@ -85,46 +87,14 @@ const AddTour = () => {
         name: businessName,
       } = location.state || {};
 
-      // Clean up waypoints to only include necessary data
-      const cleanWaypoints = waypoints.map(wp => {
-        if (typeof wp === 'object') {
-          return {
-            formatted_address: wp.formatted_address,
-            lat: wp.lat,
-            lng: wp.lng
-          };
-        }
-        return wp;
-      }).filter(wp => wp);
-
-      // Create spots array with locations and clean data
-      const spotsWithLocations = spots.map((spot, index) => ({
-        name: spot.name,
-        description: spot.description,
-        location: cleanWaypoints[index] || null
-      }));
-
-      // Clean up start and end locations
-      const cleanStartLocation = typeof startLocation === 'object' ? {
-        formatted_address: startLocation.formatted_address,
-        lat: startLocation.lat,
-        lng: startLocation.lng
-      } : startLocation;
-
-      const cleanEndLocation = typeof endLocation === 'object' ? {
-        formatted_address: endLocation.formatted_address,
-        lat: endLocation.lat,
-        lng: endLocation.lng
-      } : endLocation;
-
       const tourData = {
         name,
         description,
-        image,
-        startLocation: cleanStartLocation,
-        endLocation: cleanEndLocation,
-        waypoints: cleanWaypoints,
-        spots: spotsWithLocations,
+        duration,
+        maxpeople,
+        price,
+        images,
+        spots,
         businessId,
         ownerId,
       };
@@ -148,33 +118,24 @@ const AddTour = () => {
     }
   };
 
+  // Add new spot
+  const addSpot = () => {
+    setSpots([...spots, { name: "", description: "" }]);
+  };
+
+  // Remove spot by index
   const removeSpot = (index) => {
     const newSpots = [...spots];
     newSpots.splice(index, 1);
     setSpots(newSpots);
   };
 
-  if (loadError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-red-50 p-6 rounded-lg shadow-lg">
-          <h2 className="text-red-800 text-xl font-semibold mb-2">Error</h2>
-          <p className="text-red-600">Failed to load Google Maps. Please check your internet connection and try again.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="w-16 h-16 bg-blue-200 rounded-full mb-4"></div>
-          <div className="h-4 bg-blue-200 rounded w-32"></div>
-        </div>
-      </div>
-    );
-  }
+  // Update spot
+  const updateSpot = (index, field, value) => {
+    const newSpots = [...spots];
+    newSpots[index][field] = value;
+    setSpots(newSpots);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -195,152 +156,143 @@ const AddTour = () => {
           />
         </div>
 
-        {/* Description Field */}
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2">Tour duration</label>
+          <input
+            type="text"
+            value={duration}
+            onChange={(e) => setDuration(e.target.value)}
+            className="w-56 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-10"
+            required
+          />
+        </div>
+
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2">Description</label>
           <textarea
+            type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
             required
           />
         </div>
 
-        {/* Image Upload Field */}
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Tour Image</label>
+          <label className="block text-gray-700 text-sm font-bold mb-2">Max number of people</label>
+          <input
+            type="number"
+            value={maxpeople}
+            onChange={(e) => setMaxpeople(e.target.value)}
+            className="w-56 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-10"
+            required
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2">Price</label>
+          <input
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            className="w-56 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-10"
+            required
+          />
+        </div>
+
+        {/* Multiple Image Upload Field */}
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2">Tour Images</label>
           <input
             type="file"
             accept="image/*"
+            multiple
             onChange={handleFileChange}
             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required={!tourToEdit}
           />
-          {(image || (tourToEdit && tourToEdit.image)) && (
-            <div className="mt-2">
-              <img src={image || tourToEdit.image} alt="Preview" className="w-32 h-32 object-cover rounded-md" />
-            </div>
-          )}
-        </div>
-
-        {/* Route Location Fields */}
-        <div className="mb-4">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">Route Details</h3>
-
-          {/* Start Location */}
-          <LocationInput
-            label="Start Location"
-            value={startLocation}
-            onChange={setStartLocation}
-            placeholder="Enter start location"
-            required
-          />
-
-          {/* End Location */}
-          <LocationInput
-            label="End Location"
-            value={endLocation}
-            onChange={setEndLocation}
-            placeholder="Enter end location"
-            required
-          />
-
-          {/* Preview Map */}
-          {startLocation && endLocation && (
-            <div className="mt-4 mb-6">
-              <h4 className="text-md font-semibold text-gray-700 mb-2">Route Preview</h4>
-              <div className="h-[300px] w-full rounded-lg overflow-hidden border border-gray-300">
-                <TourMap
-                  startLocation={startLocation}
-                  endLocation={endLocation}
-                  waypoints={waypoints.filter(wp => wp)}
-                />
+          
+          {/* Image Previews */}
+          {images.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">Image Previews:</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {images.map((image, index) => (
+                  <div key={index} className="relative">
+                    <img 
+                      src={image} 
+                      alt={`Preview ${index + 1}`} 
+                      className="w-full h-32 object-cover rounded-md border"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           )}
-
-          {/* Waypoints */}
-          <div className="mb-4">
-            <div className="flex justify-between items-center mb-2">
-              <label className="block text-gray-700 text-sm font-bold">Waypoints</label>
-              <button
-                type="button"
-                onClick={() => {
-                  setWaypoints([...waypoints, ""]);
-                  setSpots([...spots, { name: "", description: "" }]);
-                }}
-                className="text-blue-500 text-sm hover:underline"
-              >
-                Add Waypoint
-              </button>
-            </div>
-            {waypoints.map((waypoint, index) => (
-              <div key={index} className="flex gap-2 mb-2">
-                <LocationInput
-                  value={waypoint}
-                  onChange={(value) => {
-                    const newWaypoints = [...waypoints];
-                    newWaypoints[index] = value;
-                    setWaypoints(newWaypoints);
-
-                    // Update the corresponding spot's name with the location name
-                    const newSpots = [...spots];
-                    if (newSpots[index]) {
-                      if (typeof value === 'object') {
-                        newSpots[index].name = value.locationName;
-                      } else {
-                        newSpots[index].name = value;
-                      }
-                      setSpots(newSpots);
-                    }
-                  }}
-                  placeholder={`Waypoint ${index + 1}`}
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    const newWaypoints = [...waypoints];
-                    newWaypoints.splice(index, 1);
-                    setWaypoints(newWaypoints);
-
-                    // Remove the corresponding spot
-                    const newSpots = [...spots];
-                    newSpots.splice(index, 1);
-                    setSpots(newSpots);
-                  }}
-                  className="px-3 py-2 text-red-500 hover:text-red-700"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Spots Field */}
         <div className="mb-4">
-          <div className="flex justify-between items-center mb-2">
-            <label className="block text-gray-700 text-sm font-bold">Spots</label>
+          <div className="flex justify-between items-center mb-4">
+            <label className="block text-gray-700 text-sm font-bold">Tour Spots</label>
+            <button
+              type="button"
+              onClick={addSpot}
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 transition-colors"
+            >
+              Add Spot
+            </button>
           </div>
-          {spots.map((spot, index) => (
-            <div key={index} className="mb-4 p-3 border rounded-lg relative">
-              <div className="text-gray-700 font-medium mb-2">
-                {spot.name || `Waypoint ${index + 1}`}
-              </div>
-              <input
-                type="text"
-                value={spot.description}
-                onChange={(e) => {
-                  const newSpots = [...spots];
-                  newSpots[index].description = e.target.value;
-                  setSpots(newSpots);
-                }}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
-                placeholder="Spot Description"
-                required
-              />
+          
+          {spots.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>No spots added yet. Click "Add Spot" to get started.</p>
             </div>
-          ))}
+          ) : (
+            spots.map((spot, index) => (
+              <div key={index} className="mb-4 p-4 border rounded-lg bg-gray-50">
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="text-lg font-medium text-gray-800">Spot {index + 1}</h4>
+                  <button
+                    type="button"
+                    onClick={() => removeSpot(index)}
+                    className="text-red-500 hover:text-red-700 text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
+                
+                <div className="mb-3">
+                  <label className="block text-gray-600 text-sm font-medium mb-1">Spot Name</label>
+                  <input
+                    type="text"
+                    value={spot.name}
+                    onChange={(e) => updateSpot(index, 'name', e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter spot name"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-600 text-sm font-medium mb-1">Description</label>
+                  <textarea
+                    value={spot.description}
+                    onChange={(e) => updateSpot(index, 'description', e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-20"
+                    placeholder="Describe this spot"
+                    required
+                  />
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Submit Button */}

@@ -4,6 +4,7 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { collection, query, where, onSnapshot, deleteDoc, doc } from "firebase/firestore";
 import { CardBody, CardContainer, CardItem } from "../components/ui/3d-card-hover";
+import Review from "./Review";
 
 function Rpf() {
   const location = useLocation();
@@ -11,6 +12,8 @@ function Rpf() {
   const [vehicles, setVehicles] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [vehicleToDelete, setVehicleToDelete] = useState(null);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
   const navigate = useNavigate();
 
   const {
@@ -67,14 +70,38 @@ function Rpf() {
     }
   };
 
-  const handleEditVehicle = (vehicle) => {
-    navigate("/bfront", { state: { businessId, ownerId, businessImage, businessName, vehicleToEdit: vehicle } });
+  const handleEditVehicle = (e, vehicle) => {
+    e.stopPropagation();
+    navigate("/addv", { state: { businessId, ownerId, businessImage, businessName, vehicleToEdit: vehicle } });
   };
 
-  const handleBookVehicle = (vehicle) => {
+  const handleBookVehicle = (e, vehicle) => {
+    e.stopPropagation();
     navigate('/book', {
       state: {
         vehicle,
+        businessId,
+        businessName,
+        businessImage,
+        ownerId
+      }
+    });
+  };
+
+  const handleOpenReview = (vehicle) => {
+    setSelectedVehicle({
+      id: vehicle.id,
+      model: vehicle.vehicle.model,
+      src: vehicle.vehicle.image,
+      businessId: businessId
+    });
+    setIsReviewOpen(true);
+  };
+
+  const handleChatClick = () => {
+    // Navigate to chat page - adjust the route as needed
+    navigate('/chat', {
+      state: {
         businessId,
         businessName,
         businessImage,
@@ -99,10 +126,35 @@ function Rpf() {
           <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold ml-4 sm:ml-6 lg:ml-10 text-gray-800 truncate">{businessName}</h1>
         </div>
 
-        <div className="flex items-center justify-end ml-4">
+        <div className="flex items-center justify-end gap-3 ml-4">
+          
+            
+          {!isOwner && (
+          <button
+            onClick={handleChatClick}
+            className="bg-green-500 text-white p-2 sm:p-3 rounded-full hover:bg-green-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+            title="Chat with business"
+          >
+            <svg 
+              className="w-5 h-5 sm:w-6 sm:h-6" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24" 
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" 
+              />
+            </svg>
+          </button>
+          )}
+          {/* Add Button - Only for owners */}
           {isOwner && (
             <button
-              onClick={() => navigate("/bfront", { state: { businessId, ownerId, businessImage, businessName } })}
+              onClick={() => navigate("/addv", { state: { businessId, ownerId, businessImage, businessName } })}
               className="bg-blue-500 text-white text-xl sm:text-2xl px-4 sm:px-6 py-2 sm:py-3 rounded-full hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
             >
               +
@@ -111,72 +163,75 @@ function Rpf() {
         </div>
       </div>
 
-    <div className="sm:mt-6 max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+      <div className="sm:mt-6 max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
         {vehicles.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-10 lg:gap-12 lg:gap-y-0">
             {vehicles.map((vehicle) => (
               <CardContainer className="inter-var w-full h-full" key={vehicle.id}>
-                <CardBody className="bg-black relative group/card w-full min-w-[300px] max-w-[400px] h-auto rounded-xl p-6 border border-black/[0.1] dark:border-white/[0.2] flex flex-col">
-                  <CardItem
-                    translateZ="50"
-                    className="text-xl font-bold text-white"
-                  >
-                    {vehicle.vehicle.model}
-                  </CardItem>
-                  <CardItem
-                    as="p"
-                    translateZ="60"
-                    className="text-white text-sm max-w-sm mt-1"
-                  >
-                    {vehicle.vehicle.class}
-                  </CardItem>
-                  <CardItem
-                    translateZ="100"
-                    rotateX={5}
-                    rotateZ={-1}
-                    className="w-full mt-4"
-                  >
-                    <img
-                      src={vehicle.vehicle.image || "/default-image.jpg"}
-                      height="1000"
-                      width="1000"
-                      className="h-40 w-full object-cover rounded-xl group-hover/card:shadow-xl"
-                      alt={vehicle.vehicle.model}
-                    />
-                  </CardItem>
+                <CardBody className="bg-black relative group/card w-full min-w-[300px] max-w-[400px] h-auto rounded-xl p-6 border border-black/[0.1] dark:border-white/[0.2] flex flex-col transition-transform duration-300 hover:scale-[1.02] active:scale-95 overflow-hidden">
+                  <span className="absolute inset-0 bg-white opacity-0 active:opacity-10 transition duration-200 rounded-xl pointer-events-none"></span>
                   
-                  <div className="mt-4 space-y-1">
-                    <CardItem className="flex text-white justify-between text-sm">
-                      <span className="">Capacity:</span>
-                      <span>{vehicle.vehicle.capacity}</span>
+                  {/* Clickable area for review - everything except the buttons */}
+                  <div onClick={() => handleOpenReview(vehicle)} className="cursor-pointer">
+                    <CardItem translateZ="50" className="text-xl font-bold text-white">
+                      {vehicle.vehicle.model}
                     </CardItem>
-                    <CardItem className="flex text-white justify-between text-sm">
-                      <span className="">Color:</span>
-                      <span>{vehicle.vehicle.color}</span>
+                    <CardItem as="p" translateZ="60" className="text-white text-sm max-w-sm mt-1">
+                      {vehicle.vehicle.brand}
                     </CardItem>
-                    <CardItem className="flex text-white justify-between text-sm">
-                      <span className="">Mileage:</span>
-                      <span>{vehicle.vehicle.mileage}</span>
+                    <CardItem translateZ="100" rotateX={5} rotateZ={-1} className="w-full mt-4">
+                      <img
+                        src={vehicle.vehicle.image || "/default-image.jpg"}
+                        height="1000"
+                        width="1000"
+                        className="h-40 w-full object-cover rounded-xl group-hover/card:shadow-xl"
+                        alt={vehicle.vehicle.model}
+                      />
+                    </CardItem>
+
+                    <div className="mt-4 space-y-1">
+                      <CardItem className="flex text-white justify-between text-sm">
+                        <span>Capacity:</span>
+                        <span>{vehicle.vehicle.capacity}</span>
+                      </CardItem>
+                      <CardItem className="flex text-white justify-between text-sm">
+                        <span>Color:</span>
+                        <span>{vehicle.vehicle.color}</span>
+                      </CardItem>
+                      <CardItem className="flex text-white justify-between text-sm">
+                        <span>Transmission:</span>
+                        <span>{vehicle.vehicle.transmission}</span>
+                      </CardItem>
+                      <CardItem className="flex text-white justify-between text-sm">
+                        <span>Fuel:</span>
+                        <span>{vehicle.vehicle.fuel}</span>
+                      </CardItem>
+                      <CardItem className="flex text-white justify-between text-sm">
+                        <span>Price per day:</span>
+                        <span>${vehicle.vehicle.price}</span>
+                      </CardItem>
+                    </div>
+
+                    <CardItem
+                      className={`text-lg font-bold mt-3 ml-auto text-right ${
+                        vehicle.vehicle.availability === "Available" ? "text-green-500" : "text-red-500"
+                      }`}
+                    >
+                      {vehicle.vehicle.availability}
                     </CardItem>
                   </div>
 
-                  <CardItem
-                    className={`text-lg font-bold mt-3 ml-auto text-right ${
-                      vehicle.vehicle.availability === "Available"
-                        ? "text-green-500"
-                        : "text-red-500"
-                    }`}
-                  >
-                    {vehicle.vehicle.availability}
-                  </CardItem>
-
+                  {/* Button area - separate from review click */}
                   <div className="flex justify-between items-center mt-6">
                     {isOwner ? (
                       <>
                         <CardItem
                           translateZ={20}
                           as="button"
-                          onClick={() => handleEditVehicle(vehicle)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditVehicle(e, vehicle);
+                          }}
                           className="px-4 py-2 rounded-xl text-xs font-normal bg-blue-500 text-white hover:bg-blue-600 transition-all"
                         >
                           Edit
@@ -184,43 +239,43 @@ function Rpf() {
                         <CardItem
                           translateZ={20}
                           as="button"
-                          onClick={() => handleOpenModal(vehicle.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenModal(vehicle.id);
+                          }}
                           className="px-4 py-2 rounded-xl text-xs font-bold bg-red-500 text-white hover:bg-red-600 transition-all"
                         >
                           Delete
                         </CardItem>
                       </>
                     ) : (
-<button
-  onClick={() => handleBookVehicle(vehicle)}
-  disabled={vehicle.vehicle.availability !== "Available"}
-  className={`w-full px-4 py-2 rounded-xl text-xs font-bold relative overflow-hidden ${
-    vehicle.vehicle.availability === "Available"
-      ? "bg-green-500 hover:bg-green-600 text-white group"
-      : "bg-gray-400 text-white cursor-not-allowed"
-  } transition-all duration-300`}
->
-  {/* Text label */}
-  <span className={`inline-block ${
-    vehicle.vehicle.availability === "Available" 
-      ? "group-hover:opacity-0 group-hover:-translate-y-2 transition-all duration-300"
-      : ""
-  }`}>
-    {vehicle.vehicle.availability === "Available" ? "Book Now" : "Not Available"}
-  </span>
-
-  {/* PNG icon - only for available vehicles */}
-  {vehicle.vehicle.availability === "Available" && (
-    <span className="absolute left-1/2 top-[20%] -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-
-      <img 
-        src="/images/car.png"  // Update this path to your PNG file
-        alt="Car" 
-        className="w-5 h-5 object-contain invert" // invert makes white icon
-      />
-    </span>
-  )}
-</button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleBookVehicle(e, vehicle);
+                        }}
+                        disabled={vehicle.vehicle.availability !== "Available"}
+                        className={`w-full px-4 py-2 rounded-xl text-xs font-bold relative overflow-hidden ${
+                          vehicle.vehicle.availability === "Available"
+                            ? "bg-green-500 hover:bg-green-600 text-white group"
+                            : "bg-gray-400 text-white cursor-not-allowed"
+                        } transition-all duration-300`}
+                      >
+                        <span
+                          className={`inline-block ${
+                            vehicle.vehicle.availability === "Available"
+                              ? "group-hover:opacity-0 group-hover:-translate-y-2 transition-all duration-300"
+                              : ""
+                          }`}
+                        >
+                          {vehicle.vehicle.availability === "Available" ? "Book Now" : "Not Available"}
+                        </span>
+                        {vehicle.vehicle.availability === "Available" && (
+                          <span className="absolute left-1/2 top-[20%] -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                            <img src="/images/car.png" alt="Car" className="w-5 h-5 object-contain invert" />
+                          </span>
+                        )}
+                      </button>
                     )}
                   </div>
                 </CardBody>
@@ -255,6 +310,14 @@ function Rpf() {
           </div>
         </div>
       )}
+
+      {/* Review Modal */}
+      <Review
+        isOpen={isReviewOpen}
+        onClose={() => setIsReviewOpen(false)}
+        product={selectedVehicle}
+        productType="vehicle"
+      />
     </div>
   );
 }

@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import useAuth from "./useAuth";
+import { motion } from "framer-motion";
+
 import {
   FaBars,
   FaTimes,
@@ -13,7 +15,69 @@ import {
 import { useHasUnreadMessages } from './hooks/unreadmessages';
 import UserAvatar from "./UserAvatar";
 
-function Header() {
+const Tab = ({ children, setPosition }) => {
+  const ref = useRef(null);
+
+  return (
+    <li
+      ref={ref}
+      onMouseEnter={() => {
+        if (!ref?.current) return;
+
+        const { width } = ref.current.getBoundingClientRect();
+
+        setPosition({
+          left: ref.current.offsetLeft,
+          width,
+          opacity: 1,
+        });
+      }}
+      className="relative z-10 block cursor-pointer px-3 py-1.5 text-xs uppercase text-white mix-blend-difference md:px-5 md:py-3 md:text-base"
+    >
+      {children}
+    </li>
+  );
+};
+
+const Cursor = ({ position }) => {
+  return (
+    <motion.li
+      animate={{
+        ...position,
+      }}
+      className="absolute z-0 h-7 rounded-full bg-white md:h-12"
+    />
+  );
+};
+
+const SlideTabs = () => {
+  const [position, setPosition] = useState({
+    left: 0,
+    width: 0,
+    opacity: 0,
+  });
+
+  return (
+    <ul
+      onMouseLeave={() => {
+        setPosition((pv) => ({
+          ...pv,
+          opacity: 0,
+        }));
+      }}
+      className="relative mx-auto flex w-fit rounded-full border-white bg-black p-1"
+    >
+      <Link to="/"><Tab setPosition={setPosition}>Businesses</Tab></Link>
+      <Link to="/map"><Tab setPosition={setPosition}>Landmarks & Attractions</Tab></Link>
+      <Link to="/tours"><Tab setPosition={setPosition}>Tours</Tab></Link>
+      <Link to="/vehicles"><Tab setPosition={setPosition}>Vehicles</Tab></Link>
+
+      <Cursor position={position} />
+    </ul>
+  );
+};
+
+export const Header = () => {
   const { userDetails, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const hasUnread = useHasUnreadMessages();
@@ -23,65 +87,70 @@ function Header() {
   };
 
   return (
-    <header className="flex items-center justify-between bg-black text-white h-24 px-6 md:px-10 sticky top-0 z-50">
-      {/* Mobile menu button */}
-      <button
-        onClick={toggleMenu}
-        className="md:hidden text-white focus:outline-none relative"
-        aria-label="Toggle menu"
-      >
-        <FaBars className="h-6 w-6" />
-        {hasUnread && (
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-        )}
-      </button>
+<header className="flex items-center justify-between bg-black text-white h-24 px-6 md:px-10 sticky top-0 z-10">
+  {/* Mobile menu button */}
+  <button
+    onClick={toggleMenu}
+    className="md:hidden text-white focus:outline-none relative"
+    aria-label="Toggle menu"
+  >
+    <FaBars className="h-6 w-6" />
+    {hasUnread && (
+      <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+    )}
+  </button>
 
-      {/* Logo */}
-      <Link to="/" className="text-3xl font-bold">
-        IslandGo
-      </Link>
+  {/* Logo - flex-1 makes it take available space pushing other elements */}
+  <Link to="/" className="text-3xl font-bold ml-5 flex-1 md:flex-none">
+    IslandGo
+  </Link>
 
-      {/* Desktop Navigation */}
-      <div className="hidden md:flex items-center space-x-6">
-        {userDetails ? (
-          <>
-            <Link to="/chat" className="relative p-2">
-              <FaEnvelope className="h-6 w-6 text-white" />
-              {hasUnread && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-              )}
+  {/* Desktop Navigation - centered */}
+  <div className="hidden md:flex flex-auto justify-center">
+    <SlideTabs />
+  </div>
+
+  {/* User controls - flex-1 with justify-end pushes to right */}
+  <div className="hidden md:flex items-center flex-1 justify-end space-x-6">
+    {userDetails ? (
+      <>
+        <Link to="/chat" className="relative p-2">
+          <FaEnvelope className="h-6 w-6 text-white" />
+          {hasUnread && (
+            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+          )}
+        </Link>
+
+        {/* Profile dropdown */}
+        <div className="relative group">
+          <button className="flex items-center focus:outline-none">
+            <UserAvatar user={userDetails} size="md" />
+          </button>
+          <div className="absolute -right-10 w-28 bg-white rounded-lg shadow-lg py-1 z-50 font-semibold hidden group-hover:block">
+            <Link
+              to="/profile"
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              Profile
             </Link>
-
-            {/* Profile dropdown */}
-            <div className="relative group">
-              <button className="flex items-center focus:outline-none">
-                <UserAvatar user={userDetails} size="md" />
-              </button>
-              <div className="absolute -right-10 w-28 bg-white rounded-lg shadow-lg py-1 z-50 font-semibold hidden group-hover:block">
-                <Link
-                  to="/profile"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Profile
-                </Link>
-                <button
-                  onClick={logout}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Sign out
-                </button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <Link
-            to="/login"
-            className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-          >
-            Log In
-          </Link>
-        )}
-      </div>
+            <button
+              onClick={logout}
+              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              Sign out
+            </button>
+          </div>
+        </div>
+      </>
+    ) : (
+      <Link
+        to="/login"
+        className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+      >
+        Log In
+      </Link>
+    )}
+  </div>
 
       {/* Mobile menu */}
       <div
@@ -110,6 +179,10 @@ function Header() {
                   Home
                 </Link>
               </li>
+              <li className="text-white">
+                <Link to="/map">Landmarks & Attractions</Link>
+              </li>
+
               {userDetails && (
                 <>
                   <li>
@@ -169,6 +242,4 @@ function Header() {
       </div>
     </header>
   );
-}
-
-export default Header;
+};

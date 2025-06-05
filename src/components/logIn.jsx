@@ -16,7 +16,7 @@ const Login = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-lg">
-        <h2 className="text-2xl font-bold text-center text-gray-900">Login to Your Account</h2>
+        <h2 className="text-2xl font-bold text-center text-gray-900">Login</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-medium text-gray-700">
@@ -34,7 +34,7 @@ const Login = () => {
             <label className="block text-sm font-medium text-gray-700">Password</label>
             <div className="relative">
               <input
-                type={showPassword ? "text" : "password"} // Toggle input type
+                type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Enter your password"
                 onChange={(e) => setPassword(e.target.value)}
@@ -43,10 +43,10 @@ const Login = () => {
               />
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)} // Toggle visibility
+                onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer"
               >
-                {showPassword ? <FaEyeSlash /> : <FaEye />} {/* Toggle eye icon */}
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
             </div>
           </div>
