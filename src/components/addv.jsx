@@ -5,6 +5,49 @@ import { db } from "./config/firebase"; // Firestore instance
 import { getAuth } from "firebase/auth";
 import { toast } from "react-toastify";
 
+// Add image compression function
+const compressImage = (file) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Calculate new dimensions while maintaining aspect ratio
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = Math.round((width * MAX_HEIGHT) / height);
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to base64 with reduced quality
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        resolve(compressedBase64);
+      };
+    };
+  });
+};
+
 const AddEditListing = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -20,7 +63,7 @@ const AddEditListing = () => {
       mileage: "",
       brand: "",
       price: "",
-      image: "",
+      images: [],
       availability: "",
     },
   });
@@ -38,7 +81,7 @@ const AddEditListing = () => {
         ...prevState,
         ownerId: currentUser.uid,
       }));
-  
+
       // If we have a vehicle to edit, populate the form
       if (location.state?.vehicleToEdit) {
         setFormData(prevState => ({
@@ -52,7 +95,7 @@ const AddEditListing = () => {
             mileage: location.state.vehicleToEdit.vehicle.mileage || "",
             brand: location.state.vehicleToEdit.vehicle.brand || "",
             price: location.state.vehicleToEdit.vehicle.price || "",
-            image: location.state.vehicleToEdit.vehicle.image || "",
+            images: location.state.vehicleToEdit.vehicle.images || [],
             availability: location.state.vehicleToEdit.vehicle.availability || "",
           }
         }));
@@ -85,31 +128,49 @@ const AddEditListing = () => {
     });
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file); // Convert to base64
-      reader.onloadend = () => {
-        setFormData({
-          ...formData,
+  const handleFileChange = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      try {
+        const compressedImages = await Promise.all(
+          files.map(file => compressImage(file))
+        );
+
+        setFormData(prev => ({
+          ...prev,
           vehicle: {
-            ...formData.vehicle,
-            image: reader.result, // Store base64 string
-          },
-        });
-      };
+            ...prev.vehicle,
+            images: [...prev.vehicle.images, ...compressedImages]
+          }
+        }));
+      } catch (error) {
+        console.error('Error compressing images:', error);
+        toast.error('Error processing images. Please try again.');
+      }
     }
+  };
+
+  const removeImage = (indexToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      vehicle: {
+        ...prev.vehicle,
+        images: prev.vehicle.images.filter((_, index) => index !== indexToRemove)
+      }
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!formData.ownerId) {
       toast.error("Owner ID is missing");
       return;
     }
-  
+
+    // Show loading toast
+    const loadingToast = toast.loading("Saving vehicle data...");
+
     try {
       if (location.state?.vehicleToEdit) {
         // Update existing vehicle
@@ -118,6 +179,7 @@ const AddEditListing = () => {
           ownerId: formData.ownerId,
           vehicle: formData.vehicle,
         });
+        toast.dismiss(loadingToast);
         toast.success("Vehicle updated successfully!");
       } else {
         // Add new vehicle
@@ -126,9 +188,10 @@ const AddEditListing = () => {
           ownerId: formData.ownerId,
           vehicle: formData.vehicle,
         });
+        toast.dismiss(loadingToast);
         toast.success("Vehicle added successfully!");
       }
-  
+
       navigate("/rpf", {
         state: {
           businessId,
@@ -139,8 +202,27 @@ const AddEditListing = () => {
       });
     } catch (error) {
       console.error("Error saving vehicle: ", error);
+      toast.dismiss(loadingToast);
       toast.error("Failed to save vehicle. Please try again.");
     }
+  };
+
+  const handleReservation = () => {
+    if (!currentUser) {
+      toast.error("Please login to reserve a tour");
+      navigate("/login");
+      return;
+    }
+    // ...
+  };
+
+  const confirmReservation = async () => {
+    if (!currentUser) {
+      toast.error("You must be logged in to reserve a tour");
+      navigate("/login");
+      return;
+    }
+    // ...
   };
 
   return (
@@ -266,20 +348,34 @@ const AddEditListing = () => {
           </div>
 
           <div className="flex flex-col">
-            <label className="text-gray-600 font-medium mb-2">Vehicle Image:</label>
+            <label className="text-gray-600 font-medium mb-2">Vehicle Images:</label>
             <input
               type="file"
               accept="image/*"
+              multiple
               onChange={handleFileChange}
               className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            {formData.vehicle.image && (
-              <div className="mt-4">
-                <img
-                  src={formData.vehicle.image}
-                  alt="Vehicle Preview"
-                  className="w-full h-40 object-cover rounded-lg"
-                />
+            {formData.vehicle.images.length > 0 && (
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {formData.vehicle.images.map((image, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={image}
+                      alt={`Vehicle Preview ${index + 1}`}
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>

@@ -37,24 +37,21 @@ const Rentals = () => {
         querySnapshot.forEach((doc) => {
           const data = doc.data();
           if (data.businessType === "Rental") {
-            rentalData.push({ id: doc.id, ...data });
+            rentalData.push({ businessId: doc.id, ...data });
           }
         });
         setRentals(rentalData);
 
-        // Set up real-time listener for reviews - FIXED VERSION
+        // Set up real-time listener for reviews
         const reviewsRef = collection(db, "reviews");
-
-        // Option 1: Remove the productType filter entirely if all reviews should be counted
         const unsubscribe = onSnapshot(reviewsRef, (querySnapshotRatings) => {
           console.log("Reviews snapshot received, total reviews:", querySnapshotRatings.size);
 
           const reviewsByProduct = {};
           querySnapshotRatings.forEach((doc) => {
             const review = doc.data();
-            console.log("Review data:", review); // Debug log
+            console.log("Review data:", review);
 
-            // Only process reviews that have a businessId
             if (review.businessId) {
               if (!reviewsByProduct[review.businessId]) {
                 reviewsByProduct[review.businessId] = [];
@@ -63,7 +60,7 @@ const Rentals = () => {
             }
           });
 
-          console.log("Reviews by business:", reviewsByProduct); // Debug log
+          console.log("Reviews by business:", reviewsByProduct);
 
           const ratingsData = {};
           for (const businessId in reviewsByProduct) {
@@ -73,19 +70,10 @@ const Rentals = () => {
             ratingsData[businessId] = Math.round(avg * 10) / 10;
           }
 
-          console.log("Final ratings data:", ratingsData); // Debug log
+          console.log("Final ratings data:", ratingsData);
           setRentalRatings(ratingsData);
         });
 
-        // Alternative Option 2: If you need to filter by productType, make sure it matches what's actually stored
-        /*
-        const q = query(reviewsRef, where("productType", "==", "rental")); // or whatever the correct value is
-        const unsubscribe = onSnapshot(q, (querySnapshotRatings) => {
-          // ... rest of the code
-        });
-        */
-
-        // Cleanup function to unsubscribe when component unmounts
         return () => unsubscribe();
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -116,7 +104,7 @@ const Rentals = () => {
   };
 
   const filteredRentals = filterRating
-    ? rentals.filter(rental => Math.round(rentalRatings[rental.id] || 0) === filterRating)
+    ? rentals.filter(rental => Math.round(rentalRatings[rental.businessId] || 0) === filterRating)
     : rentals;
 
   const sortedRentals = [...filteredRentals].sort((a, b) => {
@@ -150,8 +138,12 @@ const Rentals = () => {
     <div className="h-fit w-full pt-10 p-5 relative">
       <div className="rounded-3xl font-medium bg-white text-lg h-10 w-40 m-auto">
         <div className="flex h-full">
-          <div onClick={() => handleClick("taxis", "/")} className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${activeTab === "taxis" ? "bg-black text-white rounded-3xl" : "bg-white hover:bg-gray-200 rounded-3xl"} transition-all`}>Taxi</div>
-          <div onClick={() => handleClick("rentals", "/rentals")} className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${activeTab === "rentals" ? "bg-black text-white rounded-3xl" : "bg-white hover:bg-gray-200 rounded-3xl"} transition-all`}>Rentals</div>
+          <div onClick={() => handleClick("taxis", "/")} className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${activeTab === "taxis" ? "bg-black text-white rounded-3xl" : "bg-white hover:bg-gray-200 rounded-3xl"} transition-all`}>
+            Taxis
+          </div>
+          <div onClick={() => handleClick("rentals", "/rentals")} className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${activeTab === "rentals" ? "bg-black text-white rounded-3xl" : "bg-white hover:bg-gray-200 rounded-3xl"} transition-all`}>
+            Rentals
+          </div>
         </div>
       </div>
 
@@ -249,24 +241,33 @@ const Rentals = () => {
             <SkeletonCard />
             <SkeletonCard />
           </>
+        ) : sortedRentals.length === 0 ? (
+          <div className="col-span-full text-center text-gray-500 py-10">
+            No results found
+          </div>
         ) : (
-          // Show actual content when data is loaded
           sortedRentals.map((rental) => {
-            const avgRating = rentalRatings[rental.id] || 0;
+            const avgRating = rentalRatings[rental.businessId] || 0;
             return (
               <div
-                key={rental.id}
+                key={rental.businessId}
                 className="bg-white rounded-xl p-4 sm:p-6 shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 cursor-pointer"
-                onClick={() =>
+                onClick={() => {
+                  console.log("Navigating to RPF with rental data:", {
+                    businessImage: rental.businessImage,
+                    businessName: rental.businessName,
+                    businessId: rental.businessId,
+                    ownerId: rental.ownerId,
+                  });
                   navigate("/rpf", {
                     state: {
                       businessImage: rental.businessImage,
                       businessName: rental.businessName,
-                      id: rental.id,
+                      businessId: rental.businessId,
                       ownerId: rental.ownerId,
                     },
-                  })
-                }
+                  });
+                }}
               >
                 <div className="flex gap-3 sm:gap-6">
                   <div className="relative w-20 sm:w-32 flex-shrink-0">

@@ -18,8 +18,7 @@ import { db, auth } from "./config/firebase";
 import useAuth from "./useAuth";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Star } from 'lucide-react';
+import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const StarIcon = ({ className }) => (
   <svg
@@ -76,15 +75,15 @@ export function Review({
   const [productDetails, setProductDetails] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const ref = useRef(null);
   const id = useId();
-  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { businessId, ownerId, image, name } = location.state || {};
 
   // Determine collection names and fields based on product type
-  const productCollection = productType === 'vehicle' ? 'vehicles' : 'tours';
+  const productCollection = productType === 'vehicle' ? 'rentals' : 'tours';
   const titleField = productType === 'vehicle' ? 'model' : 'title';
   const imageField = productType === 'vehicle' ? 'imageUrl' : 'image';
 
@@ -100,19 +99,15 @@ export function Review({
 
       setIsLoading(true);
       try {
-        console.log(`Fetching ${productType} details for ID:`, product.id);
         const productRef = doc(db, productCollection, product.id);
         const productSnap = await getDoc(productRef);
 
         if (productSnap.exists()) {
-          console.log(`${productType} details found:`, productSnap.data());
           setProductDetails({ id: productSnap.id, ...productSnap.data() });
         } else {
-          console.warn(`${productType} not found in database`);
           setError(`${productType} details not found`);
         }
       } catch (err) {
-        console.error(`Error fetching ${productType} details:`, err);
         setError(`Failed to load ${productType} details`);
       } finally {
         setIsLoading(false);
@@ -317,6 +312,24 @@ export function Review({
     });
   };
 
+  const handlePreviousImage = () => {
+    setCurrentImageIndex((prevIndex) => {
+      const images = productType === 'vehicle'
+        ? (productDetails?.vehicle?.images || [productDetails?.vehicle?.image])
+        : (productDetails?.images || [productDetails?.[imageField] || product.src || product.imageUrl]);
+      return prevIndex === 0 ? images.length - 1 : prevIndex - 1;
+    });
+  };
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prevIndex) => {
+      const images = productType === 'vehicle'
+        ? (productDetails?.vehicle?.images || [productDetails?.vehicle?.image])
+        : (productDetails?.images || [productDetails?.[imageField] || product.src || product.imageUrl]);
+      return prevIndex === images.length - 1 ? 0 : prevIndex + 1;
+    });
+  };
+
   if (!isOpen || !product) return null;
 
   return (
@@ -334,42 +347,59 @@ export function Review({
       <AnimatePresence>
         {isOpen && active ? (
           <div className="fixed inset-0 grid place-items-center z-[100]">
-            {/* Debug Panel */}
-            {process.env.NODE_ENV === "development" && (
-              <div className="fixed bottom-0 left-0 p-4 bg-black text-white text-xs z-50">
-                <div>Auth Status: {authLoading ? "Loading..." : userDetails ? "Authenticated" : "Not Authenticated"}</div>
-                <div>User ID: {auth.currentUser?.uid || "N/A"}</div>
-                <div>Product Type: {productType}</div>
-                <div>Product ID: {product?.id || "N/A"}</div>
-                <div>Business ID: {product?.businessId || "N/A"}</div>
-                <div>Error: {error || "None"}</div>
-              </div>
-            )}
-
-            <motion.button
-              key={`button-${active[titleField]}-${id}`}
-              layout
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.05 } }}
-              className="flex absolute top-2 right-2 lg:hidden items-center justify-center bg-white rounded-full h-6 w-6"
-              onClick={onClose}
-            >
-              <CloseIcon />
-            </motion.button>
             <motion.div
               layoutId={`card-${active[titleField]}-${id}`}
               ref={ref}
-              className="w-full max-w-[500px] h-full md:h-fit md:max-h-[90vh] flex flex-col bg-white dark:bg-neutral-900 sm:rounded-3xl overflow-y-auto"
+              className="w-full max-w-[500px] h-full md:h-fit md:max-h-[90vh] flex flex-col bg-white dark:bg-neutral-900 sm:rounded-3xl overflow-y-auto relative"
             >
-              <motion.div layoutId={`image-${active[titleField]}-${id}`}>
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 z-10 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-colors"
+              >
+                <CloseIcon />
+              </button>
+              <motion.div layoutId={`image-${active[titleField]}-${id}`} className="relative">
                 <img
                   width={200}
                   height={200}
-                  src={productDetails?.[imageField] || product.src || product.imageUrl}
-                  alt={active[titleField]}
+                  src={productType === 'vehicle'
+                    ? (productDetails?.vehicle?.images?.[currentImageIndex] || productDetails?.vehicle?.image)
+                    : (productDetails?.images?.[currentImageIndex] || productDetails?.[imageField] || product.src || product.imageUrl)}
+                  alt={productType === 'vehicle'
+                    ? `${productDetails?.vehicle?.brand} ${productDetails?.vehicle?.model}`
+                    : active[titleField]}
                   className="w-full h-80 lg:h-80 sm:rounded-tr-lg sm:rounded-tl-lg object-cover object-top"
                 />
+                {(productType === 'vehicle'
+                  ? (productDetails?.vehicle?.images?.length > 1)
+                  : (productDetails?.images?.length > 1)) && (
+                    <>
+                      <button
+                        onClick={handlePreviousImage}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+                      >
+                        <ChevronLeft className="h-6 w-6" />
+                      </button>
+                      <button
+                        onClick={handleNextImage}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+                      >
+                        <ChevronRight className="h-6 w-6" />
+                      </button>
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                        {(productType === 'vehicle'
+                          ? (productDetails?.vehicle?.images || [])
+                          : (productDetails?.images || [])).map((_, index) => (
+                            <button
+                              key={index}
+                              onClick={() => setCurrentImageIndex(index)}
+                              className={`w-2 h-2 rounded-full transition-colors ${index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                                }`}
+                            />
+                          ))}
+                      </div>
+                    </>
+                  )}
               </motion.div>
 
               {/* Scrollable Content Area */}
@@ -412,8 +442,8 @@ export function Review({
                               >
                                 <Star
                                   className={`h-8 w-8 ${(hover || rating) >= star
-                                      ? 'text-yellow-400 fill-yellow-400'
-                                      : 'text-gray-300'
+                                    ? 'text-yellow-400 fill-yellow-400'
+                                    : 'text-gray-300'
                                     }`}
                                 />
                               </button>
@@ -446,8 +476,8 @@ export function Review({
                           onClick={handleSubmit}
                           disabled={isSubmitting || rating === 0}
                           className={`w-full py-3 px-4 rounded-lg font-bold text-white ${isSubmitting || rating === 0
-                              ? "bg-gray-400 cursor-not-allowed"
-                              : "bg-green-500 hover:bg-green-600"
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-green-500 hover:bg-green-600"
                             } transition-colors`}
                         >
                           {isSubmitting ? "Submitting..." : "Submit Review"}
@@ -494,8 +524,8 @@ export function Review({
                                       <Star
                                         key={star}
                                         className={`w-4 h-4 ${review.rating >= star
-                                            ? "text-yellow-400 fill-yellow-400"
-                                            : "text-gray-300 fill-gray-300"
+                                          ? "text-yellow-400 fill-yellow-400"
+                                          : "text-gray-300 fill-gray-300"
                                           }`}
                                       />
                                     ))}

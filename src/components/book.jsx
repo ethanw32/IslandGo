@@ -10,7 +10,10 @@ function BookVehicle() {
   const auth = getAuth();
   const currentUser = auth.currentUser;
 
-  const { vehicle, businessId, businessName, businessImage } = location.state || {};
+  const { vehicle, businessId, businessName, businessImage, ownerId } = location.state || {};
+
+  // Use ownerId as businessId if businessId is not available
+  const hostId = businessId || ownerId;
 
   // Initialize dates with correct time handling
   const now = new Date();
@@ -24,6 +27,7 @@ function BookVehicle() {
   const [specialRequests, setSpecialRequests] = useState('');
   const [bookingError, setBookingError] = useState('');
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Helper function to format date for datetime-local input
   const formatDateForInput = (date) => {
@@ -45,9 +49,9 @@ function BookVehicle() {
   };
 
   useEffect(() => {
-    if (vehicle?.vehicle?.pricePerDay && startDate && endDate) {
+    if (vehicle?.vehicle?.price && startDate && endDate) {
       const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-      const calculatedPrice = days * vehicle.vehicle.pricePerDay;
+      const calculatedPrice = days * vehicle.vehicle.price;
       setTotalPrice(calculatedPrice);
     }
   }, [startDate, endDate, vehicle]);
@@ -79,25 +83,94 @@ function BookVehicle() {
       return;
     }
 
-    try {
-      const bookingRef = doc(collection(db, 'bookings'));
-      await setDoc(bookingRef, {
-        vehicleId: vehicle.id,
-        vehicleDetails: vehicle.vehicle,
+    if (!vehicle || !vehicle.id) {
+      setBookingError('Invalid vehicle information');
+      return;
+    }
+
+    // Enhanced business data validation
+    if (!hostId) {
+      console.error('Missing hostId:', {
+        hostId,
         businessId,
+        ownerId,
+        locationState: location.state
+      });
+      setBookingError('Missing business ID. Please try again or contact support.');
+      return;
+    }
+
+    if (!businessName) {
+      console.error('Missing businessName:', {
         businessName,
-        businessImage,
+        locationState: location.state
+      });
+      setBookingError('Missing business name. Please try again or contact support.');
+      return;
+    }
+
+    try {
+      // Validate dates
+      if (startDate >= endDate) {
+        setBookingError('Return date must be after pickup date');
+        return;
+      }
+
+      // Create booking document
+      const bookingRef = doc(collection(db, 'bookings'));
+      const bookingData = {
+        vehicleId: vehicle.id,
+        vehicleDetails: {
+          brand: vehicle.vehicle.brand,
+          model: vehicle.vehicle.model,
+          transmission: vehicle.vehicle.transmission,
+          price: vehicle.vehicle.price,
+          images: vehicle.vehicle.images || [vehicle.vehicle.image],
+          color: vehicle.vehicle.color || 'Not specified',
+          capacity: vehicle.vehicle.capacity || 'Not specified'
+        },
+        hostId: hostId,
+        businessId: hostId,
+        businessName: businessName || 'Unknown Business',
+        businessImage: businessImage || '',
         customerId: currentUser.uid,
         customerEmail: currentUser.email,
-        startDate,
-        endDate,
+        customerName: currentUser.displayName || currentUser.email.split('@')[0],
+        startDate: serverTimestamp(),
+        endDate: serverTimestamp(),
         totalPrice,
-        specialRequests,
+        pricePerDay: vehicle.vehicle.price,
+        specialRequests: specialRequests || '',
         status: 'pending',
+        isPaid: false,
+        paymentStatus: 'pending',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      });
+        refundRequested: false
+      };
 
+      // Validate all required fields
+      const requiredFields = [
+        'vehicleId',
+        'vehicleDetails',
+        'hostId',
+        'businessId',
+        'businessName',
+        'customerId',
+        'startDate',
+        'endDate',
+        'totalPrice',
+        'pricePerDay'
+      ];
+
+      const missingFields = requiredFields.filter(field => !bookingData[field]);
+      if (missingFields.length > 0) {
+        throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+      }
+
+      await setDoc(bookingRef, bookingData);
+
+      // Update vehicle availability
       const vehicleRef = doc(db, 'rentals', vehicle.id);
       await updateDoc(vehicleRef, {
         'vehicle.availability': 'Booked',
@@ -106,8 +179,24 @@ function BookVehicle() {
       setBookingSuccess(true);
       setTimeout(() => navigate('/profile'), 2000);
     } catch (error) {
-      console.error('Booking error:', error);
-      setBookingError('Failed to create booking. Please try again.');
+      console.error('Detailed booking error:', error);
+      setBookingError(`Failed to create booking: ${error.message}`);
+    }
+  };
+
+  const nextImage = () => {
+    if (vehicle?.vehicle?.images) {
+      setCurrentImageIndex((prevIndex) =>
+        prevIndex === vehicle.vehicle.images.length - 1 ? 0 : prevIndex + 1
+      );
+    }
+  };
+
+  const prevImage = () => {
+    if (vehicle?.vehicle?.images) {
+      setCurrentImageIndex((prevIndex) =>
+        prevIndex === 0 ? vehicle.vehicle.images.length - 1 : prevIndex - 1
+      );
     }
   };
 
@@ -147,25 +236,45 @@ function BookVehicle() {
         <div className="flex flex-col md:flex-row gap-8">
           <div className="md:w-1/2">
             <div className="bg-white rounded-lg shadow-md p-6">
-              <img
-                src={vehicle.vehicle.image || '/default-car.jpg'}
-                alt={vehicle.vehicle.model}
-                className="w-full h-64 object-cover rounded-md mb-4"
-              />
-              <h2 className="text-2xl font-semibold mb-2">{vehicle.vehicle.model}</h2>
+              <div className="relative">
+                <img
+                  src={vehicle.vehicle.images?.[currentImageIndex] || vehicle.vehicle.image || '/default-car.jpg'}
+                  alt={vehicle.vehicle.model}
+                  className="w-full h-48 sm:h-64 object-cover rounded-md mb-4"
+                />
+                {vehicle.vehicle.images && vehicle.vehicle.images.length > 1 && (
+                  <>
+                    <button
+                      onClick={prevImage}
+                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full"
+                    >
+                      ←
+                    </button>
+                    <button
+                      onClick={nextImage}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full"
+                    >
+                      →
+                    </button>
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-2 py-1 rounded">
+                      {currentImageIndex + 1} / {vehicle.vehicle.images.length}
+                    </div>
+                  </>
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                  <p className="text-gray-600">Class:</p>
-                  <p className="font-medium">{vehicle.vehicle.class}</p>
+                  <p className="text-gray-600">Brand:</p>
+                  <p className="font-medium">{vehicle.vehicle.brand}</p>
                 </div>
                 <div>
-                  <p className="text-gray-600">Capacity:</p>
-                  <p className="font-medium">{vehicle.vehicle.capacity}</p>
+                  <p className="text-gray-600">Transmission:</p>
+                  <p className="font-medium">{vehicle.vehicle.transmission}</p>
                 </div>
               </div>
               <div className="border-t pt-4">
                 <p className="text-xl font-bold text-blue-600">
-                  ${vehicle.vehicle.pricePerDay} <span className="text-sm font-normal text-gray-600">per day</span>
+                  ${vehicle.vehicle.price} <span className="text-sm font-normal text-gray-600">per day</span>
                 </p>
               </div>
             </div>

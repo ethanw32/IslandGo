@@ -1,0 +1,18 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null;
+      
+      // CORS configuration
+      options {
+        cors: {
+          origin: ['http://localhost:3000', 'https://your-production-domain.com'],
+          methods: ['GET', 'POST', 'PUT', 'DELETE', 'HEAD'],
+          responseHeaders: ['Content-Type', 'Authorization', 'Content-Length', 'User-Agent', 'x-goog-resumable'],
+          maxAgeSeconds: 3600
+        }
+      }
+    }
+  }
+} 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { db } from "./config/firebase";
 import { useNavigate } from "react-router-dom";
 import { collection, getDocs, query, where } from "firebase/firestore";
@@ -22,6 +22,7 @@ function Vehicles() {
     availability: ''
   });
   const navigate = useNavigate();
+  const filterRef = useRef(null);
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -55,7 +56,7 @@ function Vehicles() {
       for (const vehicle of vehiclesData) {
         const reviewsQuery = query(
           collection(db, "reviews"),
-          where("productId", "==", vehicle.id)
+          where("vehicleId", "==", vehicle.id)
         );
         const reviewsSnapshot = await getDocs(reviewsQuery);
 
@@ -257,7 +258,7 @@ function Vehicles() {
       <div className="flex items-center gap-1">
         <div className="flex">{stars}</div>
         <span className="text-sm text-white ml-1">
-          {rating > 0 ? `${rating} (${reviewCount})` : 'No reviews'}
+          {rating || 0} ({reviewCount || 0})
         </span>
       </div>
     );
@@ -316,6 +317,20 @@ function Vehicles() {
     );
   };
 
+  // Add click outside handler
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setShowFilters(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen w-full relative pb-10">
@@ -344,7 +359,7 @@ function Vehicles() {
 
       {/* Filter Section */}
       <div className="mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-        <div className="relative flex items-center gap-4">
+        <div className="relative flex items-center gap-4" ref={filterRef}>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
@@ -368,7 +383,7 @@ function Vehicles() {
           </div>
 
           {showFilters && (
-            <div className="absolute top-12 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-6 z-10">
+            <div className="absolute top-12 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-6 z-[5]">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4">
                 {/* Brand Filter */}
                 <div>
@@ -527,81 +542,145 @@ function Vehicles() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+      <div className="max-w-full px-1 sm:px-2 lg:px-3">
         {filteredVehicles.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-10 lg:gap-6 lg:gap-y-0">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 relative z-[1]">
             {filteredVehicles.map((vehicle) => (
-              <CardContainer className="inter-var w-full h-full" key={vehicle.id}>
-                <CardBody className="bg-black relative group/card w-full min-w-[300px] max-w-[400px] h-auto rounded-xl p-6 border border-black/[0.1] dark:border-white/[0.2] flex flex-col transition-transform duration-300 hover:scale-[1.02] active:scale-95 overflow-hidden">
-                  <span className="absolute inset-0 bg-white opacity-0 active:opacity-10 transition duration-200 rounded-xl pointer-events-none"></span>
+              <div key={vehicle.id} className="w-full">
+                {/* Desktop version with 3D effects */}
+                <div className="hidden sm:block">
+                  <CardContainer className="inter-var w-full h-full">
+                    <CardBody className="bg-black relative group/card w-full min-w-[280px] max-w-[350px] h-auto rounded-xl p-2 sm:p-3 border border-black/[0.1] dark:border-white/[0.2] flex flex-col transition-transform duration-300 hover:scale-[1.02] active:scale-95 overflow-hidden">
+                      <span className="absolute inset-0 bg-white opacity-0 active:opacity-10 transition duration-200 rounded-lg pointer-events-none"></span>
 
-                  <div>
-                    <CardItem translateZ="50" className="text-xl font-bold text-white">
-                      {vehicle.vehicle.model}
-                    </CardItem>
-                    <CardItem as="p" translateZ="60" className="text-white text-sm max-w-sm mt-1">
-                      {vehicle.vehicle.brand}
-                    </CardItem>
-                    <CardItem translateZ="100" rotateX={5} rotateZ={-1} className="w-full mt-4">
+                      <div className="flex flex-col gap-1">
+                        <CardItem translateZ="50" className="text-xl font-bold text-white capitalize">
+                          {vehicle.vehicle.brand} {vehicle.vehicle.model}
+                        </CardItem>
+                        <CardItem translateZ="100" rotateX={5} rotateZ={-1} className="w-full relative group mt-2">
+                          <img
+                            src={vehicle.vehicle.images?.[0] || vehicle.vehicle.image || "/default-image.jpg"}
+                            height="40 sm:h-44 w-full object-cover rounded-lg group-hover/card:shadow-xl"
+                            className="h-40 sm:h-44 w-full object-cover rounded-lg group-hover/card:shadow-xl"
+                            alt={vehicle.vehicle.model}
+                          />
+                          {(vehicle.vehicle.images?.length > 1 || (vehicle.vehicle.images?.length === 1 && vehicle.vehicle.image)) && (
+                            <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                              {vehicle.vehicle.images?.length || 1} photos
+                            </div>
+                          )}
+                        </CardItem>
+
+                        <div className="flex flex-col gap-1 mt-1">
+                          <CardItem>
+                            <StarRating
+                              rating={parseFloat(vehicleRatings[vehicle.id]?.averageRating) || 0}
+                              reviewCount={vehicleRatings[vehicle.id]?.reviewCount || 0}
+                            />
+                          </CardItem>
+
+                          <div className="grid grid-cols-1 gap-2 mt-1">
+                            <CardItem className="flex text-white justify-between text-sm">
+                              <span className="text-gray-400">Seats:</span>
+                              <span>{vehicle.vehicle.seats}</span>
+                            </CardItem>
+                            <CardItem className="flex text-white justify-between text-sm">
+                              <span className="text-gray-400">Transmission:</span>
+                              <span>{vehicle.vehicle.transmission}</span>
+                            </CardItem>
+                            <CardItem className="flex text-white justify-between text-sm">
+                              <span className="text-gray-400">Fuel:</span>
+                              <span>{vehicle.vehicle.fuel}</span>
+                            </CardItem>
+                          </div>
+
+                          <CardItem className="flex text-white justify-between text-base font-semibold mt-2">
+                            <span>Price:</span>
+                            <span>${vehicle.vehicle.price || "0"}/day</span>
+                          </CardItem>
+                        </div>
+
+                        <CardItem
+                          className={`text-xl font-bold mt-1 ml-auto text-right ${vehicle.vehicle.availability === "Available" ? "text-green-500" :
+                            vehicle.vehicle.availability === "Booked" ? "text-orange-500" :
+                              "text-red-500"
+                            }`}
+                        >
+                          {vehicle.vehicle.availability}
+                        </CardItem>
+                      </div>
+
+                      <div className="flex justify-between items-center mt-2">
+                        <button
+                          onClick={(e) => handleViewDetails(e, vehicle)}
+                          className="w-full px-4 py-2 rounded-lg text-sm font-bold relative overflow-hidden bg-blue-500 hover:bg-blue-600 text-white group transition-all duration-300"
+                        >
+                          <span className="inline-block group-hover:opacity-0 group-hover:-translate-y-2 transition-all duration-300">
+                            View Details
+                          </span>
+                          <span className="absolute left-1/2 top-[20%] -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                            <img src="/images/car.png" alt="Car" className="w-4 h-4 object-contain invert" />
+                          </span>
+                        </button>
+                      </div>
+                    </CardBody>
+                  </CardContainer>
+                </div>
+
+                {/* Mobile version without 3D effects */}
+                <div
+                  className="sm:hidden bg-black mt-2 rounded-lg p-1.5 border border-black/[0.1] dark:border-white/[0.2] cursor-pointer active:scale-95 transition-transform"
+                  onClick={(e) => handleViewDetails(e, vehicle)}
+                >
+                  <div className="flex flex-col gap-0.5">
+                    <div className="text-sm font-bold text-white capitalize truncate">
+                      {vehicle.vehicle.brand} {vehicle.vehicle.model}
+                    </div>
+                    <div className="w-full relative mt-1">
                       <img
-                        src={vehicle.vehicle.image || "/default-image.jpg"}
-                        height="1000"
-                        width="1000"
-                        className="h-40 w-full object-cover rounded-xl group-hover/card:shadow-xl"
+                        src={vehicle.vehicle.images?.[0] || vehicle.vehicle.image || "/default-image.jpg"}
+                        height="32"
+                        className="h-32 w-full object-cover rounded-lg"
                         alt={vehicle.vehicle.model}
                       />
-                    </CardItem>
+                      {(vehicle.vehicle.images?.length > 1 || (vehicle.vehicle.images?.length === 1 && vehicle.vehicle.image)) && (
+                        <div className="absolute top-0.5 right-0.5 bg-black/50 text-white text-[8px] px-1 py-0.5 rounded-full">
+                          {vehicle.vehicle.images?.length || 1}
+                        </div>
+                      )}
+                    </div>
 
-                    <div className="mt-4 space-y-1">
-                      <CardItem className="my-2">
+                    <div className="flex flex-col gap-0.5">
+                      <div>
                         <StarRating
                           rating={parseFloat(vehicleRatings[vehicle.id]?.averageRating) || 0}
                           reviewCount={vehicleRatings[vehicle.id]?.reviewCount || 0}
+                          size="sm"
                         />
-                      </CardItem>
-                      <CardItem className="flex text-white align-baseline mt-2 justify-between text-sm">
-                        <span className="mr-1 text-base">seats:</span>
-                        <span>{vehicle.vehicle.seats}</span>
-                      </CardItem>
-                      <CardItem className="flex text-white justify-between text-sm">
-                        <span className="mr-1 text-base">Color:</span>
-                        <span>{vehicle.vehicle.color}</span>
-                      </CardItem>
-                      <CardItem className="flex text-white justify-between text-sm">
-                        <span className="mr-1 text-base">Mileage:</span>
-                        <span>{vehicle.vehicle.mileage}</span>
-                      </CardItem>
-                      <CardItem className="flex text-white justify-between text-sm">
-                        <span className="mr-1 text-base">Price:</span>
-                        <span>${vehicle.vehicle.price || "0"} / day</span>
-                      </CardItem>
-
+                      </div>
+                      <div className="flex text-white text-[10px]">
+                        <span className="text-gray-400 mr-1.5">Transmission:</span>
+                        <span>{vehicle.vehicle.transmission}</span>
+                      </div>
+                      <div className="flex text-white text-[10px]">
+                        <span className="text-gray-400 mr-1.5">Fuel:</span>
+                        <span>{vehicle.vehicle.fuel}</span>
+                      </div>
+                      <div className="flex text-white text-[10px]">
+                        <span className="text-gray-400 mr-1.5">Price:</span>
+                        <span>${vehicle.vehicle.price || "0"}/d</span>
+                      </div>
                     </div>
 
-                    <CardItem
-                      className={`text-lg font-bold mt-3 ml-auto text-right ${vehicle.vehicle.availability === "Available" ? "text-green-500" : "text-red-500"
-                        }`}
-                    >
+                    <div className={`text-[14px] font-bold ml-auto text-right ${vehicle.vehicle.availability === "Available" ? "text-green-500" :
+                      vehicle.vehicle.availability === "Booked" ? "text-orange-500" :
+                        "text-red-500"
+                      }`}>
                       {vehicle.vehicle.availability}
-                    </CardItem>
+                    </div>
                   </div>
-
-                  {/* Button area */}
-                  <div className="flex justify-between items-center mt-6">
-                    <button
-                      onClick={(e) => handleViewDetails(e, vehicle)}
-                      className="w-full px-4 py-2 rounded-xl text-xs font-bold relative overflow-hidden bg-blue-500 hover:bg-blue-600 text-white group transition-all duration-300"
-                    >
-                      <span className="inline-block group-hover:opacity-0 group-hover:-translate-y-2 transition-all duration-300">
-                        View Details
-                      </span>
-                      <span className="absolute left-1/2 top-[20%] -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                        <img src="/images/car.png" alt="Car" className="w-5 h-5 object-contain invert" />
-                      </span>
-                    </button>
-                  </div>
-                </CardBody>
-              </CardContainer>
+                </div>
+              </div>
             ))}
           </div>
         ) : (

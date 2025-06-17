@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { auth, db } from "./config/firebase";
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserSessionPersistence, sendPasswordResetEmail } from "firebase/auth";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserSessionPersistence, sendPasswordResetEmail, signInWithRedirect } from "firebase/auth";
 import { collection, query, where, getDocs, getDoc, doc, setDoc, updateDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 const useAuth = () => {
   const [userDetails, setUserDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const setAuthPersistence = async () => {
@@ -19,92 +20,96 @@ const useAuth = () => {
 
   const fetchUserOrBusinessData = async (email) => {
     try {
-      // Query users
-      const usersQuery = query(collection(db, "users"), where("email", "==", email));
-      const usersSnapshot = await getDocs(usersQuery);
-
-      if (!usersSnapshot.empty) {
-        const userData = usersSnapshot.docs[0].data();
-        const userId = usersSnapshot.docs[0].id;
-        
-        console.log("Raw user data from Firestore:", {
-          id: userId,
-          email: userData.email,
-          name: userData.name,
-          photo: userData.photo ? "[exists]" : "[missing]",
-          photoURL: userData.photoURL ? "[exists]" : "[missing]",
-        });
-        
-        // If user logged in with Google but we don't have their photo/photoURL
-        // Get it directly from auth.currentUser
-        if (auth.currentUser && auth.currentUser.photoURL && (!userData.photo && !userData.photoURL)) {
-          console.log("Updating missing photo from auth.currentUser");
-          const userRef = doc(db, "users", userId);
-          await updateDoc(userRef, {
-            photo: auth.currentUser.photoURL,
-            photoURL: auth.currentUser.photoURL
-          });
-          
-          // Update local userData
-          userData.photo = auth.currentUser.photoURL;
-          userData.photoURL = auth.currentUser.photoURL;
-        }
-        
-        // Explicitly set both photo and photoURL in userDetails
-        setUserDetails({
-          ...userData,
-          type: "user",
-          // Ensure both photo fields are set
-          photo: userData.photo || userData.photoURL || "",
-          photoURL: userData.photoURL || userData.photo || ""
-        });
-        
-        return true;
-      }
-
-      // Query businesses
+      // Query businesses first since we're primarily dealing with business users
       const businessesQuery = query(collection(db, "businesses"), where("email", "==", email));
       const businessesSnapshot = await getDocs(businessesQuery);
 
       if (!businessesSnapshot.empty) {
         const businessData = businessesSnapshot.docs[0].data();
-        setUserDetails({ ...businessData, type: "business" });
+        const userData = {
+          ...businessData,
+          type: "business",
+          businessType: businessData.businessType || "Unknown",
+          uid: businessesSnapshot.docs[0].id,
+          businessId: businessesSnapshot.docs[0].id,
+          email: businessData.email,
+          name: businessData.businessName,
+          photoURL: businessData.photoURL || businessData.photo || "",
+          photo: businessData.photoURL || businessData.photo || ""
+        };
+        setUserDetails(userData);
         return true;
       }
 
-      toast.error("No account found with this email");
+      // If not a business, check regular users
+      const usersQuery = query(collection(db, "users"), where("email", "==", email));
+      const usersSnapshot = await getDocs(usersQuery);
+
+      if (!usersSnapshot.empty) {
+        const userData = usersSnapshot.docs[0].data();
+        const userDetails = {
+          ...userData,
+          type: "user",
+          uid: usersSnapshot.docs[0].id,
+          photoURL: userData.photoURL || userData.photo || "",
+          photo: userData.photoURL || userData.photo || ""
+        };
+        setUserDetails(userDetails);
+        return true;
+      }
+
       return false;
     } catch (error) {
-      console.error("Error fetching user data:", error);
       toast.error("Error fetching user data");
       return false;
+    }
+  };
+
+  const convertImageToBase64 = async (imageUrl) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      return null;
     }
   };
 
   const saveUserData = async (user) => {
     try {
       const userRef = doc(db, "users", user.uid);
-      
-      // Store both original URL and in the photo field for compatibility
+
+      // Format Google photo URL if present
+      let photoURL = user.photoURL;
+      if (photoURL && photoURL.includes('googleusercontent.com')) {
+        // Ensure HTTPS
+        photoURL = photoURL.replace('http://', 'https://');
+        // Remove any existing size parameters
+        photoURL = photoURL.replace(/=s\d+(-c)?/, '');
+        // Add appropriate size parameter
+        photoURL = `${photoURL}=s96-c`;
+      }
+
       const userData = {
         email: user.email,
         name: user.displayName || "",
-        photo: user.photoURL || "", // Store in photo field for compatibility with existing code
-        photoURL: user.photoURL || "",
+        displayName: user.displayName || "",
+        photoURL: photoURL || "",
+        photo: photoURL || "",
         type: "user",
         createdAt: new Date().toISOString(),
+        emailVerified: user.emailVerified || false,
+        lastLoginAt: new Date().toISOString()
       };
-      
-      console.log("Saving Google user data:", {
-        uid: user.uid,
-        email: user.email,
-        name: user.displayName,
-        photoURL: user.photoURL ? "[photo URL exists]" : "[no photo URL]"
-      });
-      
+
       await setDoc(userRef, userData, { merge: true });
+      await fetchUserOrBusinessData(user.email);
     } catch (error) {
-      console.error("Error saving user data:", error);
       toast.error("Error saving user data");
     }
   };
@@ -129,30 +134,58 @@ const useAuth = () => {
 
   const googleLogin = async () => {
     const provider = new GoogleAuthProvider();
-    // Request additional scopes to ensure we get the profile image
     provider.addScope('profile');
     provider.addScope('email');
-    
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
+
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      
-      console.log("Google user data:", user); // Debug log
+
+      // Ensure we have a valid photo URL
+      let photoURL = user.photoURL;
+      if (photoURL && photoURL.includes('googleusercontent.com')) {
+        // Ensure HTTPS
+        photoURL = photoURL.replace('http://', 'https://');
+        // Remove any existing size parameters
+        photoURL = photoURL.replace(/=s\d+(-c)?/, '');
+        // Add appropriate size parameter
+        photoURL = `${photoURL}=s96-c`;
+      }
 
       const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
+      const userData = {
+        email: user.email,
+        name: user.displayName || "",
+        displayName: user.displayName || "",
+        photoURL: photoURL || "",
+        photo: photoURL || "",
+        type: "user",
+        createdAt: new Date().toISOString(),
+        emailVerified: user.emailVerified || false,
+        lastLoginAt: new Date().toISOString()
+      };
 
-      // Always save/update user data to ensure we have the latest photo
-      await saveUserData(user);
-      
-      // Force refresh the user data to ensure we have the latest information
-      await fetchUserOrBusinessData(user.email);
-      
-      toast.success("Google login successful!", { position: "top-center" });
-      navigate("/");
+      await setDoc(userRef, userData, { merge: true });
+
+      const foundData = await fetchUserOrBusinessData(user.email);
+      if (foundData) {
+        toast.success("Google login successful!", { position: "top-center" });
+        navigate("/");
+      } else {
+        await signOut(auth);
+        toast.error("Error fetching user data");
+      }
     } catch (error) {
-      console.error("Google login error:", error);
-      toast.error(error.message, { position: "bottom-center" });
+      if (error.code === 'auth/popup-blocked') {
+        toast.error("Please allow popups for this website to use Google login", { position: "bottom-center" });
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        toast.error("Login cancelled", { position: "bottom-center" });
+      } else {
+        toast.error(error.message, { position: "bottom-center" });
+      }
     }
   };
 
@@ -182,12 +215,50 @@ const useAuth = () => {
 
   useEffect(() => {
     setAuthPersistence();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        fetchUserOrBusinessData(user.email);
+        // Handle Google sign-in redirect
+        if (user.providerData[0]?.providerId === 'google.com') {
+          try {
+            // Ensure we have a valid photo URL
+            let photoURL = user.photoURL;
+            if (photoURL && photoURL.includes('googleusercontent.com')) {
+              // Ensure HTTPS
+              photoURL = photoURL.replace('http://', 'https://');
+
+              // Remove any existing size parameters
+              photoURL = photoURL.replace(/=s\d+(-c)?/, '');
+
+              // Add appropriate size parameter
+              photoURL = `${photoURL}=s96-c`;
+            }
+
+            const userRef = doc(db, "users", user.uid);
+            const userData = {
+              email: user.email,
+              name: user.displayName || "",
+              displayName: user.displayName || "",
+              photoURL: photoURL || "",
+              photo: photoURL || "",
+              type: "user",
+              createdAt: new Date().toISOString(),
+              emailVerified: user.emailVerified || false,
+              lastLoginAt: new Date().toISOString()
+            };
+
+            await setDoc(userRef, userData, { merge: true });
+            navigate("/");
+          } catch (error) {
+            toast.error("Error saving user data");
+          }
+        }
+
+        await fetchUserOrBusinessData(user.email);
       } else {
         setUserDetails(null);
       }
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -195,10 +266,12 @@ const useAuth = () => {
 
   return {
     userDetails,
+    setUserDetails,
+    loading,
     login,
     googleLogin,
     logout,
-    resetPassword,
+    resetPassword
   };
 };
 

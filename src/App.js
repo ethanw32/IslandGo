@@ -1,41 +1,41 @@
-import React, { useEffect, useState } from 'react';
-import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer } from 'react-toastify';
-import './index.css';
-import './App.css';
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Layout from './components/layout';
 import Taxis from './components/Taxis';
 import Rentals from './components/Rentals';
 import Bpf from './components/bpf';
 import Chat from './components/chat';
 import Rpf from './components/rpf';
-import Requirements from './components/requirements';
-import Contact from './components/contact';
-import Login from './components/logIn';
-import SignUp from './components/signUp';
+import Book from './components/book';
 import Addtour from './components/addtour';
+import Requirements from './components/requirements';
+import Profile from './components/myprofile';
+import Contact from './components/contact';
+import SignUp from './components/signUp';
+import Login from './components/logIn';
 import BsignUP from './components/bsignUp';
 import Addv from './components/addv';
-import Profile from './components/myprofile';
-import Layout from './components/layout';
-import Bsetup from "./components/bsetup";
-import Book from "./components/book"
-import Map from "./components/Map"
-import Tours from "./components/tours"
-import Vehicles from "./components/Vehicles"
-import Details from "./components/Details"
-import VehiclesDetails from "./components/vehiclesdetails"
-
-
+import Bsetup from './components/bsetup';
+import Map from './components/Map';
+import Tours from './components/tours';
+import Vehicles from './components/Vehicles';
+import Details from './components/Details';
+import VehiclesDetails from './components/vehiclesdetails';
+import Dashboard from './components/Dashboard';
+import PickupSpots from './components/PickupSpots';
+import AuthProvider from './AuthProvider';
+import useAuth from './components/useAuth';
+import Weather from './components/Weather';
 
 function App() {
-
-
   return (
-    <>
+    <AuthProvider>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Taxis />} />
+          <Route path="/weather" element={<Weather />} />
           <Route path="/rentals" element={<Rentals />} />
           <Route path="/bpf" element={<Bpf />} />
           <Route path="/chat" element={<Chat />} />
@@ -55,11 +55,12 @@ function App() {
           <Route path="/vehicles" element={<Vehicles />} />
           <Route path="/details" element={<Details />} />
           <Route path="/vdetails" element={<VehiclesDetails />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/pickup-spots" element={<PickupSpots />} />
         </Route>
       </Routes>
       <ToastContainer />
-    </>
-
+    </AuthProvider>
   );
 }
 

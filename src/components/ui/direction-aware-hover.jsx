@@ -16,13 +16,10 @@ export const DirectionAwareHover = ({
 
   const [direction, setDirection] = useState("left");
 
-  const handleMouseEnter = (
-    event
-  ) => {
+  const handleMouseEnter = (event) => {
     if (!ref.current) return;
 
     const direction = getDirection(event, ref.current);
-    console.log("direction", direction);
     switch (direction) {
       case 0:
         setDirection("top");

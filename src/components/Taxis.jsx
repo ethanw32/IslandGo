@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "./config/firebase";
 import StarRating from "./star.js";
 
 const Taxis = () => {
   const [activeTab, setActiveTab] = useState("");
+  const [taxis, setTaxis] = useState([]);
+  const [taxiRatings, setTaxiRatings] = useState({});
   const [filterRating, setFilterRating] = useState(null);
   const [sortOrder, setSortOrder] = useState("default");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
-  const [taxis, setTaxis] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,61 +30,48 @@ const Taxis = () => {
   }, []);
 
   useEffect(() => {
-    const fetchTaxisAndReviews = async () => {
+    const fetchData = async () => {
       setLoading(true);
-      console.log("Starting to fetch taxis and reviews...");
       try {
         // Fetch taxi businesses
-        const businessesSnapshot = await getDocs(collection(db, "businesses"));
+        const querySnapshot = await getDocs(collection(db, "businesses"));
         const taxiData = [];
-
-        businessesSnapshot.forEach((doc) => {
+        querySnapshot.forEach((doc) => {
           const data = doc.data();
           if (data.businessType === "Taxi") {
-            taxiData.push({
-              id: doc.id,
-              ...data,
-              averageRating: 0,
-              reviewCount: 0
-            });
+            taxiData.push({ id: doc.id, ...data });
           }
         });
+        setTaxis(taxiData);
 
-        console.log("Found", taxiData.length, "taxis");
-
-        // Fetch all reviews for taxi businesses
+        // Set up real-time listener for reviews
         const reviewsRef = collection(db, "reviews");
-        const reviewsSnapshot = await getDocs(reviewsRef);
-        const allReviews = [];
+        const unsubscribe = onSnapshot(reviewsRef, (querySnapshotRatings) => {
+          console.log("Reviews snapshot received, total reviews:", querySnapshotRatings.size);
 
-        reviewsSnapshot.forEach(doc => {
-          const review = doc.data();
-          if (review.businessId) {
-            allReviews.push(review);
-          }
-        });
+          const reviewsByBusiness = {};
+          querySnapshotRatings.forEach((doc) => {
+            const review = doc.data();
+            if (review.businessId) {
+              if (!reviewsByBusiness[review.businessId]) {
+                reviewsByBusiness[review.businessId] = [];
+              }
+              reviewsByBusiness[review.businessId].push(review.rating);
+            }
+          });
 
-        console.log(`Found ${allReviews.length} reviews for businesses`);
-
-        // Calculate average ratings for each taxi
-        const updatedTaxis = taxiData.map(taxi => {
-          const taxiReviews = allReviews.filter(review => review.businessId === taxi.id);
-
-          if (taxiReviews.length > 0) {
-            const totalRating = taxiReviews.reduce((sum, review) => sum + review.rating, 0);
-            const averageRating = totalRating / taxiReviews.length;
-
-            return {
-              ...taxi,
-              averageRating: parseFloat(averageRating.toFixed(1)),
-              reviewCount: taxiReviews.length
-            };
+          const ratingsData = {};
+          for (const businessId in reviewsByBusiness) {
+            const ratings = reviewsByBusiness[businessId];
+            const sum = ratings.reduce((a, b) => a + b, 0);
+            const avg = sum / ratings.length;
+            ratingsData[businessId] = Math.round(avg * 10) / 10;
           }
 
-          return taxi;
+          setTaxiRatings(ratingsData);
         });
 
-        setTaxis(updatedTaxis);
+        return () => unsubscribe();
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -91,7 +79,7 @@ const Taxis = () => {
       }
     };
 
-    fetchTaxisAndReviews();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -114,7 +102,7 @@ const Taxis = () => {
   };
 
   const filteredTaxis = filterRating
-    ? taxis.filter(taxi => Math.round(taxi.averageRating) === filterRating)
+    ? taxis.filter(taxi => Math.round(taxiRatings[taxi.id] || 0) === filterRating)
     : taxis;
 
   const sortedTaxis = [...filteredTaxis].sort((a, b) => {
@@ -124,25 +112,27 @@ const Taxis = () => {
   });
 
   return (
-    <div className="h-fit w-full pt-10 p-5 relative">
+    <div className="h-screen w-full pt-10 p-5 relative">
       <div className="rounded-3xl font-medium bg-white text-lg h-10 w-40 m-auto">
         <div className="flex h-full">
-          <div onClick={() => handleClick("taxis", "/")} className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${activeTab === "taxis" ? "bg-black text-white rounded-3xl" : "bg-white hover:bg-gray-200 rounded-3xl"} transition-all`}>Taxi</div>
-          <div onClick={() => handleClick("rentals", "/rentals")} className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${activeTab === "rentals" ? "bg-black text-white rounded-3xl" : "bg-white hover:bg-gray-200 rounded-3xl"} transition-all`}>Rentals</div>
+          <div onClick={() => handleClick("taxis", "/")} className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${activeTab === "taxis" ? "bg-black text-white rounded-3xl" : "bg-white hover:bg-gray-200 rounded-3xl"} transition-all`}>
+            Taxis
+          </div>
+          <div onClick={() => handleClick("rentals", "/rentals")} className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${activeTab === "rentals" ? "bg-black text-white rounded-3xl" : "bg-white hover:bg-gray-200 rounded-3xl"} transition-all`}>
+            Rentals
+          </div>
         </div>
       </div>
 
       <div className="flex justify-center gap-4 mt-8">
-        <div className="relative">
+        <div className="relative filter-dropdown">
           <button
-            className={`px-6 py-2.5 rounded-full transition-all duration-300 flex items-center gap-2 ${isFilterOpen
-              ? "bg-black text-white"
-              : "bg-white text-gray-700 hover:bg-gray-50"
-              } shadow-md`}
+            className={`px-6 py-2.5 rounded-full flex items-center gap-2 ${isFilterOpen ? "bg-black text-white" : "bg-white text-gray-700 hover:bg-gray-50"} shadow-md`}
             onClick={() => {
               setIsFilterOpen(!isFilterOpen);
               setIsSortOpen(false);
             }}
+            disabled={loading}
           >
             <span className="font-medium">Filters</span>
             <i className="fa fa-filter text-sm"></i>
@@ -152,12 +142,11 @@ const Taxis = () => {
               {[1, 2, 3, 4, 5].map((rating) => (
                 <div
                   key={rating}
-                  className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${filterRating === rating ? "bg-gray-100" : ""
-                    }`}
+                  className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${filterRating === rating ? "bg-gray-100" : ""}`}
                   onClick={() => handleFilterChange(rating)}
                 >
                   <div className="flex items-center gap-2">
-                    <span>{rating} {rating === 1 ? "star" : "stars"}</span>
+                    <span>{rating} {rating === 1 ? "★" : "★"}</span>
                     {filterRating === rating && (
                       <i className="fas fa-check text-green-500 ml-auto"></i>
                     )}
@@ -168,16 +157,14 @@ const Taxis = () => {
           )}
         </div>
 
-        <div className="relative">
+        <div className="relative sort-dropdown">
           <button
-            className={`px-6 py-2.5 rounded-full transition-all duration-300 flex items-center gap-2 ${isSortOpen
-              ? "bg-black text-white"
-              : "bg-white text-gray-700 hover:bg-gray-50"
-              } shadow-md`}
+            className={`px-6 py-2.5 rounded-full flex items-center gap-2 ${isSortOpen ? "bg-black text-white" : "bg-white text-gray-700 hover:bg-gray-50"} shadow-md`}
             onClick={() => {
               setIsSortOpen(!isSortOpen);
               setIsFilterOpen(false);
             }}
+            disabled={loading}
           >
             <span className="font-medium">Sort</span>
             <i className="fa fa-sort text-sm"></i>
@@ -185,8 +172,7 @@ const Taxis = () => {
           {isSortOpen && (
             <div className="absolute top-12 left-0 bg-white rounded-xl shadow-xl w-36 z-10 overflow-hidden">
               <div
-                className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${sortOrder === "default" ? "bg-gray-100" : ""
-                  }`}
+                className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${sortOrder === "default" ? "bg-gray-100" : ""}`}
                 onClick={() => handleSortChange("default")}
               >
                 <div className="flex items-center gap-2">
@@ -197,24 +183,22 @@ const Taxis = () => {
                 </div>
               </div>
               <div
-                className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${sortOrder === "a-z" ? "bg-gray-100" : ""
-                  }`}
+                className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${sortOrder === "a-z" ? "bg-gray-100" : ""}`}
                 onClick={() => handleSortChange("a-z")}
               >
                 <div className="flex items-center gap-2">
-                  <span>A to Z</span>
+                  <span>A-Z</span>
                   {sortOrder === "a-z" && (
                     <i className="fas fa-check text-green-500 ml-auto"></i>
                   )}
                 </div>
               </div>
               <div
-                className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${sortOrder === "z-a" ? "bg-gray-100" : ""
-                  }`}
+                className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${sortOrder === "z-a" ? "bg-gray-100" : ""}`}
                 onClick={() => handleSortChange("z-a")}
               >
                 <div className="flex items-center gap-2">
-                  <span>Z to A</span>
+                  <span>Z-A</span>
                   {sortOrder === "z-a" && (
                     <i className="fas fa-check text-green-500 ml-auto"></i>
                   )}
@@ -245,50 +229,51 @@ const Taxis = () => {
             No results found
           </div>
         ) : (
-          sortedTaxis.map((taxi) => (
-            <div
-              key={taxi.id}
-              className="bg-white dark rounded-xl p-4 sm:p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
-              onClick={() =>
-                navigate("/bpf", {
-                  state: {
-                    businessId: taxi.id,
-                    ownerId: taxi.ownerId,
-                    image: taxi.businessImage,
-                    name: taxi.businessName,
-                  },
-                })
-              }
-            >
-              <div className="flex gap-3 sm:gap-6">
-                <div className="relative w-20 sm:w-32 flex-shrink-0">
-                  <img
-                    className="aspect-square w-full rounded-full shadow-md object-cover"
-                    src={taxi.businessImage || "/default-image.jpg"}
-                    alt={taxi.businessName}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "/default-image.jpg";
-                    }}
-                  />
-                </div>
-                <div className="ml-2 sm:ml-4 flex flex-col justify-between flex-grow">
-                  <div>
-                    <h1 className="font-bold text-xl sm:text-2xl text-gray-800 mb-1 sm:mb-2">{taxi.businessName}</h1>
-                    <p className="text-gray-600 line-clamp-2 text-xs sm:text-sm">{taxi.businessDescription}</p>
+          sortedTaxis.map((taxi) => {
+            const avgRating = taxiRatings[taxi.id] || 0;
+            return (
+              <div
+                key={taxi.id}
+                className="bg-white rounded-xl p-4 sm:p-6 shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 cursor-pointer"
+                onClick={() =>
+                  navigate("/bpf", {
+                    state: {
+                      businessId: taxi.id,
+                      ownerId: taxi.ownerId,
+                      image: taxi.businessImage,
+                      name: taxi.businessName,
+                    },
+                  })
+                }
+              >
+                <div className="flex gap-3 sm:gap-6">
+                  <div className="relative w-20 sm:w-32 flex-shrink-0">
+                    <img
+                      className="aspect-square w-full rounded-full shadow-md object-cover"
+                      src={taxi.businessImage || "/default-image.jpg"}
+                      alt={taxi.businessName}
+                    />
                   </div>
-                  <div className="mt-1 sm:mt-2">
-                    <div className="flex items-center">
-                      <StarRating rating={taxi.averageRating} />
-                      <span className="text-gray-500 text-sm ml-2">
-                        {taxi.averageRating.toFixed(1)}
-                      </span>
+                  <div className="ml-2 sm:ml-4 flex flex-col justify-between flex-grow">
+                    <div>
+                      <h1 className="font-bold text-xl sm:text-2xl text-gray-800 mb-1 sm:mb-2">{taxi.businessName}</h1>
+                      <p className="text-gray-600 line-clamp-2 text-xs sm:text-sm">{taxi.businessDescription}</p>
+                    </div>
+                    <div className="mt-1 sm:mt-2">
+                      <div className="flex items-center">
+                        <StarRating rating={Math.round(avgRating)} />
+                        {avgRating > 0 && (
+                          <span className="ml-2 text-sm text-gray-600">
+                            ({avgRating} ★)
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

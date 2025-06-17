@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 
-const GrenadaLandmarksMap = ({ 
-  className = "", 
-  showHeader = true, 
-  zoom = 11, 
+const GrenadaLandmarksMap = ({
+  className = "",
+  showHeader = true,
+  zoom = 11,
   height = '650px',
-  showLegend = true 
+  showLegend = true
 }) => {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -36,8 +36,6 @@ const GrenadaLandmarksMap = ({
   const initializeMap = () => {
     if (!window.L || mapInstanceRef.current) return;
 
-    console.log('Initializing Grenada Landmarks Map...');
-    
     // Create map instance with configurable zoom
     const map = window.L.map(mapRef.current, {
       center: [12.1165, -61.6790],
@@ -50,7 +48,7 @@ const GrenadaLandmarksMap = ({
     });
 
     mapInstanceRef.current = map;
-    
+
     // Add tile layer
     const tileLayer = window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
@@ -58,9 +56,9 @@ const GrenadaLandmarksMap = ({
       crossOrigin: true,
       subdomains: ['a', 'b', 'c']
     });
-    
+
     tileLayer.addTo(map);
-    
+
     // Define categories with colors and icons
     const categories = {
       beaches: { color: '#3498db', icon: '🏖️' },
@@ -75,13 +73,21 @@ const GrenadaLandmarksMap = ({
     const landmarks = [
       // Beaches
       { name: "Grand Anse Beach", lat: 12.025019195630641, lng: -61.76198898796977, category: "beaches", description: "One of the world's most beautiful beaches with 2 miles of white sand and crystal-clear waters." },
-      { name: "Morne Rouge Beach", lat: 12.019585508732703, lng: -61.77275951076697, category: "beaches", description: "A sheltered crescent-shaped beach perfect for swimming and snorkeling." },
+      { name: "Pandy Beach", lat: 12.042514577404479, lng: -61.752934562407255, category: "beaches", description: "This stunning beach stretches along approximately 500 meters of golden sand, inviting visitors to bask in the Caribbean sunshine." },
+      { name: "BBC Beach", lat: 12.019585508732703, lng: -61.77275951076697, category: "beaches", description: "A sheltered crescent-shaped beach perfect for swimming and snorkeling." },
       { name: "Bathway Beach", lat: 12.215486712125777, lng: -61.60971498647282, category: "beaches", description: "A unique beach with natural rock formations creating protected swimming pools." },
       { name: "La Sagesse Beach", lat: 12.02367524407815, lng: -61.67280972067488, category: "beaches", description: "A secluded paradise with mangroves, salt pond, and pristine white sand." },
       { name: "Levera Beach", lat: 12.225012898987178, lng: -61.608054132667505, category: "beaches", description: "Wild Atlantic coast beach with dramatic waves and turtle nesting site." },
       { name: "Magazine Beach", lat: 12.010987068298734, lng: -61.78552011559304, category: "beaches", description: "Popular local beach with calm waters, perfect for families and water sports." },
       { name: "Pink Gin Beach", lat: 12.008588495277712, lng: -61.792573067359804, category: "beaches", description: "Exclusive beach with luxury resorts and pristine white sand." },
-      
+      { name: "True Blue Beach", lat: 11.99820363146707, lng: -61.76775289762083, category: "beaches", description: "Exclusive beach with luxury resorts and pristine white sand." },
+      { name: "Calo Beach", lat: 12.002232797254349, lng: -61.79632050689598, category: "beaches", description: "Exclusive beach with luxury resorts and pristine white sand." },
+      { name: "Grand Beach", lat: 12.001898021621326, lng: -61.79107541314244, category: "beaches", description: "Exclusive beach with luxury resorts and pristine white sand." },
+      { name: "Grooms Beach", lat: 12.01427776709724, lng: -61.7806298661793, category: "beaches", description: "Exclusive beach with luxury resorts and pristine white sand." },
+      { name: "Secret Beach", lat: 12.002857131785778, lng: -61.776725656046736, category: "beaches", description: "Exclusive beach with luxury resorts and pristine white sand." },
+      { name: "Lance Aux Epines Beach", lat: 12.002154706854027, lng: -61.75950076236197, category: "beaches", description: "Exclusive beach with luxury resorts and pristine white sand." },
+      { name: "Fort Judy Beach", lat: 12.012897983898721, lng: -61.717548299216524, category: "beaches", description: "Exclusive beach with luxury resorts and pristine white sand." },
+
       // Historical Sites
       { name: "Fort Frederick", lat: 12.048339911869135, lng: -61.737469648650396, category: "historical", description: "18th-century fortress offering panoramic views of the island and harbor." },
       { name: "Fort Matthew", lat: 12.05039470482077, lng: -61.738016759655245, category: "historical", description: "Ruined fort on Richmond Hill with commanding views over St. George's." },
@@ -90,16 +96,20 @@ const GrenadaLandmarksMap = ({
       { name: "Belmont Estate", lat: 12.174851630861625, lng: -61.626898110416285, category: "historical", description: "Historic plantation in St. Patrick showcasing traditional cocoa and spice production." },
       { name: "Laura Herb & Spice Garden", lat: 12.04190462103274, lng: -61.69665118585402, category: "historical", description: "Organic spice garden and plantation showcasing traditional farming methods." },
       { name: "Morne Fendue Plantation", lat: 12.209157370110871, lng: -61.63026848663825, category: "historical", description: "Historic plantation house offering traditional Grenadian cuisine and history." },
-      
+
       // Natural Attractions
       { name: "Grand Etang National Park", lat: 12.094200932671036, lng: -61.69401638532512, category: "natural", description: "Crater lake surrounded by lush rainforest with hiking trails and wildlife." },
+      { name: "Rainbow Tree", lat: 12.082687658462907, lng: -61.707136331417324, category: "natural", description: "The most beautiful tree in Grenada is a living masterpiece whose smooth bark is peeling away in ragged strips to reveal an ever-changing canvas of orange, green, gray and purplish brown" },
       { name: "Underwater Sculpture Park", lat: 12.083472210062865, lng: -61.76339677504767, category: "natural", description: "World's first underwater sculpture park, perfect for snorkeling and diving." },
       { name: "Lake Antoine", lat: 12.185809926207037, lng: -61.61232997325479, category: "natural", description: "Volcanic crater lake surrounded by tropical vegetation and bird life." },
       { name: "Levera National Park", lat: 12.222721629520914, lng: -61.612899088488554, category: "natural", description: "Coastal park with mangroves, pond, and important bird sanctuary." },
       { name: "La Sagesse Nature Center", lat: 12.024578143708172, lng: -61.67093491732724, category: "natural", description: "Protected area with mangrove estuary, salt pond, and diverse wildlife." },
-      
+      { name: "Hog Island", lat: 12.000651566439279, lng: -61.73891949323388, category: "natural", description: "Protected area with mangrove estuary, salt pond, and diverse wildlife." },
+      { name: "The Blow Hole", lat: 11.999233738237338, lng: -61.70714946547633, category: "natural", description: "Protected area with mangrove estuary, salt pond, and diverse wildlife." },
+
       // Cultural Sites
       { name: "St. George's Market Square", lat: 12.052449656731188, lng: -61.75335418258073, category: "cultural", description: "Historic town center with colorful Georgian buildings and local markets." },
+      { name: "The Tower Estate", lat: 12.047958677043345, lng: -61.72021100101143, category: "cultural", description: "100 year old Great House with museum quality maps and memorabilia and two acre ornamental garden on a working seven acre estate" },
       { name: "House of Chocolate", lat: 12.050684087226339, lng: -61.75284421117853, category: "cultural", description: "Museum and factory showcasing Grenada's rich chocolate and spice heritage." },
       { name: "Grenada Chocolate Company", lat: 12.176046037537981, lng: -61.63776082030105, category: "cultural", description: "Organic chocolate factory using traditional methods and local cocoa beans." },
       { name: "Grenada National Museum", lat: 12.050499071172318, lng: -61.75260587743098, category: "cultural", description: "Museum housed in French barracks showcasing island's history and culture." },
@@ -108,7 +118,7 @@ const GrenadaLandmarksMap = ({
       { name: "Clarke's Court Rum Distillery", lat: 12.02611718502591, lng: -61.74000584915563, category: "cultural", description: "Modern rum distillery offering tours and tastings of their premium rums." },
       { name: "Diamond Chocolate Factory (Jouvay Chocolate)", lat: 12.188900605731876, lng: -61.701141330817414, category: "cultural", description: "Artisan chocolate factory producing organic chocolate from tree to bar." },
       { name: "Tri-Island Spice Company", lat: 12.074907925973664, lng: -61.72986124616227, category: "cultural", description: "Spice processing facility and shop showcasing Grenada's spice heritage." },
-      
+
       // Waterfalls
       { name: "Annandale Falls", lat: 12.087479234939158, lng: -61.717052820187, category: "waterfalls", description: "35-foot waterfall surrounded by tropical plants, with swimming pool below." },
       { name: "Seven Sisters Falls", lat: 12.095262568425326, lng: -61.68050939513836, category: "waterfalls", description: "Series of seven cascading waterfalls in the Grand Etang rainforest." },
@@ -116,10 +126,13 @@ const GrenadaLandmarksMap = ({
       { name: "Royal Mt. Carmel Falls", lat: 12.093068741175745, lng: -61.63543313747944, category: "waterfalls", description: "Hidden 70-foot waterfall requiring a moderate hike through rainforest." },
       { name: "Honeymoon Falls", lat: 12.116661366918471, lng: -61.679050708774106, category: "waterfalls", description: "Romantic waterfall with natural pool, perfect for swimming and relaxation." },
       { name: "Tufton Hall Waterfall", lat: 12.16197888381273, lng: -61.68340132272949, category: "waterfalls", description: "Spectacular 100-foot waterfall cascading down volcanic rock formations." },
-      
+      { name: "Funtastic River Tubing & Adventures Grenada", lat: 12.129795745711846, lng: -61.656537669809154, category: "waterfalls", description: "Funtastic River Tubing & Adventures aims to offer its guests opportunities to really discover the Gem that is Grenada through unique experiences." },
+      { name: "The Shodoo Waterfall", lat: 12.085898793776376, lng: -61.71681334430274, category: "waterfalls", description: "The Shodoo Waterfall is a mesmerizing natural attraction located in the heart of Grenada" },
+      { name: "Castaigne Waterfall", lat: 12.124604832198298, lng: -61.66914783081008, category: "waterfalls", description: "This picturesque waterfall is a favored spot for both tourists and locals, offering a serene escape into nature" },
+
       // Scenic Viewpoints
       { name: "Mount Qua Qua", lat: 12.099700090584546, lng: -61.70119282314723, category: "viewpoints", description: "Hiking trail leading to summit with 360-degree island views." },
-      { name: "Fedon's Camp", lat: 12.118636072834546, lng: -61.69819013266894, category: "viewpoints", description: "Historic revolutionary site with panoramic mountain and forest views." }
+      { name: "Fedon's Camp", lat: 12.118636072834546, lng: -61.69819013266894, category: "viewpoints", description: "Historic revolutionary site with panoramic mountain and forest views." },
     ];
 
     // Function to create custom markers
@@ -156,7 +169,7 @@ const GrenadaLandmarksMap = ({
       // Create popup content
       const categoryColor = categories[landmark.category].color;
       const categoryName = landmark.category.charAt(0).toUpperCase() + landmark.category.slice(1);
-      
+
       const popupContent = `
         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
           <div style="font-size: 1.2em; font-weight: 600; color: #2c3e50; margin: 0 0 8px 0;">
@@ -175,9 +188,9 @@ const GrenadaLandmarksMap = ({
         maxWidth: 300,
         className: 'custom-popup'
       });
-      
+
       // Add hover effect
-      marker.on('mouseover', function() {
+      marker.on('mouseover', function () {
         this.openPopup();
       });
     });
@@ -187,11 +200,10 @@ const GrenadaLandmarksMap = ({
       position: 'bottomleft',
       imperial: false
     }).addTo(map);
-    
+
     // Force map to refresh
     setTimeout(() => {
       map.invalidateSize();
-      console.log('Grenada map initialized successfully');
     }, 500);
   };
 
@@ -204,42 +216,42 @@ const GrenadaLandmarksMap = ({
           <p className="text-sm opacity-90">Discover the Spice Island's Most Beautiful Landmarks & Attractions</p>
         </div>
       )}
-      
+
       {/* Map Container */}
       <div className="relative">
-        <div 
-          ref={mapRef} 
+        <div
+          ref={mapRef}
           style={{ height: height, width: '100%', background: '#b3d9ff' }}
           className={showHeader ? "rounded-b-lg" : "rounded-lg"}
         />
-        
+
         {/* Conditional Legend */}
         {showLegend && (
           <div className="absolute bottom-4 right-4 bg-white bg-opacity-95 backdrop-blur-sm p-4 rounded-lg shadow-lg z-1000 min-w-48">
             <h3 className="text-lg font-semibold text-gray-800 mb-3">📍 Categories</h3>
             <div className="space-y-2">
               <div className="flex items-center text-sm text-gray-700">
-                <div className="w-4 h-4 rounded-full mr-3 border-2 border-white" style={{backgroundColor: '#3498db'}}></div>
+                <div className="w-4 h-4 rounded-full mr-3 border-2 border-white" style={{ backgroundColor: '#3498db' }}></div>
                 <span>Beaches</span>
               </div>
               <div className="flex items-center text-sm text-gray-700">
-                <div className="w-4 h-4 rounded-full mr-3 border-2 border-white" style={{backgroundColor: '#e74c3c'}}></div>
+                <div className="w-4 h-4 rounded-full mr-3 border-2 border-white" style={{ backgroundColor: '#e74c3c' }}></div>
                 <span>Historical Sites</span>
               </div>
               <div className="flex items-center text-sm text-gray-700">
-                <div className="w-4 h-4 rounded-full mr-3 border-2 border-white" style={{backgroundColor: '#27ae60'}}></div>
+                <div className="w-4 h-4 rounded-full mr-3 border-2 border-white" style={{ backgroundColor: '#27ae60' }}></div>
                 <span>Natural Attractions</span>
               </div>
               <div className="flex items-center text-sm text-gray-700">
-                <div className="w-4 h-4 rounded-full mr-3 border-2 border-white" style={{backgroundColor: '#f39c12'}}></div>
+                <div className="w-4 h-4 rounded-full mr-3 border-2 border-white" style={{ backgroundColor: '#f39c12' }}></div>
                 <span>Cultural Sites</span>
               </div>
               <div className="flex items-center text-sm text-gray-700">
-                <div className="w-4 h-4 rounded-full mr-3 border-2 border-white" style={{backgroundColor: '#9b59b6'}}></div>
+                <div className="w-4 h-4 rounded-full mr-3 border-2 border-white" style={{ backgroundColor: '#9b59b6' }}></div>
                 <span>Waterfalls</span>
               </div>
               <div className="flex items-center text-sm text-gray-700">
-                <div className="w-4 h-4 rounded-full mr-3 border-2 border-white" style={{backgroundColor: '#e67e22'}}></div>
+                <div className="w-4 h-4 rounded-full mr-3 border-2 border-white" style={{ backgroundColor: '#e67e22' }}></div>
                 <span>Scenic Viewpoints</span>
               </div>
             </div>

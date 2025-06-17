@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from './config/firebase';
 import { getAuth } from 'firebase/auth';
 import { toast } from 'react-toastify';
 import useAuth from './useAuth';
-import { 
-  Star, 
-  MapPin, 
-  Clock, 
-  Users, 
-  Calendar, 
-  ChevronLeft, 
+import {
+  Star,
+  MapPin,
+  Clock,
+  Users,
+  Calendar,
+  ChevronLeft,
   ChevronRight,
   Heart,
   Share2,
@@ -19,6 +19,143 @@ import {
   X,
   User
 } from 'lucide-react';
+
+// Add required CSS animations
+const styles = `
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(calc(-350px * 5));
+    }
+  }
+
+  @keyframes scroll-reverse {
+    0% {
+      transform: translateX(calc(-350px * 5));
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  .animate-scroll {
+    animation: scroll 20s linear infinite;
+  }
+
+  .animate-scroll-reverse {
+    animation: scroll-reverse 20s linear infinite;
+  }
+
+  .animate-duration-20s {
+    animation-duration: 20s;
+  }
+
+  .animate-duration-40s {
+    animation-duration: 40s;
+  }
+
+  .hover\\:pause:hover {
+    animation-play-state: paused;
+  }
+`;
+
+// Add InfiniteMovingCards component
+const InfiniteMovingCards = ({ items, direction = "left", speed = "fast", pauseOnHover = true, className }) => {
+  const containerRef = React.useRef(null);
+  const scrollerRef = React.useRef(null);
+
+  useEffect(() => {
+    // Inject styles
+    const styleSheet = document.createElement("style");
+    styleSheet.textContent = styles;
+    document.head.appendChild(styleSheet);
+
+    return () => {
+      document.head.removeChild(styleSheet);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (containerRef.current && scrollerRef.current) {
+      const scrollerContent = Array.from(scrollerRef.current.children);
+
+      scrollerContent.forEach((item) => {
+        const duplicatedItem = item.cloneNode(true);
+        scrollerRef.current.appendChild(duplicatedItem);
+      });
+    }
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className={`relative overflow-hidden ${className}`}
+    >
+      <div
+        ref={scrollerRef}
+        className={`flex gap-4 py-4 w-max ${direction === "left" ? "animate-scroll" : "animate-scroll-reverse"
+          } ${pauseOnHover ? "hover:pause" : ""} ${speed === "fast" ? "animate-duration-20s" : "animate-duration-40s"
+          }`}
+      >
+        {items.map((item, idx) => (
+          <div
+            key={idx}
+            className="w-[350px] max-w-full relative rounded-2xl border border-neutral-200 dark:border-white/[0.1] bg-white dark:bg-black p-5 shadow-md"
+          >
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                  {item.userPhotoURL ? (
+                    <img
+                      src={item.userPhotoURL}
+                      alt={item.userName}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <User className="h-5 w-5 text-white" />
+                  )}
+                </div>
+                <div>
+                  <div className="font-medium text-white">{item.userName || 'Anonymous User'}</div>
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${i < (item.rating || 5)
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'text-gray-400'
+                          }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <p className="text-white line-clamp-3">{item.comment || item.review || 'Great experience!'}</p>
+              <p className="text-sm text-gray-300">
+                {item.createdAt?.seconds
+                  ? new Date(item.createdAt.seconds * 1000).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })
+                  : item.date?.seconds
+                    ? new Date(item.date.seconds * 1000).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })
+                    : 'Recent'
+                }
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const TourDetails = () => {
   const location = useLocation();
@@ -39,13 +176,21 @@ const TourDetails = () => {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-  
+  const [businessData, setBusinessData] = useState(null);
+  const [availableDates, setAvailableDates] = useState([]);
+  const [dateBookings, setDateBookings] = useState({});
+
   const { userDetails } = useAuth();
   const auth = getAuth();
   const currentUser = auth.currentUser;
 
   useEffect(() => {
-    if (!tourId) {
+    // If no tourId in state, try to get it from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const tourIdFromUrl = urlParams.get('tourId');
+    const finalTourId = tourId || tourIdFromUrl;
+
+    if (!finalTourId) {
       setError("Tour ID not provided");
       setLoading(false);
       return;
@@ -54,32 +199,84 @@ const TourDetails = () => {
     const fetchTourAndReviews = async () => {
       try {
         // Fetch tour data
-        const tourDoc = await getDoc(doc(db, "tours", tourId));
+        const tourDoc = await getDoc(doc(db, "tours", finalTourId));
         if (!tourDoc.exists()) throw new Error("Tour not found");
-        
+
         const tourData = { id: tourDoc.id, ...tourDoc.data() };
         setTour(tourData);
 
+        // Set available dates
+        if (tourData.availableDates) {
+          const dates = tourData.availableDates.map(date => {
+            try {
+              if (date instanceof Date) return date;
+              if (date.toDate) return date.toDate();
+              const newDate = new Date(date);
+              if (isNaN(newDate.getTime())) {
+                console.warn('Invalid date found:', date);
+                return null;
+              }
+              return newDate;
+            } catch (error) {
+              console.warn('Error converting date:', date, error);
+              return null;
+            }
+          }).filter(date => date !== null); // Remove any invalid dates
+          setAvailableDates(dates);
+        }
+
+        // Only fetch bookings if user is authenticated
+        if (currentUser) {
+          try {
+            // Fetch existing bookings for this tour
+            const bookingsQuery = query(
+              collection(db, "tourReservations"),
+              where("tourId", "==", finalTourId)
+            );
+            const bookingsSnapshot = await getDocs(bookingsQuery);
+
+            // Calculate bookings per date
+            const bookingsPerDate = {};
+            bookingsSnapshot.docs.forEach(doc => {
+              const booking = doc.data();
+              try {
+                const date = booking.reservationDate?.toDate?.() || new Date(booking.reservationDate);
+                if (!isNaN(date.getTime())) {
+                  const dateKey = date.toISOString().split('T')[0];
+                  bookingsPerDate[dateKey] = (bookingsPerDate[dateKey] || 0) + (booking.persons || 1);
+                }
+              } catch (error) {
+                console.warn('Error processing booking date:', booking.reservationDate, error);
+              }
+            });
+
+            setDateBookings(bookingsPerDate);
+          } catch (error) {
+            console.warn('Error fetching bookings:', error);
+            // Continue execution even if bookings fetch fails
+          }
+        }
+
         // Fetch reviews for this tour
         const reviewsQuery = query(
-          collection(db, "reviews"), 
-          where("tourId", "==", tourId)
+          collection(db, "reviews"),
+          where("tourId", "==", finalTourId)
         );
         const reviewsSnapshot = await getDocs(reviewsQuery);
         const reviewsData = reviewsSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
-        
+
         // Sort reviews by date (newest first)
         reviewsData.sort((a, b) => {
           const dateA = a.createdAt?.seconds || 0;
           const dateB = b.createdAt?.seconds || 0;
           return dateB - dateA;
         });
-        
+
         setReviews(reviewsData);
-        
+
         // Calculate average rating from actual reviews
         if (reviewsData.length > 0) {
           const avgRating = reviewsData.reduce((sum, review) => sum + (review.rating || 5), 0) / reviewsData.length;
@@ -101,6 +298,24 @@ const TourDetails = () => {
     fetchTourAndReviews();
   }, [tourId]);
 
+  // Fetch business data
+  useEffect(() => {
+    const fetchBusinessData = async () => {
+      if (!tour?.businessId) return;
+
+      try {
+        const businessDoc = await getDoc(doc(db, "businesses", tour.businessId));
+        if (businessDoc.exists()) {
+          setBusinessData(businessDoc.data());
+        }
+      } catch (error) {
+        console.error("Error fetching business data:", error);
+      }
+    };
+
+    fetchBusinessData();
+  }, [tour?.businessId]);
+
   const handleNextImage = () => {
     if (tour?.images?.length > 1) {
       setCurrentImageIndex((prev) => (prev + 1) % tour.images.length);
@@ -109,7 +324,7 @@ const TourDetails = () => {
 
   const handlePrevImage = () => {
     if (tour?.images?.length > 1) {
-      setCurrentImageIndex((prev) => 
+      setCurrentImageIndex((prev) =>
         prev === 0 ? tour.images.length - 1 : prev - 1
       );
     }
@@ -129,12 +344,47 @@ const TourDetails = () => {
     setShowReservationModal(true);
   };
 
+  const getAvailableSpots = (date) => {
+    try {
+      const dateObj = date instanceof Date ? date : new Date(date);
+      if (isNaN(dateObj.getTime())) {
+        console.warn('Invalid date in getAvailableSpots:', date);
+        return 0;
+      }
+      const dateKey = dateObj.toISOString().split('T')[0];
+      const bookedSpots = dateBookings[dateKey] || 0;
+      return Math.max(0, (tour.maxpeople || 10) - bookedSpots);
+    } catch (error) {
+      console.warn('Error in getAvailableSpots:', error);
+      return 0;
+    }
+  };
+
+  const isDateFullyBooked = (date) => {
+    try {
+      const dateObj = date instanceof Date ? date : new Date(date);
+      if (isNaN(dateObj.getTime())) {
+        return true;
+      }
+      return getAvailableSpots(dateObj) <= 0;
+    } catch (error) {
+      return true;
+    }
+  };
+
   const confirmReservation = async () => {
     if (isSubmittingReservation) return;
 
     if (!currentUser) {
       toast.error("You must be logged in to reserve a tour");
       navigate("/login");
+      return;
+    }
+
+    // Check if there are enough spots available
+    const availableSpots = getAvailableSpots(selectedDate);
+    if (guestCount > availableSpots) {
+      toast.error(`Only ${availableSpots} spots available for this date`);
       return;
     }
 
@@ -146,7 +396,7 @@ const TourDetails = () => {
         tourName: tour.name,
         tourImage: tour.images?.[0] || tour.image,
         businessId: tour.businessId,
-        businessName: tour.businessName || tour.name,
+        businessName: businessData?.businessName || tour.name,
         customerId: currentUser.uid,
         customerName: userDetails?.name || currentUser.email,
         customerEmail: currentUser.email,
@@ -154,23 +404,48 @@ const TourDetails = () => {
         isPrivate: isPrivateTour,
         persons: parseInt(guestCount) || 1,
         specialRequests: "",
-        status: "confirmed",
+        status: "pending",
+        totalPrice: totalPrice,
+        pricePerPerson: tour.price || 99,
         createdAt: serverTimestamp(),
-        type: "tour"
+        type: "tour",
+        isPaid: false
       };
 
       const docRef = await addDoc(collection(db, 'tourReservations'), reservationData);
-      
+
+      // Update local bookings count
+      const dateKey = new Date(selectedDate).toISOString().split('T')[0];
+      setDateBookings(prev => ({
+        ...prev,
+        [dateKey]: (prev[dateKey] || 0) + guestCount
+      }));
+
+      // If it's a private tour, remove the date from available dates
+      if (isPrivateTour) {
+        const tourRef = doc(db, "tours", tourId);
+        const updatedDates = availableDates.filter(date =>
+          new Date(date).toISOString() !== new Date(selectedDate).toISOString()
+        );
+        await updateDoc(tourRef, {
+          availableDates: updatedDates
+        });
+        setAvailableDates(updatedDates);
+      }
+
       console.log('Reservation saved with ID:', docRef.id);
       toast.success('Tour reserved successfully!');
-      
+
       setShowReservationModal(false);
       setSelectedDate('');
       setGuestCount(1);
-      
+      setIsPrivateTour(false);
+
+      // Navigate to profile page after successful reservation
+      navigate('/profile');
+
     } catch (error) {
-      console.error('Error saving reservation:', error);
-      toast.error(`Failed to reserve tour: ${error.message}`);
+      toast.error("Failed to create reservation. Please try again.");
     } finally {
       setIsSubmittingReservation(false);
     }
@@ -204,12 +479,12 @@ const TourDetails = () => {
       };
 
       await addDoc(collection(db, 'reviews'), reviewData);
-      
+
       toast.success('Review submitted successfully!');
-      
+
       // Refresh reviews
       const reviewsQuery = query(
-        collection(db, "reviews"), 
+        collection(db, "reviews"),
         where("tourId", "==", tourId)
       );
       const reviewsSnapshot = await getDocs(reviewsQuery);
@@ -217,15 +492,15 @@ const TourDetails = () => {
         id: doc.id,
         ...doc.data()
       }));
-      
+
       reviewsData.sort((a, b) => {
         const dateA = a.createdAt?.seconds || 0;
         const dateB = b.createdAt?.seconds || 0;
         return dateB - dateA;
       });
-      
+
       setReviews(reviewsData);
-      
+
       // Update average rating
       if (reviewsData.length > 0) {
         const avgRating = reviewsData.reduce((sum, review) => sum + (review.rating || 5), 0) / reviewsData.length;
@@ -240,7 +515,7 @@ const TourDetails = () => {
       setReviewComment('');
       setReviewRating(5);
       setShowReviewForm(false);
-      
+
     } catch (error) {
       console.error('Error submitting review:', error);
       toast.error(`Failed to submit review: ${error.message}`);
@@ -251,11 +526,11 @@ const TourDetails = () => {
 
   const getHighQualityImageUrl = (imageUrl) => {
     if (!imageUrl) return imageUrl;
-    
+
     if (imageUrl.includes('firebasestorage.googleapis.com')) {
       return `${imageUrl}&quality=95&w=1200&h=800&fit=crop`;
     }
-    
+
     return imageUrl;
   };
 
@@ -290,28 +565,28 @@ const TourDetails = () => {
       <div className="relative h-96 md:h-[500px] overflow-hidden">
         {images.length > 0 ? (
           <>
-            <img 
-              src={getHighQualityImageUrl(images[currentImageIndex])} 
+            <img
+              src={getHighQualityImageUrl(images[currentImageIndex])}
               alt={`${tour.name} - Image ${currentImageIndex + 1}`}
               className="w-full h-full object-cover"
               loading="eager"
-              style={{ 
+              style={{
                 imageRendering: 'high-quality',
                 objectFit: 'cover',
                 objectPosition: 'center'
               }}
             />
-            
+
             {images.length > 1 && (
               <>
-                <button 
+                <button
                   onClick={handlePrevImage}
                   className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
                 >
                   <ChevronLeft className="h-6 w-6" />
                 </button>
-                
-                <button 
+
+                <button
                   onClick={handleNextImage}
                   className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
                 >
@@ -323,11 +598,10 @@ const TourDetails = () => {
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                        index === currentImageIndex 
-                          ? 'bg-white scale-110' 
-                          : 'bg-white/60 hover:bg-white/80'
-                      }`}
+                      className={`w-3 h-3 rounded-full transition-all duration-200 ${index === currentImageIndex
+                        ? 'bg-white scale-110'
+                        : 'bg-white/60 hover:bg-white/80'
+                        }`}
                     />
                   ))}
                 </div>
@@ -339,7 +613,7 @@ const TourDetails = () => {
             )}
 
             <div className="absolute top-4 right-4 flex space-x-2">
-              <button 
+              <button
                 onClick={() => setIsFavorite(!isFavorite)}
                 className="p-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-full transition-colors"
               >
@@ -368,10 +642,27 @@ const TourDetails = () => {
                 <span className="font-semibold">{tour.averageRating || "New"}</span>
                 <span className="text-gray-500">({tour.reviewCount || 0} reviews)</span>
               </div>
-              
+
               <h1 className="text-3xl font-bold text-gray-900 mb-4">{tour.name}</h1>
-              
+
               <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-4">
+                <div className="flex items-center gap-1">
+                  <User className="h-4 w-4" />
+                  <button
+                    onClick={() => navigate("/bpf", {
+                      state: {
+                        businessId: tour.businessId,
+                        businessName: businessData?.businessName,
+                        businessImage: businessData?.businessImage,
+                        ownerId: tour.businessId
+                      }
+                    })}
+                    className="text-blue-500 hover:text-blue-700 hover:underline"
+                  >
+                    {businessData?.businessName || 'Business Name'}
+                  </button>
+                </div>
+
                 <div className="flex items-center gap-1">
                   <MapPin className="h-4 w-4" />
                   <span>{tour.location || 'Location not specified'}</span>
@@ -399,25 +690,25 @@ const TourDetails = () => {
                     <span className="text-gray-700">{item}</span>
                   </div>
                 )) || (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-500" />
-                      <span className="text-gray-700">Professional guide</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-500" />
-                      <span className="text-gray-700">Transportation</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-500" />
-                      <span className="text-gray-700">Entry fees</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-500" />
-                      <span className="text-gray-700">Free cancellation</span>
-                    </div>
-                  </>
-                )}
+                    <>
+                      <div className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-green-500" />
+                        <span className="text-gray-700">Professional guide</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-green-500" />
+                        <span className="text-gray-700">Transportation</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-green-500" />
+                        <span className="text-gray-700">Entry fees</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-green-500" />
+                        <span className="text-gray-700">Free cancellation</span>
+                      </div>
+                    </>
+                  )}
               </div>
             </div>
 
@@ -450,7 +741,7 @@ const TourDetails = () => {
                   Reviews ({reviews.length})
                 </h2>
                 {currentUser && (
-                  <button 
+                  <button
                     onClick={() => setShowReviewForm(!showReviewForm)}
                     className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                   >
@@ -458,7 +749,7 @@ const TourDetails = () => {
                   </button>
                 )}
               </div>
-              
+
               {/* Review Form */}
               {showReviewForm && (
                 <div className="bg-gray-50 p-4 rounded-lg mb-6">
@@ -475,11 +766,10 @@ const TourDetails = () => {
                           className="focus:outline-none"
                         >
                           <Star
-                            className={`h-6 w-6 ${
-                              star <= reviewRating
-                                ? 'fill-yellow-400 text-yellow-400'
-                                : 'text-gray-300'
-                            }`}
+                            className={`h-6 w-6 ${star <= reviewRating
+                              ? 'fill-yellow-400 text-yellow-400'
+                              : 'text-gray-300'
+                              }`}
                           />
                         </button>
                       ))}
@@ -508,58 +798,15 @@ const TourDetails = () => {
                   </div>
                 </div>
               )}
-              
+
               {reviews.length > 0 ? (
-                <div className="space-y-4">
-                  {reviews.map((review) => (
-                    <div key={review.id} className="border-b border-gray-200 pb-4 last:border-b-0">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                          {review.userPhotoURL ? (
-                            <img 
-                              src={review.userPhotoURL} 
-                              alt={review.userName} 
-                              className="w-full h-full rounded-full object-cover"
-                            />
-                          ) : (
-                            <User className="h-5 w-5 text-gray-600" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900">{review.userName || 'Anonymous User'}</div>
-                          <div className="flex items-center gap-1">
-                            {[...Array(5)].map((_, i) => (
-                              <Star 
-                                key={i} 
-                                className={`h-4 w-4 ${
-                                  i < (review.rating || 5) 
-                                    ? 'fill-yellow-400 text-yellow-400' 
-                                    : 'text-gray-300'
-                                }`} 
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-gray-700">{review.comment || review.review || 'Great experience!'}</p>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {review.createdAt?.seconds 
-                          ? new Date(review.createdAt.seconds * 1000).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            })
-                          : review.date?.seconds 
-                          ? new Date(review.date.seconds * 1000).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            })
-                          : 'Recent'
-                        }
-                      </p>
-                    </div>
-                  ))}
+                <div className="h-[400px] rounded-md flex flex-col antialiased bg-white items-center justify-center relative overflow-hidden">
+                  <InfiniteMovingCards
+                    items={reviews}
+                    direction="right"
+                    speed="slow"
+                    className="w-full"
+                  />
                 </div>
               ) : (
                 <div className="text-center py-8">
@@ -588,32 +835,65 @@ const TourDetails = () => {
                     <Calendar className="h-4 w-4 inline mr-1" />
                     Select Date
                   </label>
-                  <input
-                    type="date"
+                  <select
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+                  >
+                    <option value="">Select a date</option>
+                    {availableDates.map((date, index) => {
+                      try {
+                        const dateObj = date instanceof Date ? date : new Date(date);
+                        if (isNaN(dateObj.getTime())) {
+                          console.warn('Invalid date in select options:', date);
+                          return null;
+                        }
+                        const dateStr = dateObj.toISOString();
+                        const availableSpots = getAvailableSpots(dateObj);
+                        const fullyBooked = isDateFullyBooked(dateObj);
+
+                        return (
+                          <option
+                            key={index}
+                            value={dateStr}
+                            disabled={fullyBooked}
+                          >
+                            {dateObj.toLocaleDateString('en-US', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })} - {fullyBooked ? 'Fully Booked' : `${availableSpots} spots available`}
+                          </option>
+                        );
+                      } catch (error) {
+                        console.warn('Error processing date in select options:', error);
+                        return null;
+                      }
+                    }).filter(Boolean)}
+                  </select>
                 </div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-gray-700">
-                        Private Tour
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => setIsPrivateTour(!isPrivateTour)}
-                        className={`${
-                          isPrivateTour ? 'bg-blue-500' : 'bg-gray-200'
-                        } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
-                      >
-                        <span
-                          className={`${
-                            isPrivateTour ? 'translate-x-6' : 'translate-x-1'
-                          } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                        />
-                      </button>
-                    </div>
+                {selectedDate && !isDateFullyBooked(selectedDate) && (
+                  <div className="mt-2 text-sm text-gray-600">
+                    {getAvailableSpots(selectedDate)} spots available for this date
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-gray-700">
+                    Private Tour
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsPrivateTour(!isPrivateTour)}
+                    className={`${isPrivateTour ? 'bg-blue-500' : 'bg-gray-200'
+                      } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+                  >
+                    <span
+                      className={`${isPrivateTour ? 'translate-x-6' : 'translate-x-1'
+                        } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                    />
+                  </button>
+                </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -625,7 +905,7 @@ const TourDetails = () => {
                     onChange={(e) => setGuestCount(parseInt(e.target.value))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    {[...Array(tour.maxGuests || 10)].map((_, i) => (
+                    {[...Array(parseInt(tour.maxpeople) || 10)].map((_, i) => (
                       <option key={i + 1} value={i + 1}>
                         {i + 1} {i + 1 === 1 ? 'Guest' : 'Guests'}
                       </option>

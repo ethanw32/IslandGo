@@ -18,31 +18,53 @@ import {
 } from "firebase/firestore";
 import { db, auth } from "./config/firebase";
 import { toast } from "react-toastify";
+import { MapPin } from 'lucide-react';
+import ProfileImage from './ProfileImage';
 
-const ChatMessage = ({ message }) => {
-  const { text, uid, photoURL, displayName } = message;
+const Message = ({ message, photoURL, displayName }) => {
+  const { text, uid, type, location } = message;
   const isCurrentUser = uid === auth.currentUser?.uid;
 
+  const handleLocationClick = () => {
+    if (location?.coordinates) {
+      const { lat, lng } = location.coordinates;
+      window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
+    }
+  };
 
+  const renderMessageContent = () => {
+    if ((type === 'pickup_location' || type === 'meetup_location') && location) {
+      return (
+        <div
+          onClick={handleLocationClick}
+          className="cursor-pointer hover:bg-opacity-90 transition-colors"
+        >
+          <div className="flex items-center space-x-2">
+            <MapPin className="w-4 h-4" />
+            <span>{location.name}</span>
+          </div>
+          <p className="text-sm text-gray-500 mt-1">Click to open in Google Maps</p>
+        </div>
+      );
+    }
+    return <p>{text}</p>;
+  };
 
   return (
     <div className={`flex mb-4 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-      {!isCurrentUser && photoURL && (
-        <img
-          src={photoURL}
-          className="w-8 h-8 rounded-full mr-2 object-cover"
-          alt={displayName || 'User'}
-          onError={(e) => e.target.src = '/images/defaultpfp.jpg'}
-        />
+      {!isCurrentUser && (
+        <div className="mr-2">
+          <ProfileImage user={{ photoURL }} size="sm" />
+        </div>
       )}
 
       <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${isCurrentUser ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
         {!isCurrentUser && displayName && <p className="text-xs font-semibold text-gray-600">{displayName}</p>}
-        <p>{text}</p>
+        {renderMessageContent()}
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default function Chat() {
   const [user, authLoading] = useAuthState(auth);
@@ -396,11 +418,14 @@ export default function Chat() {
       ? conversation.participant2Image
       : conversation.participant1Image;
 
+    // Check if the other participant is a business
+    const isBusiness = conversation.type === "business" || conversation.role === "business";
+
     const conversationData = {
       id: otherParticipantId,
-      name: otherParticipantName || (conversation.isBusiness ? 'Business' : 'User'),
+      name: otherParticipantName || (isBusiness ? 'Business' : 'User'),
       image: otherParticipantImage || '/images/defaultpfp.jpg',
-      isBusiness: conversation.isBusiness || false
+      isBusiness: isBusiness
     };
 
     // Update lastRead immediately when selecting a conversation
@@ -471,7 +496,7 @@ export default function Chat() {
   }
 
   return (
-    <div className="flex overflow-hidden">
+    <div className="flex overflow-hidden h-[calc(100vh-12rem)] md:h-[calc(100vh-8rem)]">
       {/* Conversations sidebar - hidden on mobile when conversation is selected */}
       <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r border-gray-200 bg-white flex-col h-full`}>
         <div className="p-4 border-b border-gray-200">
@@ -483,7 +508,7 @@ export default function Chat() {
           {conversationsLoading || authLoading ? (
             <div className="p-4 space-y-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex items-center space-x-3">
+                <div key={`skeleton-${i}`} className="flex items-center space-x-3">
                   <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
                   <div className="flex-1 space-y-2">
                     <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
@@ -510,16 +535,17 @@ export default function Chat() {
 
                 return (
                   <div
-                    key={conv.id}
+                    key={conversationId}
                     onClick={() => selectConversation(conv)}
                     className={`p-4 flex h-fit items-center cursor-pointer hover:bg-gray-50 relative ${isActive ? 'bg-blue-50' : ''
                       } ${hasUnread ? 'border-l-4 border-blue-500' : ''}`}
                   >
-                    <img
-                      src={conv.participant1 === user.uid ? conv.participant2Image : conv.participant1Image}
-                      className="w-10 h-10 rounded-full mr-3"
-                      alt={otherParticipantName}
-                      onError={(e) => e.target.src = '/images/defaultpfp.jpg'}
+                    <ProfileImage
+                      user={{
+                        photoURL: conv.participant1 === user.uid ? conv.participant2Image : conv.participant1Image
+                      }}
+                      size="md"
+                      className="mr-3"
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex justify-between items-center">
@@ -527,11 +553,6 @@ export default function Chat() {
                           <h3 className={`font-medium truncate ${hasUnread ? 'font-semibold' : ''}`}>
                             {otherParticipantName}
                           </h3>
-                          {isBusiness && (
-                            <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
-                              Business
-                            </span>
-                          )}
                         </div>
                         {hasUnread && (
                           <span className="ml-2 bg-blue-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
@@ -552,7 +573,7 @@ export default function Chat() {
       </div>
 
       {/* Chat area - full width on mobile when conversation is selected */}
-      <div className={`${selectedConversation ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white h-[660px]`}>
+      <div className={`${selectedConversation ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white h-full`}>
         {!selectedConversation ? (
           <div className="flex-1 flex items-center justify-center text-gray-500">
             {initialBusinessId ? (
@@ -574,19 +595,15 @@ export default function Chat() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <img
-                src={selectedConversation.image}
-                className="w-10 h-10 rounded-full mr-3"
-                alt={selectedConversation.name}
-                onError={(e) => e.target.src = '/images/defaultpfp.jpg'}
+              <ProfileImage
+                user={{
+                  photoURL: selectedConversation.image
+                }}
+                size="md"
+                className="mr-3"
               />
               <h2 className="text-lg font-semibold">
                 {selectedConversation.name}
-                {selectedConversation.isBusiness && (
-                  <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
-                    Business
-                  </span>
-                )}
               </h2>
             </div>
 
@@ -601,14 +618,14 @@ export default function Chat() {
                   No messages yet. Start the conversation!
                 </div>
               ) : (
-                messages.map(msg => <ChatMessage key={msg.id} message={msg} />)
+                messages.map(msg => <Message key={msg.id} message={msg} photoURL={msg.photoURL} displayName={msg.displayName} />)
               )}
 
               <div ref={dummy}></div>
             </div>
 
             {/* Input - fixed at bottom */}
-            <div className="p-4 bg-white border-t border-gray-300">
+            <div className="p-4 bg-white border-t border-gray-300 md:block">
               <form onSubmit={sendMessage}>
                 {error && <ErrorAlert />}
                 <div className="flex items-center space-x-2">

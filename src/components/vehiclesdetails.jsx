@@ -32,6 +32,143 @@ import {
   CarTaxiFront
 } from 'lucide-react';
 
+// Add required CSS animations
+const styles = `
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(calc(-350px * 5));
+    }
+  }
+
+  @keyframes scroll-reverse {
+    0% {
+      transform: translateX(calc(-350px * 5));
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  .animate-scroll {
+    animation: scroll 20s linear infinite;
+  }
+
+  .animate-scroll-reverse {
+    animation: scroll-reverse 20s linear infinite;
+  }
+
+  .animate-duration-20s {
+    animation-duration: 20s;
+  }
+
+  .animate-duration-40s {
+    animation-duration: 40s;
+  }
+
+  .hover\\:pause:hover {
+    animation-play-state: paused;
+  }
+`;
+
+// Add InfiniteMovingCards component
+const InfiniteMovingCards = ({ items, direction = "left", speed = "fast", pauseOnHover = true, className }) => {
+  const containerRef = React.useRef(null);
+  const scrollerRef = React.useRef(null);
+
+  useEffect(() => {
+    // Inject styles
+    const styleSheet = document.createElement("style");
+    styleSheet.textContent = styles;
+    document.head.appendChild(styleSheet);
+
+    return () => {
+      document.head.removeChild(styleSheet);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (containerRef.current && scrollerRef.current) {
+      const scrollerContent = Array.from(scrollerRef.current.children);
+
+      scrollerContent.forEach((item) => {
+        const duplicatedItem = item.cloneNode(true);
+        scrollerRef.current.appendChild(duplicatedItem);
+      });
+    }
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className={`relative overflow-hidden ${className}`}
+    >
+      <div
+        ref={scrollerRef}
+        className={`flex gap-4 py-4 w-max ${direction === "left" ? "animate-scroll" : "animate-scroll-reverse"
+          } ${pauseOnHover ? "hover:pause" : ""} ${speed === "fast" ? "animate-duration-20s" : "animate-duration-40s"
+          }`}
+      >
+        {items.map((item, idx) => (
+          <div
+            key={idx}
+            className="w-[350px] max-w-full relative rounded-2xl border border-neutral-200 dark:border-white/[0.1] bg-white dark:bg-black p-5 shadow-md"
+          >
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                  {item.userPhotoURL ? (
+                    <img
+                      src={item.userPhotoURL}
+                      alt={item.userName}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <User className="h-5 w-5 text-white" />
+                  )}
+                </div>
+                <div>
+                  <div className="font-medium text-white">{item.userName || 'Anonymous User'}</div>
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${i < (item.rating || 5)
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'text-gray-400'
+                          }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <p className="text-white line-clamp-3">{item.comment || item.review || 'Great experience!'}</p>
+              <p className="text-sm text-gray-300">
+                {item.createdAt?.seconds
+                  ? new Date(item.createdAt.seconds * 1000).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })
+                  : item.date?.seconds
+                    ? new Date(item.date.seconds * 1000).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })
+                    : 'Recent'
+                }
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const VehicleDetails = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -46,6 +183,7 @@ const VehicleDetails = () => {
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showFullGallery, setShowFullGallery] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [guestCount, setGuestCount] = useState(1);
@@ -56,10 +194,29 @@ const VehicleDetails = () => {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [businessData, setBusinessData] = useState(null);
 
   const { userDetails } = useAuth();
   const auth = getAuth();
   const currentUser = auth.currentUser;
+
+  // Fetch business data
+  useEffect(() => {
+    const fetchBusinessData = async () => {
+      if (!vehicle?.ownerId) return;
+
+      try {
+        const businessDoc = await getDoc(doc(db, "businesses", vehicle.ownerId));
+        if (businessDoc.exists()) {
+          setBusinessData(businessDoc.data());
+        }
+      } catch (error) {
+        console.error("Error fetching business data:", error);
+      }
+    };
+
+    fetchBusinessData();
+  }, [vehicle?.ownerId]);
 
   // Improved image URL handling
   const getHighQualityImageUrl = (imageUrl) => {
@@ -76,6 +233,17 @@ const VehicleDetails = () => {
       return imageUrl;
     }
   };
+
+  // Get images array with fallback for single image
+  const images = React.useMemo(() => {
+    if (vehicle.vehicle?.images?.length > 0) {
+      return vehicle.vehicle.images;
+    }
+    if (vehicle.vehicle?.image) {
+      return [vehicle.vehicle.image];
+    }
+    return [];
+  }, [vehicle.vehicle?.images, vehicle.vehicle?.image]);
 
   // Separate function to fetch reviews
   const fetchReviews = async (vId) => {
@@ -305,10 +473,14 @@ const VehicleDetails = () => {
         vehicleDetails: vehicle.vehicle,
         vehicleId: vehicle.id,
         hostId: vehicle.ownerId,
+        businessName: businessData?.businessName || 'Unknown Business',
         customerId: currentUser.uid,
+        customerEmail: currentUser.email,
+        customerName: currentUser.displayName || currentUser.email.split('@')[0],
         startDate: new Date(startDate),
         endDate: new Date(endDate),
-        status: "confirmed",
+        status: "pending",
+        isPaid: false,
         createdAt: serverTimestamp(),
         totalPrice: calculateTotalPrice(),
         paymentStatus: "pending"
@@ -320,7 +492,7 @@ const VehicleDetails = () => {
       // Update the vehicle's availability status
       const vehicleRef = doc(db, 'rentals', vehicle.id);
       await updateDoc(vehicleRef, {
-        'vehicle.availability': 'Unavailable'
+        'vehicle.availability': 'Booked'
       });
 
       // Update local state to reflect the change
@@ -328,7 +500,7 @@ const VehicleDetails = () => {
         ...prev,
         vehicle: {
           ...prev.vehicle,
-          availability: 'Unavailable'
+          availability: 'Booked'
         }
       }));
 
@@ -337,6 +509,9 @@ const VehicleDetails = () => {
       setStartDate('');
       setEndDate('');
       setGuestCount(1);
+
+      // Navigate to profile page after successful reservation
+      navigate('/profile');
 
     } catch (error) {
       console.error('Error saving reservation:', error);
@@ -371,19 +546,18 @@ const VehicleDetails = () => {
     );
   }
 
-  const images = vehicle.vehicle?.images || [vehicle.vehicle?.image].filter(Boolean);
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Image Gallery Section */}
-      <div className="relative h-64 sm:h-80 md:h-[500px] overflow-hidden bg-black">
+      <div className="relative h-48 sm:h-80 md:h-[500px] overflow-hidden bg-black">
         {images.length > 0 ? (
           <>
             <img
               src={getHighQualityImageUrl(images[currentImageIndex])}
-              alt={`${vehicle.vehicle.make} ${vehicle.vehicle.model} - Image ${currentImageIndex + 1}`}
-              className="w-full h-full object-contain"
+              alt={`${vehicle.vehicle.brand} ${vehicle.vehicle.model} - Image ${currentImageIndex + 1}`}
+              className="w-full h-full object-contain cursor-pointer"
               loading="eager"
+              onClick={() => setShowFullGallery(true)}
               style={{
                 imageRendering: 'high-quality',
                 objectFit: 'contain',
@@ -452,6 +626,63 @@ const VehicleDetails = () => {
         )}
       </div>
 
+      {/* Full Gallery Modal */}
+      {showFullGallery && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
+          <div className="relative w-full max-w-7xl h-full flex flex-col">
+            <button
+              onClick={() => setShowFullGallery(false)}
+              className="absolute top-4 right-4 text-white p-2 hover:bg-white/10 rounded-full transition-colors"
+            >
+              <X className="h-6 w-6" />
+            </button>
+
+            <div className="flex-1 flex items-center justify-center">
+              <img
+                src={getHighQualityImageUrl(images[currentImageIndex])}
+                alt={`${vehicle.vehicle.brand} ${vehicle.vehicle.model} - Image ${currentImageIndex + 1}`}
+                className="max-h-[80vh] max-w-full object-contain"
+              />
+            </div>
+
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={handlePrevImage}
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+                >
+                  <ChevronLeft className="h-8 w-8" />
+                </button>
+
+                <button
+                  onClick={handleNextImage}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+                >
+                  <ChevronRight className="h-8 w-8" />
+                </button>
+
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                  {images.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`w-3 h-3 rounded-full transition-all duration-200 ${index === currentImageIndex
+                        ? 'bg-white scale-110'
+                        : 'bg-white/60 hover:bg-white/80'
+                        }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+
+            <div className="absolute bottom-4 left-4 text-white text-sm">
+              {currentImageIndex + 1} of {images.length}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
@@ -462,12 +693,7 @@ const VehicleDetails = () => {
                 <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                 <span className="font-semibold">{vehicle.averageRating || "New"}</span>
                 <span className="text-gray-500">({vehicle.reviewCount || 0} Reviews)</span>
-                <button
-                  onClick={() => setIsReviewOpen(true)}
-                  className="ml-auto text-sm text-blue-500 hover:text-blue-700"
-                >
-                  Write a Review
-                </button>
+
               </div>
 
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{vehicle.vehicle.brand} {vehicle.vehicle.model}</h1>
@@ -475,8 +701,25 @@ const VehicleDetails = () => {
 
               <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-4">
                 <div className="flex items-center gap-1">
+                  <User className="h-4 w-4" />
+                  <button
+                    onClick={() => navigate("/rpf", {
+                      state: {
+                        businessId: vehicle.ownerId,
+                        businessName: businessData?.businessName,
+                        businessImage: businessData?.businessImage,
+                        ownerId: vehicle.ownerId
+                      }
+                    })}
+                    className="text-blue-500 hover:text-blue-700 hover:underline"
+                  >
+                    {businessData?.businessName || 'Business Name'}
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-1">
                   <MapPin className="h-4 w-4" />
-                  <span>{vehicle.location || 'Location not specified'}</span>
+                  <span>{businessData?.address || 'Location not specified'}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Car className="h-4 w-4" />
@@ -486,6 +729,7 @@ const VehicleDetails = () => {
                   <Users className="h-4 w-4" />
                   <span>Seats: {vehicle.vehicle.seats || 4}</span>
                 </div>
+
               </div>
 
               <p className="text-gray-700 leading-relaxed mb-4">
@@ -601,6 +845,8 @@ const VehicleDetails = () => {
                 <div className="text-sm text-gray-500 mt-1">
                   {vehicle.vehicle.availability === "Available" ? (
                     <span className="text-green-500">Available now</span>
+                  ) : vehicle.vehicle.availability === "Booked" ? (
+                    <span className="text-orange-500">Currently booked</span>
                   ) : (
                     <span className="text-red-500">Currently unavailable</span>
                   )}
@@ -675,10 +921,16 @@ const VehicleDetails = () => {
                 disabled={vehicle.vehicle.availability !== "Available" || !startDate || !endDate}
                 className={`w-full ${vehicle.vehicle.availability === "Available"
                   ? 'bg-green-500 hover:bg-green-600'
-                  : 'bg-gray-400 cursor-not-allowed'
+                  : vehicle.vehicle.availability === "Booked"
+                    ? 'bg-orange-500 cursor-not-allowed'
+                    : 'bg-gray-400 cursor-not-allowed'
                   } text-white font-semibold py-3 px-4 rounded-lg transition-colors`}
               >
-                {vehicle.vehicle.availability === "Available" ? 'Reserve Now' : 'Unavailable'}
+                {vehicle.vehicle.availability === "Available"
+                  ? 'Reserve Now'
+                  : vehicle.vehicle.availability === "Booked"
+                    ? 'Booked'
+                    : 'Unavailable'}
               </button>
 
               <p className="text-xs text-gray-500 text-center mt-3">
@@ -700,89 +952,17 @@ const VehicleDetails = () => {
                   <span className="mx-1">·</span>
                   <span className="text-gray-600">{reviews.length} reviews</span>
                 </div>
-                {reviews.length > 0 && (
-                  <div className="hidden md:block">
-                    {[5, 4, 3, 2, 1].map((star) => {
-                      const count = reviews.filter(r => Math.round(r.rating) === star).length;
-                      return (
-                        <div key={star} className="flex items-center text-sm">
-                          <span className="w-8">{star} star</span>
-                          <div className="w-24 h-1.5 bg-gray-200 rounded-full mx-2">
-                            <div
-                              className="h-full bg-yellow-400 rounded-full"
-                              style={{ width: `${(count / reviews.length) * 100}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-gray-500">{count}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
             </div>
+            {currentUser && (
+              <button
+                onClick={() => setIsReviewOpen(true)}
+                className="mt-4 md:mt-0 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                Write a Review
+              </button>
+            )}
           </div>
-
-          {/* Review Form Modal */}
-          {isReviewOpen && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-lg max-w-md w-full p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">Write a Review</h3>
-                  <button
-                    onClick={() => setIsReviewOpen(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                    disabled={isSubmittingReview}
-                  >
-                    <X className="h-6 w-6" />
-                  </button>
-                </div>
-
-                <div className="flex items-center mb-4">
-                  <span className="mr-2 text-gray-700">Rating:</span>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setReviewRating(star)}
-                      className="focus:outline-none"
-                      disabled={isSubmittingReview}
-                    >
-                      <Star
-                        className={`h-6 w-6 ${star <= reviewRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-                      />
-                    </button>
-                  ))}
-                </div>
-
-                <textarea
-                  value={reviewComment}
-                  onChange={(e) => setReviewComment(e.target.value)}
-                  placeholder="Share your experience with this vehicle..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"
-                  rows="4"
-                  disabled={isSubmittingReview}
-                />
-
-                <div className="flex space-x-3 mt-4">
-                  <button
-                    onClick={() => setIsReviewOpen(false)}
-                    disabled={isSubmittingReview}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSubmitReview}
-                    disabled={isSubmittingReview || !reviewComment.trim()}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
 
           {reviewsLoading ? (
             <div className="flex justify-center py-8">
@@ -805,59 +985,13 @@ const VehicleDetails = () => {
               )}
             </div>
           ) : (
-            <div className="space-y-8">
-              {reviews.map((review) => (
-                <div key={review.id} className="border-b border-gray-100 pb-6 last:border-b-0">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                        {review.userPhotoURL ? (
-                          <img
-                            src={review.userPhotoURL}
-                            alt={review.userName}
-                            className="w-full h-full rounded-full object-cover"
-                          />
-                        ) : (
-                          <User className="h-5 w-5 text-gray-600" />
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium text-gray-900">{review.userName || 'Anonymous'}</h4>
-                          <div className="flex items-center mt-1">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`h-4 w-4 ${i < (review.rating || 5)
-                                  ? 'fill-yellow-400 text-yellow-400'
-                                  : 'text-gray-300'
-                                  }`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                        <span className="text-sm text-gray-500">
-                          {review.createdAt.toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                          })}
-                        </span>
-                      </div>
-                      <p className="mt-3 text-gray-700">{review.comment}</p>
-
-                      {review.response && (
-                        <div className="mt-4 pl-4 border-l-2 border-gray-200">
-                          <div className="text-sm font-medium text-gray-600">Owner's Response</div>
-                          <p className="mt-1 text-sm text-gray-600">{review.response}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="h-[400px] rounded-md flex flex-col antialiased bg-white items-center justify-center relative overflow-hidden">
+              <InfiniteMovingCards
+                items={reviews}
+                direction="right"
+                speed="slow"
+                className="w-full"
+              />
             </div>
           )}
         </div>
@@ -927,6 +1061,67 @@ const VehicleDetails = () => {
                 className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmittingReservation ? 'Saving...' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Review Form Modal */}
+      {isReviewOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Write a Review</h3>
+              <button
+                onClick={() => setIsReviewOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+                disabled={isSubmittingReview}
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="flex items-center mb-4">
+              <span className="mr-2 text-gray-700">Rating:</span>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setReviewRating(star)}
+                  className="focus:outline-none"
+                  disabled={isSubmittingReview}
+                >
+                  <Star
+                    className={`h-6 w-6 ${star <= reviewRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                  />
+                </button>
+              ))}
+            </div>
+
+            <textarea
+              value={reviewComment}
+              onChange={(e) => setReviewComment(e.target.value)}
+              placeholder="Share your experience with this vehicle..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"
+              rows="4"
+              disabled={isSubmittingReview}
+            />
+
+            <div className="flex space-x-3 mt-4">
+              <button
+                onClick={() => setIsReviewOpen(false)}
+                disabled={isSubmittingReview}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitReview}
+                disabled={isSubmittingReview || !reviewComment.trim()}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
               </button>
             </div>
           </div>

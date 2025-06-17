@@ -1,245 +1,141 @@
-import React, { useState, useRef } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import useAuth from "./useAuth";
 import { motion } from "framer-motion";
-
+import { FloatingDock } from "./ui/floating-dock";
+import { MobileNavBar } from "./MobileNavBar";
+import Weather from "./Weather";
 import {
-  FaBars,
-  FaTimes,
-  FaEnvelope,
-  FaHome,
-  FaUser,
-  FaSignOutAlt,
-  FaSignInAlt
-} from "react-icons/fa";
+  Building2,
+  MapPin,
+  Route,
+  Car,
+  Gauge,
+  Mail,
+  User
+} from "lucide-react";
 import { useHasUnreadMessages } from './hooks/unreadmessages';
-import UserAvatar from "./UserAvatar";
+import ProfileImage from "./ProfileImage";
 
-const Tab = ({ children, setPosition }) => {
-  const ref = useRef(null);
-
-  return (
-    <li
-      ref={ref}
-      onMouseEnter={() => {
-        if (!ref?.current) return;
-
-        const { width } = ref.current.getBoundingClientRect();
-
-        setPosition({
-          left: ref.current.offsetLeft,
-          width,
-          opacity: 1,
-        });
-      }}
-      className="relative z-10 block cursor-pointer px-3 py-1.5 text-xs uppercase text-white mix-blend-difference md:px-5 md:py-3 md:text-base"
-    >
-      {children}
-    </li>
-  );
-};
-
-const Cursor = ({ position }) => {
-  return (
-    <motion.li
-      animate={{
-        ...position,
-      }}
-      className="absolute z-0 h-7 rounded-full bg-white md:h-12"
-    />
-  );
-};
-
-const SlideTabs = () => {
-  const [position, setPosition] = useState({
-    left: 0,
-    width: 0,
-    opacity: 0,
-  });
-
-  return (
-    <ul
-      onMouseLeave={() => {
-        setPosition((pv) => ({
-          ...pv,
-          opacity: 0,
-        }));
-      }}
-      className="relative mx-auto flex w-fit rounded-full border-white bg-black p-1"
-    >
-      <Link to="/"><Tab setPosition={setPosition}>Businesses</Tab></Link>
-      <Link to="/map"><Tab setPosition={setPosition}>Landmarks & Attractions</Tab></Link>
-      <Link to="/tours"><Tab setPosition={setPosition}>Tours</Tab></Link>
-      <Link to="/vehicles"><Tab setPosition={setPosition}>Vehicles</Tab></Link>
-
-      <Cursor position={position} />
-    </ul>
-  );
-};
-
-export const Header = () => {
+const Header = () => {
   const { userDetails, logout } = useAuth();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const hasUnread = useHasUnreadMessages();
+  const location = useLocation();
+  const isChatPage = location.pathname === '/chat';
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const desktopNavigationItems = [
+    {
+      title: "Businesses",
+      icon: <Building2 className="h-full w-full" />,
+      href: "/"
+    },
+    {
+      title: "Tours",
+      icon: <Route className="h-full w-full" />,
+      href: "/tours"
+    },
+    {
+      title: "Attractions",
+      icon: <MapPin className="h-full w-full" />,
+      href: "/map"
+    },
+    {
+      title: "Vehicles",
+      icon: <Car className="h-full w-full" />,
+      href: "/vehicles"
+    }
+  ];
+
+  const mobileNavigationItems = [
+    ...desktopNavigationItems,
+    {
+      title: "Profile",
+      icon: <User className="h-full w-full" />,
+      href: "/profile"
+    }
+  ];
+
+  // Add dashboard link for taxi/rental users
+  if (userDetails?.businessType === "Taxi" || userDetails?.businessType === "Rental") {
+    desktopNavigationItems.push({
+      title: "Dashboard",
+      icon: <Gauge className="h-full w-full" />,
+      href: "/dashboard"
+    });
+    mobileNavigationItems.push({
+      title: "Dashboard",
+      icon: <Gauge className="h-full w-full" />,
+      href: "/dashboard"
+    });
+  }
 
   return (
-<header className="flex items-center justify-between bg-black text-white h-24 px-6 md:px-10 sticky top-0 z-10">
-  {/* Mobile menu button */}
-  <button
-    onClick={toggleMenu}
-    className="md:hidden text-white focus:outline-none relative"
-    aria-label="Toggle menu"
-  >
-    <FaBars className="h-6 w-6" />
-    {hasUnread && (
-      <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-    )}
-  </button>
-
-  {/* Logo - flex-1 makes it take available space pushing other elements */}
-  <Link to="/" className="text-3xl font-bold ml-5 flex-1 md:flex-none">
-    IslandGo
-  </Link>
-
-  {/* Desktop Navigation - centered */}
-  <div className="hidden md:flex flex-auto justify-center">
-    <SlideTabs />
-  </div>
-
-  {/* User controls - flex-1 with justify-end pushes to right */}
-  <div className="hidden md:flex items-center flex-1 justify-end space-x-6">
-    {userDetails ? (
-      <>
-        <Link to="/chat" className="relative p-2">
-          <FaEnvelope className="h-6 w-6 text-white" />
-          {hasUnread && (
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-          )}
+    <>
+      <header className="flex items-center justify-between bg-black text-white h-20 px-6 md:px-10 sticky top-0 z-10">
+        {/* Logo */}
+        <Link to="/" className="text-3xl font-bold">
+          IslandGo
         </Link>
 
-        {/* Profile dropdown */}
-        <div className="relative group">
-          <button className="flex items-center focus:outline-none">
-            <UserAvatar user={userDetails} size="md" />
-          </button>
-          <div className="absolute -right-10 w-28 bg-white rounded-lg shadow-lg py-1 z-50 font-semibold hidden group-hover:block">
-            <Link
-              to="/profile"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            >
-              Profile
-            </Link>
-            <button
-              onClick={logout}
-              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            >
-              Sign out
-            </button>
+        {/* User controls - flex-1 with justify-end pushes to right */}
+        <div className="flex items-center space-x-4 md:space-x-6">
+          {/* Weather Component */}
+          <div className="hidden md:block">
+            <Weather />
           </div>
-        </div>
-      </>
-    ) : (
-      <Link
-        to="/login"
-        className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-      >
-        Log In
-      </Link>
-    )}
-  </div>
 
-      {/* Mobile menu */}
-      <div
-        className={`fixed inset-0 bg-black bg-opacity-75 z-40 transform ${isMenuOpen ? "translate-x-0" : "-translate-x-full"
-          } transition-transform duration-300 ease-in-out md:hidden`}
-        onClick={toggleMenu}
-      >
-        <div className="w-64 h-full bg-black text-white p-4" onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-center justify-between border-b border-gray-700 pb-4">
-            <span className="text-xl font-bold">IslandGo</span>
-            <div className="flex items-center">
-              <button onClick={toggleMenu} className="text-white">
-                <FaTimes className="h-6 w-6" />
-              </button>
-            </div>
-          </div>
-          <nav className="mt-3">
-            <ul className="space-y-4">
-              <li>
-                <Link
-                  to="/"
-                  onClick={toggleMenu}
-                  className="flex items-center py-2 hover:text-gray-300"
-                >
-                  <FaHome className="h-5 w-5 mr-2" />
-                  Home
-                </Link>
-              </li>
-              <li className="text-white">
-                <Link to="/map">Landmarks & Attractions</Link>
-              </li>
+          {userDetails ? (
+            <>
+              <Link to="/chat" className="relative p-2">
+                <Mail className="h-6 w-6 text-white" />
+                {hasUnread && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                )}
+              </Link>
 
-              {userDetails && (
-                <>
-                  <li>
-                    <Link
-                      to="/profile"
-                      onClick={toggleMenu}
-                      className="flex items-center py-2 hover:text-gray-300"
-                    >
-                      <FaUser className="h-5 w-5 mr-2" />
-                      Profile
-                    </Link>
-                  </li>
-                  <li className="relative">
-                    <Link
-                      to="/chat"
-                      onClick={toggleMenu}
-                      className="flex items-center py-2 hover:text-gray-300"
-                    >
-                      <div className="flex items-center">
-                        <FaEnvelope className="h-5 w-5 mr-2" />
-                        Messages
-                        {hasUnread && (
-                          <span className="ml-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                        )}
-                      </div>
-                    </Link>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => {
-                        logout();
-                        toggleMenu();
-                      }}
-                      className="flex items-center py-2 hover:text-gray-300 w-full text-left"
-                    >
-                      <FaSignOutAlt className="h-5 w-5 mr-2" />
-                      Sign Out
-                    </button>
-                  </li>
-                </>
-              )}
-              {!userDetails && (
-                <li>
+              {/* Profile dropdown - hidden on mobile */}
+              <div className="relative group hidden md:block">
+                <button className="flex items-center focus:outline-none">
+                  <ProfileImage user={userDetails} size="md" />
+                </button>
+                <div className="absolute -right-10 w-28 bg-white rounded-lg shadow-lg py-1 z-50 font-semibold hidden group-hover:block">
                   <Link
-                    to="/login"
-                    onClick={toggleMenu}
-                    className="flex items-center py-2 hover:text-gray-300"
+                    to="/profile"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    <FaSignInAlt className="h-5 w-5 mr-2" />
-                    Log In
+                    Profile
                   </Link>
-                </li>
-              )}
-            </ul>
-          </nav>
+                  <button
+                    onClick={logout}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+            >
+              Log In
+            </Link>
+          )}
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Desktop Navigation Dock */}
+      <FloatingDock
+        items={desktopNavigationItems}
+        desktopClassName="translate-y-0"
+        mobileClassName="hidden"
+      />
+
+      {/* Mobile Navigation Bar */}
+      <MobileNavBar items={mobileNavigationItems} />
+    </>
   );
 };
+
+export default Header;
