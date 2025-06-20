@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuth from "./useAuth";
+import { auth } from "./config/firebase";
 import { motion } from "framer-motion";
 import { FloatingDock } from "./ui/floating-dock";
 import { MobileNavBar } from "./MobileNavBar";
@@ -21,6 +22,7 @@ const Header = () => {
   const { userDetails, logout } = useAuth();
   const hasUnread = useHasUnreadMessages();
   const location = useLocation();
+  const navigate = useNavigate();
   const isChatPage = location.pathname === '/chat';
 
   const desktopNavigationItems = [
@@ -105,6 +107,23 @@ const Header = () => {
                   >
                     Profile
                   </Link>
+                  {userDetails.businessType === 'Taxi' || userDetails.businessType === 'Rental' && (
+                  <button
+                    onClick={() => {
+                      navigate(userDetails.businessType === 'Taxi' ? '/bpf' : '/rpf', {
+                        state: {
+                          businessId: auth.currentUser.uid,
+                          businessName: userDetails.businessName,
+                          businessImage: userDetails.businessImage || userDetails.photoURL,
+                          ownerId: auth.currentUser.uid
+                        }
+                      });
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                      {userDetails.businessType === 'Taxi' ? 'My Tours' : 'My Rentals'}
+                    </button>
+                  )}
                   <button
                     onClick={logout}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

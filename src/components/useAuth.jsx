@@ -248,7 +248,6 @@ const useAuth = () => {
             };
 
             await setDoc(userRef, userData, { merge: true });
-            navigate("/");
           } catch (error) {
             toast.error("Error saving user data");
           }

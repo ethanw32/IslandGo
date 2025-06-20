@@ -5,6 +5,7 @@ import { db } from './config/firebase';
 import { getAuth } from 'firebase/auth';
 import { toast } from 'react-toastify';
 import useAuth from './useAuth';
+import ProfileImage from './ProfileImage';
 import {
   Star,
   MapPin,
@@ -71,6 +72,17 @@ const styles = `
   .hover\\:pause:hover {
     animation-play-state: paused;
   }
+
+  /* Add styles for Google profile images */
+  .google-profile-image img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    -webkit-backface-visibility: hidden;
+    -moz-backface-visibility: hidden;
+    -webkit-transform: translateZ(0) scale(1.0, 1.0);
+    transform: translateZ(0);
+    referrer-policy: no-referrer;
+  }
 `;
 
 // Add InfiniteMovingCards component
@@ -118,17 +130,18 @@ const InfiniteMovingCards = ({ items, direction = "left", speed = "fast", pauseO
           >
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                  {item.userPhotoURL ? (
-                    <img
-                      src={item.userPhotoURL}
-                      alt={item.userName}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <User className="h-5 w-5 text-white" />
-                  )}
-                </div>
+                <ProfileImage
+                  user={{
+                    uid: item.userId,
+                    photoURL: item.userPhotoURL,
+                    name: item.userName,
+                    displayName: item.userName,
+                    provider: item.provider,
+                    referrerPolicy: item.provider === 'google.com' ? 'no-referrer' : undefined
+                  }}
+                  size="md"
+                  className={item.provider === 'google.com' ? 'google-profile-image' : ''}
+                />
                 <div>
                   <div className="font-medium text-white">{item.userName || 'Anonymous User'}</div>
                   <div className="flex items-center gap-1">
@@ -146,14 +159,14 @@ const InfiniteMovingCards = ({ items, direction = "left", speed = "fast", pauseO
               </div>
               <p className="text-white line-clamp-3">{item.comment || item.review || 'Great experience!'}</p>
               <p className="text-sm text-gray-300">
-                {item.createdAt?.seconds
-                  ? new Date(item.createdAt.seconds * 1000).toLocaleDateString('en-US', {
+                {item.createdAt instanceof Date
+                  ? item.createdAt.toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
                   })
-                  : item.date?.seconds
-                    ? new Date(item.date.seconds * 1000).toLocaleDateString('en-US', {
+                  : item.createdAt?.seconds
+                    ? new Date(item.createdAt.seconds * 1000).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'
@@ -361,16 +374,37 @@ const VehicleDetails = () => {
     try {
       setIsSubmittingReview(true);
 
+      // Get Google provider data if available
+      const googleProvider = currentUser.providerData?.find(
+        provider => provider.providerId === 'google.com'
+      );
+
+      // Get user photo URL with priority for Google photo
+      const userPhotoURL =
+        googleProvider?.photoURL || // Google photo (highest priority)
+        currentUser?.photoURL || // Direct auth photo
+        userDetails?.photoURL || // User details photo
+        null;
+
+      // Get user display name with priority for Google display name
+      const userName =
+        googleProvider?.displayName || // Google display name
+        userDetails?.name ||
+        currentUser.displayName ||
+        currentUser.email;
+
       const reviewData = {
         vehicleId: vehicle.id,
         userId: currentUser.uid,
-        userName: userDetails?.name || currentUser.email,
-        userPhotoURL: currentUser.photoURL || null,
+        userName: userName,
+        userPhotoURL: userPhotoURL,
         rating: reviewRating,
         comment: reviewComment,
         createdAt: serverTimestamp(),
         businessId: vehicle.ownerId,
-        type: "vehicle"
+        type: "vehicle",
+        // Store provider information to help with photo display
+        provider: googleProvider ? 'google.com' : currentUser.providerId || 'unknown'
       };
 
       // Add the review to Firestore
@@ -989,7 +1023,7 @@ const VehicleDetails = () => {
               <InfiniteMovingCards
                 items={reviews}
                 direction="right"
-                speed="slow"
+                speed="fast"
                 className="w-full"
               />
             </div>
