@@ -100,20 +100,20 @@ export default function SignUp() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-lg">
-        <h2 className="text-2xl font-bold text-center text-gray-900">Sign Up</h2>
+      <div className="w-full max-w-md p-8 space-y-6 bg-dark text-dark rounded-2xl shadow-lg">
+        <h2 className="text-2xl font-bold text-center text-dark">Sign Up</h2>
 
         {/* Taxis and Rentals Tabs */}
         <div className="h-fit w-full pt-10 relative">
-          <div className="rounded-3xl font-medium bg-white text-lg h-10 w-40 m-auto">
+          <div className="rounded-3xl font-medium bg-dark text-lg h-10 w-40 m-auto">
             <div className="flex h-full">
               {/* Taxis Button */}
               <div
                 onClick={() => handleClick("client", "/signUp")}
                 className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${
                   activeTab === "client"
-                    ? "bg-black text-white rounded-3xl"
-                    : "bg-white hover:bg-gray-200 rounded-3xl"
+                    ? "bg-black text-white dark:text-dark dark:bg-white rounded-3xl"
+                    : "bg-dark hover:bg-gray-200 hover:text-black rounded-3xl"
                 } transition-all`}
               >
                 Client
@@ -124,8 +124,8 @@ export default function SignUp() {
                 onClick={() => handleClick("rentals", "/bsignUp")}
                 className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${
                   activeTab === "bsignUp"
-                    ? "bg-black text-white rounded-3xl"
-                    : "bg-white hover:bg-gray-200 rounded-3xl"
+                    ? "bg-black text-white dark:text-black dark:bg-white rounded-3xl"
+                    : "bg-dark dark:bg-white dark:text-black hover:bg-gray-200 dark:hover:text-black rounded-3xl"
                 } transition-all`}
               >
                 Business
@@ -137,13 +137,13 @@ export default function SignUp() {
         <form className="space-y-4" onSubmit={handleSubmit}>
           {/* First Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Name</label>
+            <label className="block text-sm font-medium text-dark">Name</label>
             <input
               type="text"
               name="fname"
               value={formData.fname}
               onChange={handleChange}
-              className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-3 mt-1 border bg-dark text-dark rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter your first name"
               required
             />
@@ -151,13 +151,13 @@ export default function SignUp() {
 
           {/* Business Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Business Name</label>
+            <label className="block text-sm font-medium text-dark">Business Name</label>
             <input
               type="text"
               name="Bname"
               value={formData.Bname}
               onChange={handleChange}
-              className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-3 mt-1 border bg-dark text-dark rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter your business name"
               required
             />
@@ -165,13 +165,13 @@ export default function SignUp() {
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+          <label className="block text-sm font-medium text-dark">Email</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-3 mt-1 border bg-dark text-dark rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter your email"
               required
             />
@@ -179,21 +179,21 @@ export default function SignUp() {
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Password</label>
+            <label className="block text-sm font-medium text-dark">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"} // Toggle input type
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-3 mt-1 border bg-dark text-dark rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter your password"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)} // Toggle visibility
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-dark cursor-pointer"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />} {/* Toggle eye icon */}
@@ -203,21 +203,21 @@ export default function SignUp() {
 
           {/* Confirm Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+            <label className="block text-sm font-medium text-dark">Confirm Password</label>
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"} // Toggle input type
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="w-full p-3 mt-1 border rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-3 mt-1 border bg-dark text-dark rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Confirm your password"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)} // Toggle visibility
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-dark cursor-pointer"
                 aria-label={showConfirmPassword ? "Hide password" : "Show password"}
               >
                 {showConfirmPassword ? <FaEyeSlash /> : <FaEye />} {/* Toggle eye icon */}
@@ -238,7 +238,7 @@ export default function SignUp() {
         </form>
 
         {/* Login Link */}
-        <p className="text-sm text-center text-gray-500">
+        <p className="text-sm text-center text-dark">
           Already have an account?{" "}
           <a href="/login" className="text-blue-600 hover:underline">
             Log In

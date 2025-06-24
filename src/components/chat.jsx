@@ -43,7 +43,7 @@ const Message = ({ message, photoURL, displayName }) => {
             <MapPin className="w-4 h-4" />
             <span>{location.name}</span>
           </div>
-          <p className="text-sm text-gray-500 mt-1">Click to open in Google Maps</p>
+          <p className="text-sm text-gray-400 mt-1">Click to open in Google Maps</p>
         </div>
       );
     }
@@ -58,8 +58,8 @@ const Message = ({ message, photoURL, displayName }) => {
         </div>
       )}
 
-      <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${isCurrentUser ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
-        {!isCurrentUser && displayName && <p className="text-xs font-semibold text-gray-600">{displayName}</p>}
+      <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${isCurrentUser ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-message text-gray-900 dark:text-white'}`}>
+        {!isCurrentUser && displayName && <p className="text-xs font-semibold text-grey-900 dark:text-white">{displayName}</p>}
         {renderMessageContent()}
       </div>
     </div>
@@ -96,6 +96,7 @@ export default function Chat() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [unreadCounts, setUnreadCounts] = useState({});
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   // Conversations query
   const conversationsQuery = useMemo(() => {
@@ -445,7 +446,15 @@ export default function Chat() {
     });
   };
 
+  const handleInputFocus = () => {
+    setIsInputFocused(true);
+    window.dispatchEvent(new CustomEvent('chatInputFocus', { detail: { focused: true } }));
+  };
 
+  const handleInputBlur = () => {
+    setIsInputFocused(false);
+    window.dispatchEvent(new CustomEvent('chatInputFocus', { detail: { focused: false } }));
+  };
 
   const ErrorAlert = () => (
     <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
@@ -496,10 +505,10 @@ export default function Chat() {
   }
 
   return (
-    <div className="flex overflow-hidden h-[calc(100vh-12rem)] md:h-[calc(100vh-8rem)]">
+    <div className={`flex overflow-hidden h-[calc(100vh-12rem)] md:h-[calc(100vh-8rem)] ${isInputFocused ? 'input-focused' : ''}`}>
       {/* Conversations sidebar - hidden on mobile when conversation is selected */}
-      <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r border-gray-200 bg-white flex-col h-full`}>
-        <div className="p-4 border-b border-gray-200">
+      <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r bg-dark text-dark flex-col h-full`}>
+        <div className="p-4">
           <h2 className="text-lg font-semibold">Your Conversations</h2>
           {error && <ErrorAlert />}
         </div>
@@ -509,18 +518,18 @@ export default function Chat() {
             <div className="p-4 space-y-4">
               {[...Array(3)].map((_, i) => (
                 <div key={`skeleton-${i}`} className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
+                  <div className="w-10 h-10 rounded-full bg-dark animate-pulse" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
-                    <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse" />
+                    <div className="h-4 bg-dark rounded w-3/4 animate-pulse" />
+                    <div className="h-3 bg-dark rounded w-1/2 animate-pulse" />
                   </div>
                 </div>
               ))}
             </div>
           ) : conversations.length === 0 ? (
-            <p className="p-4 text-gray-500">No conversations yet</p>
+            <p className="p-4 text-dark">No conversations yet</p>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="">
               {conversations.map(conv => {
                 const participants = [conv.participant1, conv.participant2].sort();
                 const conversationId = `conversation_${participants[0]}_${participants[1]}`;
@@ -537,7 +546,7 @@ export default function Chat() {
                   <div
                     key={conversationId}
                     onClick={() => selectConversation(conv)}
-                    className={`p-4 flex h-fit items-center cursor-pointer hover:bg-gray-50 relative ${isActive ? 'bg-blue-50' : ''
+                    className={`p-4 flex h-fit items-center cursor-pointer hover:hover hover:bg-gray-50 dark:hover:bg-message relative ${isActive ? 'bg-blue-50 dark:bg-message' : ''
                       } ${hasUnread ? 'border-l-4 border-blue-500' : ''}`}
                   >
                     <ProfileImage
@@ -555,12 +564,12 @@ export default function Chat() {
                           </h3>
                         </div>
                         {hasUnread && (
-                          <span className="ml-2 bg-blue-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                          <span className="ml-2 bg-blue-500 text-dark text-xs font-semibold px-2 py-0.5 rounded-full">
                             {unreadCount}
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500 truncate">
+                      <p className="text-sm text-dark truncate">
                         {conv.lastMessage}
                       </p>
                     </div>
@@ -573,9 +582,9 @@ export default function Chat() {
       </div>
 
       {/* Chat area - full width on mobile when conversation is selected */}
-      <div className={`${selectedConversation ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white h-full`}>
+      <div className={`${selectedConversation ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-dark h-full`}>
         {!selectedConversation ? (
-          <div className="flex-1 flex items-center justify-center text-gray-500">
+          <div className="flex-1 flex items-center justify-center text-dark">
             {initialBusinessId ? (
               <p>Loading conversation...</p>
             ) : (
@@ -585,11 +594,11 @@ export default function Chat() {
         ) : (
           <>
             {/* Header - fixed height */}
-            <div className="bg-white p-4 border-b border-gray-200 flex items-center">
+            <div className="bg-dark p-4 flex items-center">
               {/* Back button - only on mobile */}
               <button
                 onClick={() => setSelectedConversation(null)}
-                className="md:hidden mr-3 text-gray-600 hover:text-gray-800"
+                className="md:hidden mr-3 text-dark hover:text-gray-800"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -608,13 +617,13 @@ export default function Chat() {
             </div>
 
             {/* Messages - scrollable area */}
-            <div className="flex-1 overflow-y-auto p-4" style={{ scrollBehavior: 'smooth' }}>
+            <div className="flex-1 overflow-y-auto p-4 text-dark" style={{ scrollBehavior: 'smooth' }}>
               {messagesLoading ? (
-                <div className="h-full flex items-center justify-center text-gray-500">
+                <div className="h-full flex items-center justify-center text-dark">
                   Loading messages...
                 </div>
               ) : messages.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-gray-500">
+                <div className="h-full flex items-center justify-center text-dark">
                   No messages yet. Start the conversation!
                 </div>
               ) : (
@@ -625,15 +634,17 @@ export default function Chat() {
             </div>
 
             {/* Input - fixed at bottom */}
-            <div className="p-4 bg-white border-t border-gray-300 md:block">
+            <div className="p-4 bg-dark border-t border-gray-300 md:block">
               <form onSubmit={sendMessage}>
                 {error && <ErrorAlert />}
                 <div className="flex items-center space-x-2">
                   <input
                     value={formValue}
                     onChange={(e) => setFormValue(e.target.value)}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
                     placeholder="Type a message..."
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-full"
+                    className="flex-1 px-4 py-2 border text-dark bg-message border-gray-300 rounded-full"
                     disabled={loading}
                   />
                   <button

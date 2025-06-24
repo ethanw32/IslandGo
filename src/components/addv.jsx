@@ -227,41 +227,41 @@ const AddEditListing = () => {
 
   return (
     <div className="h-fit w-full pt-10 relative">
-      <div className="max-w-4xl mx-auto p-5 m-5 bg-white rounded-lg shadow-lg mt-6">
+      <div className="max-w-4xl mx-auto p-5 m-5 bg-dark text-dark rounded-lg shadow-lg mt-6">
         <h1 className="text-3xl font-bold mb-5">{vehicleToEdit ? "Edit Vehicle" : "Add New Vehicle"}</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex flex-col">
-            <label className="text-gray-600 font-medium mb-2">Model:</label>
+            <label className="font-medium mb-2">Model:</label>
             <input
               type="text"
               name="model"
               value={formData.vehicle.model}
               onChange={handleInputChange}
               required
-              className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-3 border border-black bg-dark text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div className="flex flex-col">
-            <label className="text-gray-600 font-medium mb-2">Seats:</label>
+            <label className="text-dark font-medium mb-2">Seats:</label>
             <input
               type="text"
               name="seats"
               value={formData.vehicle.seats}
               onChange={handleInputChange}
               required
-              className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-3 border border-black bg-dark text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div className="flex flex-col">
-            <label className="text-gray-600 font-medium mb-2">Transmission:</label>
+            <label className="text-dark font-medium mb-2">Transmission:</label>
             <select
               name="transmission"
               value={formData.vehicle.transmission}
               onChange={handleInputChange}
               required
-              className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-3 border border-black bg-dark text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select</option>
               <option value="Automatic">Automatic</option>
@@ -270,13 +270,13 @@ const AddEditListing = () => {
           </div>
 
           <div className="flex flex-col">
-            <label className="text-gray-600 font-medium mb-2">Fuel:</label>
+            <label className="text-dark font-medium mb-2">Fuel:</label>
             <select
               name="fuel"
               value={formData.vehicle.fuel}
               onChange={handleInputChange}
               required
-              className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-3 border border-black bg-dark text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select</option>
               <option value="Diesel">Diesel</option>
@@ -286,60 +286,60 @@ const AddEditListing = () => {
           </div>
 
           <div className="flex flex-col">
-            <label className="text-gray-600 font-medium mb-2">Color:</label>
+            <label className="text-dark font-medium mb-2">Color:</label>
             <input
               type="text"
               name="color"
               value={formData.vehicle.color}
               onChange={handleInputChange}
               required
-              className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-3 border border-black bg-dark text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div className="flex flex-col">
-            <label className="text-gray-600 font-medium mb-2">Mileage:</label>
+            <label className="text-darkfont-medium mb-2">Mileage:</label>
             <input
               type="text"
               name="mileage"
               value={formData.vehicle.mileage}
               onChange={handleInputChange}
               required
-              className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-3 border border-black bg-dark text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div className="flex flex-col">
-            <label className="text-gray-600 font-medium mb-2">Brand:</label>
+            <label className="text-dark font-medium mb-2">Brand:</label>
             <input
               type="text"
               name="brand"
               value={formData.vehicle.brand}
               onChange={handleInputChange}
               required
-              className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-3 border border-black bg-dark text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div className="flex flex-col">
-            <label className="text-gray-600 font-medium mb-2">Price per day:</label>
+            <label className="text-dark font-medium mb-2">Price per day:</label>
             <input
               type="number"
               name="price"
               value={formData.vehicle.price}
               onChange={handleInputChange}
               required
-              className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-3 border border-black bg-dark text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div className="flex flex-col">
-            <label className="text-gray-600 font-medium mb-2">Availability:</label>
+            <label className="text-dark font-medium mb-2">Availability:</label>
             <select
               name="availability"
               value={formData.vehicle.availability}
               onChange={handleInputChange}
-              className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-3 border border-black bg-dark text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select</option>
               <option value="Available">Available</option>
@@ -348,13 +348,13 @@ const AddEditListing = () => {
           </div>
 
           <div className="flex flex-col">
-            <label className="text-gray-600 font-medium mb-2">Vehicle Images:</label>
+            <label className="text-dark font-medium mb-2">Vehicle Images:</label>
             <input
               type="file"
               accept="image/*"
               multiple
               onChange={handleFileChange}
-              className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-3 border border-black bg-dark text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {formData.vehicle.images.length > 0 && (
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">

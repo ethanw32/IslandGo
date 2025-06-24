@@ -2,7 +2,7 @@ import React from 'react';
 
 function Footer() {
   return (
-    <footer className="hidden md:flex flex-row items-center text-3xl text-white bg-black h-24 w-full px-10 z-10">
+    <footer className="hidden md:flex flex-row items-center text-3xl text-white bg-[#212121] h-24 w-full px-10 z-10">
       {/* Left Section */}
       <div className="font-bold max-sm:text-2xl">IslandGo</div>
 

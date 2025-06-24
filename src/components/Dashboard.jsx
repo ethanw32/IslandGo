@@ -10,16 +10,16 @@ const LoadingSkeleton = () => {
   return (
     <div className="space-y-6">
       {[1, 2, 3].map((index) => (
-        <div key={index} className="bg-white rounded-lg shadow-md p-6 animate-pulse">
+        <div key={index} className="bg-dark text-dark rounded-lg shadow-md p-6 animate-pulse">
           <div className="flex justify-between items-start">
             <div className="space-y-3">
-              <div className="h-6 bg-gray-200 rounded w-48"></div>
-              <div className="h-4 bg-gray-200 rounded w-64"></div>
-              <div className="h-4 bg-gray-200 rounded w-32"></div>
+              <div className="h-6 bg-secondary rounded w-48"></div>
+              <div className="h-4 bg-secondary rounded w-64"></div>
+              <div className="h-4 bg-secondary rounded w-32"></div>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="h-8 bg-gray-200 rounded w-32"></div>
-              <div className="h-8 bg-gray-200 rounded w-8"></div>
+              <div className="h-8 bg-secondary rounded w-32"></div>
+              <div className="h-8 bg-secondary rounded w-8"></div>
             </div>
           </div>
         </div>
@@ -336,8 +336,8 @@ const Dashboard = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <div className="h-8 bg-gray-200 rounded w-64 animate-pulse"></div>
-          <div className="h-4 bg-gray-200 rounded w-96 mt-2"></div>
+          <div className="h-8 bg-secondary rounded w-64 animate-pulse"></div>
+          <div className="h-4 bg-secondary rounded w-96 mt-2"></div>
         </div>
         <LoadingSkeleton />
       </div>
@@ -346,10 +346,10 @@ const Dashboard = () => {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-500 text-center">
-          <h2 className="text-xl font-bold mb-2">Error Loading Dashboard</h2>
-          <p>{error}</p>
+      <div className="flex items-center justify-center min-h-screen bg-dark text-dark">
+        <div className="text-red-500 text-center bg-dark p-6 rounded-lg shadow-lg">
+          <h2 className="text-xl font-bold mb-2 text-dark">Error Loading Dashboard</h2>
+          <p className="text-secondary">{error}</p>
         </div>
       </div>
     );
@@ -362,10 +362,10 @@ const Dashboard = () => {
       <div className="mb-8">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-dark">
               {userDetails?.businessName ? `${userDetails.businessName} Dashboard` : 'Business Dashboard'}
             </h1>
-            <p className="text-gray-600 mt-2">Manage your vehicle bookings and tour reservations</p>
+            <p className="text-dark mt-2">Manage your vehicle bookings and tour reservations</p>
           </div>
           <button
             onClick={async () => {
@@ -441,50 +441,50 @@ const Dashboard = () => {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
+        <div className="bg-dark rounded-lg shadow-md p-4 md:p-6">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
               <Calendar className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
             </div>
             <div className="ml-3 md:ml-4">
-              <p className="text-xs md:text-sm font-medium text-gray-600">Total Bookings</p>
-              <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.totalBookings}</p>
+              <p className="text-xs md:text-sm font-medium text-secondary">Total Bookings</p>
+              <p className="text-xl md:text-2xl font-bold text-dark">{stats.totalBookings}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
+        <div className="bg-dark rounded-lg shadow-md p-4 md:p-6">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-green-600" />
             </div>
             <div className="ml-3 md:ml-4">
-              <p className="text-xs md:text-sm font-medium text-gray-600">Total Revenue</p>
-              <p className="text-xl md:text-2xl font-bold text-gray-900">{formatPrice(stats.totalRevenue)}</p>
+              <p className="text-xs md:text-sm font-medium text-secondary">Total Revenue</p>
+              <p className="text-xl md:text-2xl font-bold text-dark">{formatPrice(stats.totalRevenue)}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
+        <div className="bg-dark rounded-lg shadow-md p-4 md:p-6">
           <div className="flex items-center">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <Clock className="h-5 w-5 md:h-6 md:w-6 text-yellow-600" />
             </div>
             <div className="ml-3 md:ml-4">
-              <p className="text-xs md:text-sm font-medium text-gray-600">Pending Payments</p>
-              <p className="text-xl md:text-2xl font-bold text-gray-900">{formatPrice(stats.pendingPayments)}</p>
+              <p className="text-xs md:text-sm font-medium text-secondary">Pending Payments</p>
+              <p className="text-xl md:text-2xl font-bold text-dark">{formatPrice(stats.pendingPayments)}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
+        <div className="bg-dark rounded-lg shadow-md p-4 md:p-6">
           <div className="flex items-center">
             <div className="p-2 bg-purple-100 rounded-lg">
               <Users className="h-5 w-5 md:h-6 md:w-6 text-purple-600" />
             </div>
             <div className="ml-3 md:ml-4">
-              <p className="text-xs md:text-sm font-medium text-gray-600">Completed</p>
-              <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.completedBookings}</p>
+              <p className="text-xs md:text-sm font-medium text-secondary">Completed</p>
+              <p className="text-xl md:text-2xl font-bold text-dark">{stats.completedBookings}</p>
             </div>
           </div>
         </div>
@@ -496,7 +496,7 @@ const Dashboard = () => {
           <button
             className={`px-4 md:px-6 py-2 md:py-3 rounded-lg font-medium transition-colors text-sm md:text-base ${activeTab === 'bookings'
               ? 'bg-blue-500 text-white shadow-md'
-              : 'bg-white text-gray-700 hover:bg-gray-50'
+              : 'bg-dark text-dark hover:bg-dark'
               }`}
             onClick={() => setActiveTab('bookings')}
           >
@@ -508,7 +508,7 @@ const Dashboard = () => {
           <button
             className={`px-4 md:px-6 py-2 md:py-3 rounded-lg font-medium transition-colors text-sm md:text-base ${activeTab === 'tours'
               ? 'bg-blue-500 text-white shadow-md'
-              : 'bg-white text-gray-700 hover:bg-gray-50'
+              : 'bg-dark text-dark hover:bg-dark'
               }`}
             onClick={() => setActiveTab('tours')}
           >
@@ -519,68 +519,68 @@ const Dashboard = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-6">
+      <div className="bg-dark rounded-lg shadow-md p-4 md:p-6 mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="relative">
             <input
               type="text"
               placeholder="Search by customer, vehicle, or location..."
-              className="w-full pl-10 pr-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base"
+              className="w-full pl-10 pr-4 py-2 md:py-3 border border-custom rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base bg-dark text-dark"
               value={filters.search}
               onChange={(e) => handleFilterChange('search', e.target.value)}
             />
-            <Search className="absolute left-3 top-2.5 md:top-3.5 h-4 w-4 md:h-5 md:w-5 text-gray-400" />
+            <Search className="absolute left-3 top-2.5 md:top-3.5 h-4 w-4 md:h-5 md:w-5 text-secondary" />
           </div>
 
           <div className="relative">
             <select
-              className="w-full pl-10 pr-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none text-sm md:text-base"
+              className="w-full pl-10 pr-4 py-2 md:py-3 border border-custom rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none text-sm md:text-base bg-dark text-light"
               value={filters.status}
               onChange={(e) => handleFilterChange('status', e.target.value)}
             >
-              <option value="">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="cancelled">Cancelled</option>
-              <option value="completed">Completed</option>
+              <option className="bg-dark text-light" value="">All Status</option>
+              <option className="bg-dark text-light" value="pending">Pending</option>
+              <option className="bg-dark text-light" value="confirmed">Confirmed</option>
+              <option className="bg-dark text-light" value="cancelled">Cancelled</option>
+              <option className="bg-dark text-light" value="completed">Completed</option>
             </select>
-            <Filter className="absolute left-3 top-2.5 md:top-3.5 h-4 w-4 md:h-5 md:w-5 text-gray-400" />
-            <ChevronDown className="absolute right-3 top-2.5 md:top-3.5 h-4 w-4 md:h-5 md:w-5 text-gray-400" />
+            <Filter className="absolute left-3 top-2.5 md:top-3.5 h-4 w-4 md:h-5 md:w-5 text-secondary" />
+            <ChevronDown className="absolute right-3 top-2.5 md:top-3.5 h-4 w-4 md:h-5 md:w-5 text-secondary" />
           </div>
 
           <div className="relative">
             <select
-              className="w-full pl-10 pr-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none text-sm md:text-base"
+              className="w-full pl-10 pr-4 py-2 md:py-3 border border-custom rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none text-sm md:text-base bg-dark text-light"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
             >
-              <option value="date">Sort by Date</option>
-              <option value="price">Sort by Price</option>
+              <option className="bg-dark text-light" value="date">Sort by Date</option>
+              <option className="bg-dark text-light" value="price">Sort by Price</option>
             </select>
-            <Clock className="absolute left-3 top-2.5 md:top-3.5 h-4 w-4 md:h-5 md:w-5 text-gray-400" />
-            <ChevronDown className="absolute right-3 top-2.5 md:top-3.5 h-4 w-4 md:h-5 md:w-5 text-gray-400" />
+            <Clock className="absolute left-3 top-2.5 md:top-3.5 h-4 w-4 md:h-5 md:w-5 text-secondary" />
+            <ChevronDown className="absolute right-3 top-2.5 md:top-3.5 h-4 w-4 md:h-5 md:w-5 text-secondary" />
           </div>
         </div>
       </div>
 
       {/* Results Summary */}
       <div className="mb-4">
-        <p className="text-sm md:text-base text-gray-600">
+        <p className="text-sm md:text-base text-secondary">
           Showing {filteredData.length} {activeTab === 'bookings' ? 'vehicle bookings' : 'tour reservations'}
         </p>
       </div>
 
       {/* Data Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-dark text-dark rounded-lg shadow-md overflow-hidden">
         {filteredData.length === 0 ? (
           <div className="text-center py-8 md:py-12">
-            <div className="text-gray-400 mb-4">
+            <div className="mb-4">
               {activeTab === 'bookings' ? <Car className="h-8 w-8 md:h-12 md:w-12 mx-auto" /> : <MapPin className="h-8 w-8 md:h-12 md:w-12 mx-auto" />}
             </div>
-            <h3 className="text-base md:text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-base md:text-lg font-medium text-dark mb-2">
               No {activeTab === 'bookings' ? 'vehicle bookings' : 'tour reservations'} found
             </h3>
-            <p className="text-sm md:text-base text-gray-500">
+            <p className="text-sm md:text-base text-secondary">
               {filters.search || filters.status
                 ? 'Try adjusting your search or filters'
                 : `You don't have any ${activeTab === 'bookings' ? 'vehicle bookings' : 'tour reservations'} yet`
@@ -588,48 +588,48 @@ const Dashboard = () => {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+          <div className="overflow-x-auto bg-dark text-dark">
+            <table className="min-w-full divide-y divide-gray-200 bg-dark text-dark">
+              <thead className="bg-dark text-dark">
                 <tr>
-                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs font-medium text-secondary uppercase tracking-wider">
                     {activeTab === 'bookings' ? 'Vehicle Details' : 'Tour Details'}
                   </th>
-                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs font-medium text-secondary uppercase tracking-wider">
                     Customer Information
                   </th>
-                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs font-medium text-secondary uppercase tracking-wider">
                     {activeTab === 'bookings' ? 'Booking Period' : 'Reservation Date'}
                   </th>
-                  <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">
                     Location Details
                   </th>
-                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs font-medium uppercase tracking-wider">
                     Price & Payment
                   </th>
-                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs font-medium uppercase tracking-wider">
                     Status
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-dark text-dark divide-y divide-custom">
                 {filteredData.map((item) => (
                   <React.Fragment key={activeTab === 'bookings' ? item.id : `${item.tourName}-${item.reservationDate?.toDateString()}`}>
                     <tr
-                      className={`hover:bg-gray-50 transition-colors ${item.status === 'completed' ? 'cursor-pointer' : ''}`}
+                      className="transition-colors cursor-pointer"
                       onClick={() => activeTab === 'bookings' ? handleItemClick(item) : toggleTourExpansion(`${item.tourName}-${item.reservationDate?.toDateString()}`)}
                     >
                       <td className="px-3 md:px-6 py-3 md:py-4">
                         <div className="flex items-center">
                           <div>
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-medium text-dark">
                               {activeTab === 'bookings'
                                 ? `${item.vehicleDetails?.brand || 'Unknown'} ${item.vehicleDetails?.model || 'Model'}`
                                 : item.tourName}
                             </div>
                             {activeTab === 'tours' && (
                               <div className="flex items-center space-x-2 mt-1">
-                                <div className="text-xs md:text-sm text-gray-500">
+                                <div className="text-xs md:text-sm text-dark">
                                   <Users className="inline-block w-3 h-3 mr-1" />
                                   {item.totalPeople} {item.totalPeople === 1 ? 'person' : 'people'} total
                                 </div>
@@ -687,27 +687,27 @@ const Dashboard = () => {
                       <td className="px-3 md:px-6 py-3 md:py-4">
                         {activeTab === 'bookings' ? (
                           <div className="space-y-1">
-                            <div className="text-sm font-medium text-gray-900">{item.customerName}</div>
-                            <div className="text-xs md:text-sm text-gray-500 flex items-center">
+                            <div className="text-sm font-medium text-dark">{item.customerName}</div>
+                            <div className="text-xs md:text-sm text-dark flex items-center">
                               <Mail className="w-3 h-3 mr-1" />
                               {item.customerEmail}
                             </div>
                             {item.customerPhone && item.customerPhone !== 'No phone provided' && (
-                              <div className="text-xs md:text-sm text-gray-500 flex items-center">
+                              <div className="text-xs md:text-sm text-dark flex items-center">
                                 <Phone className="w-3 h-3 mr-1" />
                                 {item.customerPhone}
                               </div>
                             )}
                           </div>
                         ) : (
-                          <div className="text-xs md:text-sm text-gray-500">
+                          <div className="text-xs md:text-sm text-dark">
                             {item.bookings.length} {item.bookings.length === 1 ? 'booking' : 'bookings'}
                           </div>
                         )}
                       </td>
 
                       <td className="px-3 md:px-6 py-3 md:py-4">
-                        <div className="text-xs md:text-sm text-gray-900">
+                        <div className="text-xs md:text-sm text-dark">
                           {activeTab === 'bookings' ? (
                             <div className="space-y-1">
                               <div><strong>Start:</strong> {formatDate(item.startDate)}</div>
@@ -725,15 +725,15 @@ const Dashboard = () => {
                       </td>
 
                       <td className="hidden md:table-cell px-6 py-4">
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm text-dark">
                           {activeTab === 'bookings' ? (
                             <div className="space-y-2">
                               {pickupSpots[item.id] ? (
                                 <div className="flex items-start">
                                   <MapPin className="w-4 h-4 mr-2 text-green-500 mt-0.5" />
                                   <div>
-                                    <span className="text-xs font-medium text-gray-700">Pickup Spot:</span>
-                                    <div className="text-sm text-gray-900 mt-1">
+                                    <span className="text-xs font-medium text-dark ">Pickup Spot:</span>
+                                    <div className="text-sm mt-1 text-dark">
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -748,11 +748,11 @@ const Dashboard = () => {
                                   </div>
                                 </div>
                               ) : (
-                                <div className="flex items-start">
-                                  <MapPin className="w-4 h-4 mr-2 text-gray-400 mt-0.5" />
+                                <div className="flex text-dark items-start">
+                                  <MapPin className="w-4 h-4 mr-2 text-dark mt-0.5" />
                                   <div>
-                                    <span className="text-xs font-medium text-gray-700">Pickup Location:</span>
-                                    <div className="text-sm text-gray-900 mt-1">{item.pickupLocation}</div>
+                                    <span className="text-xs font-medium text-dark">Pickup Location:</span>
+                                    <div className="text-sm text-dark mt-1">{item.pickupLocation}</div>
                                   </div>
                                 </div>
                               )}
@@ -763,8 +763,8 @@ const Dashboard = () => {
                                 <div className="flex justify-center">
                                   <MapPin className="w-4 h-4 mr-2 text-green-500 mt-0.5" />
                                   <div>
-                                    <span className="text-xs text-center font-medium text-gray-700">Meetup Spot:</span>
-                                    <div className="text-sm text-gray-900 mt-1">
+                                    <span className="text-xs text-center text-dark font-medium">Meetup Spot:</span>
+                                    <div className="text-sm text-dark mt-1">
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -794,11 +794,11 @@ const Dashboard = () => {
 
                       <td className="px-3 md:px-6 py-3 md:py-4">
                         <div className="space-y-2">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-dark">
                             {formatPrice(item.totalPrice)}
                           </div>
                           {activeTab === 'tours' && (
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-dark">
                               {formatPrice(item.pricePerPerson)} per person
                             </div>
                           )}
@@ -814,50 +814,41 @@ const Dashboard = () => {
 
                     {activeTab === 'tours' && expandedTours[`${item.tourName}-${item.reservationDate?.toDateString()}`] && (
                       <tr>
-                        <td colSpan="6" className="px-3 md:px-6 py-3 md:py-4 bg-gray-50">
+                        <td colSpan="6" className="px-3 md:px-6 py-3 md:py-4 bg-dark">
                           <div className="space-y-3">
-                            <h4 className="font-medium text-gray-900 mb-3">All Bookings for {item.tourName}</h4>
+                            <h4 className="font-medium text-light mb-3">All Bookings for {item.tourName}</h4>
                             {item.bookings.map((booking) => (
                               <div
                                 key={booking.id}
-                                className="bg-white p-3 rounded-lg shadow-sm border border-gray-200"
+                                className="bg-secondary p-3 rounded-lg shadow-sm border border-custom"
                               >
                                 <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2">
                                   <div>
-                                    <p className="font-medium text-gray-900">{booking.customerName}</p>
-                                    <p className="text-xs md:text-sm text-gray-600">{booking.customerEmail}</p>
+                                    <p className="font-medium text-light">{booking.customerName}</p>
+                                    <p className="text-xs md:text-sm text-secondary">{booking.customerEmail}</p>
                                     {booking.customerPhone && (
-                                      <p className="text-xs md:text-sm text-gray-600">{booking.customerPhone}</p>
+                                      <p className="text-xs md:text-sm text-secondary">{booking.customerPhone}</p>
                                     )}
                                   </div>
-                                  <div className="text-left md:text-right">
-                                    <p className="text-xs md:text-sm font-medium text-gray-900">
-                                      {booking.persons} {booking.persons === 1 ? 'person' : 'people'}
-                                    </p>
-                                    <p className="text-xs md:text-sm text-gray-600">
-                                      {formatPrice(booking.totalPrice)}
-                                    </p>
-                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${booking.isPaid ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                  <div className="text-right">
+                                    <p className="text-sm text-light">{booking.persons} {booking.persons === 1 ? 'person' : 'people'}</p>
+                                    <p className="text-sm text-light">{formatPrice(booking.totalPrice)}</p>
+                                    <span className={`text-xs px-2 py-1 rounded ${booking.isPaid ? 'bg-green-500/20 text-green-500' : 'bg-yellow-500/20 text-yellow-500'
                                       }`}>
-                                      {booking.isPaid ? 'Paid' : 'Pending'}
+                                      {booking.isPaid ? 'Paid' : 'Payment Pending'}
                                     </span>
                                   </div>
                                 </div>
-                                {booking.specialRequests && (
-                                  <div className="mt-2 text-xs md:text-sm text-gray-600">
-                                    <span className="font-medium">Special Requests:</span> {booking.specialRequests}
-                                  </div>
-                                )}
                               </div>
                             ))}
-                            <div className="mt-4 pt-4 border-t border-gray-200">
-                              <p className="text-xs md:text-sm text-gray-600">
+                            <div className="mt-4 pt-4 border-t border-custom">
+                              <p className="text-xs md:text-sm text-secondary">
                                 Total Bookings: {item.bookings.length}
                               </p>
-                              <p className="text-xs md:text-sm text-gray-600">
+                              <p className="text-xs md:text-sm text-secondary">
                                 Total People: {item.totalPeople}
                               </p>
-                              <p className="text-xs md:text-sm text-gray-600">
+                              <p className="text-xs md:text-sm text-secondary">
                                 Total Revenue: {formatPrice(item.totalPrice)}
                               </p>
                             </div>
@@ -875,15 +866,15 @@ const Dashboard = () => {
 
       {/* Details Modal */}
       {selectedItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-4 md:p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-dark bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-dark rounded-lg p-4 md:p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+              <h2 className="text-xl md:text-2xl font-bold text-light">
                 {activeTab === 'bookings' ? 'Booking Details' : 'Tour Reservation Details'}
               </h2>
               <button
                 onClick={handleCloseDetails}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-secondary hover:text-light transition-colors"
               >
                 <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -893,19 +884,19 @@ const Dashboard = () => {
 
             <div className="space-y-4">
               <div>
-                <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-base md:text-lg font-semibold text-light mb-2">
                   {activeTab === 'bookings'
                     ? `${selectedItem.vehicleDetails?.brand} ${selectedItem.vehicleDetails?.model}`
                     : selectedItem.tourName}
                 </h3>
-                <p className="text-sm text-gray-600">ID: {selectedItem.id}</p>
+                <p className="text-sm text-secondary">ID: {selectedItem.id}</p>
               </div>
 
               {activeTab === 'tours' && (
                 <div className="mb-4">
                   <button
                     onClick={() => setShowRelatedBookings(!showRelatedBookings)}
-                    className="flex items-center text-blue-600 hover:text-blue-800 text-sm md:text-base"
+                    className="flex items-center text-blue-400 hover:text-blue-300 text-sm md:text-base"
                   >
                     <Users className="w-4 h-4 md:w-5 md:h-5 mr-2" />
                     {showRelatedBookings ? 'Hide' : 'Show'} All Bookings for This Tour
@@ -913,49 +904,41 @@ const Dashboard = () => {
                   </button>
 
                   {showRelatedBookings && (
-                    <div className="mt-4 bg-gray-50 rounded-lg p-3 md:p-4">
-                      <h4 className="font-medium text-gray-900 mb-3">All Bookings for {selectedItem.tourName}</h4>
+                    <div className="mt-4 bg-dark rounded-lg p-3 md:p-4">
+                      <h4 className="font-medium text-light mb-3">All Bookings for {selectedItem.tourName}</h4>
                       <div className="space-y-3">
                         {relatedTourBookings.map((booking) => (
                           <div
                             key={booking.id}
-                            className="bg-white p-3 rounded-lg shadow-sm border border-gray-200"
+                            className="bg-secondary rounded p-3 hover:bg-opacity-80 transition-all"
                           >
-                            <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2">
+                            <div className="flex justify-between items-start">
                               <div>
-                                <p className="font-medium text-gray-900">{booking.customerName}</p>
-                                <p className="text-xs md:text-sm text-gray-600">{booking.customerEmail}</p>
-                                {booking.customerPhone && (
-                                  <p className="text-xs md:text-sm text-gray-600">{booking.customerPhone}</p>
-                                )}
+                                <h5 className="font-medium text-light">{booking.customerName}</h5>
+                                <p className="text-sm text-secondary">{booking.customerEmail}</p>
+                                <p className="text-sm text-secondary">{booking.customerPhone || 'No phone provided'}</p>
                               </div>
-                              <div className="text-left md:text-right">
-                                <p className="text-xs md:text-sm font-medium text-gray-900">
-                                  {booking.persons} {booking.persons === 1 ? 'person' : 'people'}
-                                </p>
-                                <p className="text-xs md:text-sm text-gray-600">
-                                  {formatPrice(booking.totalPrice)}
-                                </p>
-                                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${booking.isPaid ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                              <div className="text-right">
+                                <p className="text-sm text-light">{booking.persons} person</p>
+                                <p className="text-sm text-light">${booking.totalPrice.toFixed(2)}</p>
+                                <span className={`text-xs px-2 py-1 rounded ${booking.status === 'Paid' ? 'bg-green-500/20 text-green-500' : 'bg-yellow-500/20 text-yellow-500'
                                   }`}>
-                                  {booking.isPaid ? 'Paid' : 'Pending'}
+                                  {booking.status}
                                 </span>
                               </div>
                             </div>
-                            {booking.specialRequests && (
-                              <div className="mt-2 text-xs md:text-sm text-gray-600">
-                                <span className="font-medium">Special Requests:</span> {booking.specialRequests}
-                              </div>
-                            )}
                           </div>
                         ))}
                       </div>
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <p className="text-xs md:text-sm text-gray-600">
+                      <div className="mt-4 pt-4 border-t border-custom">
+                        <p className="text-xs md:text-sm text-secondary">
                           Total Bookings: {relatedTourBookings.length}
                         </p>
-                        <p className="text-xs md:text-sm text-gray-600">
+                        <p className="text-xs md:text-sm text-secondary">
                           Total People: {relatedTourBookings.reduce((sum, booking) => sum + booking.persons, 0)}
+                        </p>
+                        <p className="text-xs md:text-sm text-secondary">
+                          Total Revenue: ${relatedTourBookings.reduce((sum, booking) => sum + booking.totalPrice, 0).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -965,44 +948,44 @@ const Dashboard = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Customer Information</h4>
-                  <p className="text-sm text-gray-600">{selectedItem.customerName}</p>
-                  <p className="text-sm text-gray-600">{selectedItem.customerEmail}</p>
+                  <h4 className="font-medium text-light mb-2">Customer Information</h4>
+                  <p className="text-sm text-secondary">{selectedItem.customerName}</p>
+                  <p className="text-sm text-secondary">{selectedItem.customerEmail}</p>
                   {selectedItem.customerPhone && (
-                    <p className="text-sm text-gray-600">{selectedItem.customerPhone}</p>
+                    <p className="text-sm text-secondary">{selectedItem.customerPhone}</p>
                   )}
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">
+                  <h4 className="font-medium text-light mb-2">
                     {activeTab === 'bookings' ? 'Booking Period' : 'Reservation Date'}
                   </h4>
                   {activeTab === 'bookings' ? (
                     <>
-                      <p className="text-sm text-gray-600">Start: {formatDate(selectedItem.startDate)}</p>
-                      <p className="text-sm text-gray-600">End: {formatDate(selectedItem.endDate)}</p>
+                      <p className="text-sm text-secondary">Start: {formatDate(selectedItem.startDate)}</p>
+                      <p className="text-sm text-secondary">End: {formatDate(selectedItem.endDate)}</p>
                     </>
                   ) : (
-                    <p className="text-sm text-gray-600">Date: {formatDate(selectedItem.reservationDate)}</p>
+                    <p className="text-sm text-secondary">Date: {formatDate(selectedItem.reservationDate)}</p>
                   )}
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Location Details</h4>
+                  <h4 className="font-medium text-light mb-2">Location Details</h4>
                   {activeTab === 'bookings' ? (
                     <>
-                      <p className="text-sm text-gray-600">Pickup: {selectedItem.pickupLocation}</p>
-                      <p className="text-sm text-gray-600">Dropoff: {selectedItem.dropoffLocation}</p>
+                      <p className="text-sm text-secondary">Pickup: {selectedItem.pickupLocation}</p>
+                      <p className="text-sm text-secondary">Dropoff: {selectedItem.dropoffLocation}</p>
                     </>
                   ) : (
-                    <p className="text-sm text-gray-600">Location: {selectedItem.tourLocation}</p>
+                    <p className="text-sm text-secondary">Location: {selectedItem.tourLocation}</p>
                   )}
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Payment Information</h4>
-                  <p className="text-sm text-gray-600">Total: {formatPrice(selectedItem.totalPrice)}</p>
-                  <p className="text-sm text-gray-600">
+                  <h4 className="font-medium text-light mb-2">Payment Information</h4>
+                  <p className="text-sm text-secondary">Total: {formatPrice(selectedItem.totalPrice)}</p>
+                  <p className="text-sm text-secondary">
                     Status: {selectedItem.isPaid ? 'Paid' : 'Payment Pending'}
                   </p>
                 </div>
@@ -1010,15 +993,15 @@ const Dashboard = () => {
 
               {activeTab === 'tours' && selectedItem.specialRequests && (
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Special Requests</h4>
-                  <p className="text-sm text-gray-600">{selectedItem.specialRequests}</p>
+                  <h4 className="font-medium text-light mb-2">Special Requests</h4>
+                  <p className="text-sm text-secondary">{selectedItem.specialRequests}</p>
                 </div>
               )}
 
               <div className="flex justify-end mt-6">
                 <button
                   onClick={handleCloseDetails}
-                  className="px-3 md:px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors text-sm md:text-base"
+                  className="px-3 md:px-4 py-2 bg-secondary text-light rounded-lg hover:bg-opacity-80 transition-colors text-sm md:text-base"
                 >
                   Close
                 </button>

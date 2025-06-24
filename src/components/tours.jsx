@@ -243,16 +243,16 @@ const ToursPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-dark">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="animate-pulse">
-            <div className="h-8 w-48 bg-gray-200 rounded mx-auto mb-8"></div>
+            <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded mx-auto mb-8"></div>
 
             {/* Filter Section Skeleton */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
-                <div className="h-10 w-24 bg-gray-200 rounded-lg"></div>
-                <div className="h-4 w-32 bg-gray-200 rounded"></div>
+                <div className="h-10 w-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
               </div>
             </div>
 
@@ -261,29 +261,29 @@ const ToursPage = () => {
               {[...Array(8)].map((_, index) => (
                 <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
                   {/* Image Skeleton */}
-                  <div className="h-48 bg-gray-200"></div>
+                  <div className="h-48 bg-gray-200 dark:bg-gray-700"></div>
 
                   {/* Content Skeleton */}
                   <div className="p-4 space-y-3">
                     <div className="flex items-center gap-2">
                       <div className="h-4 w-4 bg-gray-200 rounded-full"></div>
-                      <div className="h-4 w-16 bg-gray-200 rounded"></div>
-                      <div className="h-4 w-24 bg-gray-200 rounded"></div>
+                      <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                      <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
                     </div>
 
-                    <div className="h-5 w-3/4 bg-gray-200 rounded"></div>
-                    <div className="h-4 w-full bg-gray-200 rounded"></div>
+                    <div className="h-5 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded"></div>
 
                     <div className="space-y-2">
-                      <div className="h-3 w-32 bg-gray-200 rounded"></div>
-                      <div className="h-3 w-24 bg-gray-200 rounded"></div>
+                      <div className="h-3 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                      <div className="h-3 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <div className="h-6 w-20 bg-gray-200 rounded"></div>
+                      <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
                     </div>
 
-                    <div className="h-10 w-full bg-gray-200 rounded"></div>
+                    <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 rounded"></div>
                   </div>
                 </div>
               ))}
@@ -296,7 +296,7 @@ const ToursPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-dark">
         <div className="bg-red-50 p-6 rounded-lg shadow-lg">
           <h2 className="text-red-800 text-xl font-semibold mb-2">Error</h2>
           <p className="text-red-600">{error}</p>
@@ -380,13 +380,10 @@ const ToursPage = () => {
   };
 
   const FilterDropdown = () => (
-    <div className="relative inline-block">
+    <div className="relative inline-block bg-dark text-dark">
       <button
         onClick={() => setShowFilters(!showFilters)}
-        className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${hasActiveFilters
-          ? 'bg-blue-50 border-blue-300 text-blue-700'
-          : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-          }`}
+        className="flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors border-custom text-dark bg-dark"
       >
         <Filter className="h-4 w-4" />
         <span>Filters</span>
@@ -399,107 +396,92 @@ const ToursPage = () => {
       </button>
 
       {showFilters && (
-        <div className="absolute top-full left-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-          <div className="p-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900">Filters</h3>
-              {hasActiveFilters && (
-                <button
-                  onClick={clearFilters}
-                  className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
-                >
-                  <X className="h-3 w-3" />
-                  Clear All
-                </button>
-              )}
-            </div>
-
-            {/* Rating Filter */}
+        <div className="absolute top-12 left-0 right-0 bg-dark border border-custom rounded-lg shadow-lg p-6 z-[5]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Rating
-              </label>
+              <label className="block text-sm font-medium text-dark mb-2">Rating</label>
               <select
                 value={filters.rating}
                 onChange={(e) => handleFilterChange('rating', e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
               >
-                <option value="">Any Rating</option>
-                <option value="4.5">4.5+</option>
-                <option value="4.0">4+</option>
-                <option value="3.5">3.5+</option>
-                <option value="3.0">3+</option>
+                <option className="bg-dark text-dark" value="">All Ratings</option>
+                <option className="bg-dark text-dark" value="4.5">4.5+ Stars</option>
+                <option className="bg-dark text-dark" value="4.0">4+ Stars</option>
+                <option className="bg-dark text-dark" value="3.5">3.5+ Stars</option>
+                <option className="bg-dark text-dark" value="3.0">3+ Stars</option>
               </select>
             </div>
 
-            {/* Spots Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Spots</label>
+              <label className="block text-sm font-medium text-dark mb-2">Spots</label>
               <select
                 value={filters.spots}
                 onChange={(e) => handleFilterChange('spots', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
               >
-                <option value="">All Spots</option>
+                <option className="bg-dark text-dark" value="">All Spots</option>
                 {getUniqueValues('spots').map(spotName => (
-                  <option key={spotName} value={spotName}>{spotName}</option>
+                  <option className="bg-dark text-dark" key={spotName} value={spotName}>{spotName}</option>
                 ))}
               </select>
             </div>
 
-            {/* Duration Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Duration
-              </label>
+              <label className="block text-sm font-medium text-dark mb-2">Duration</label>
               <select
                 value={filters.duration}
                 onChange={(e) => handleFilterChange('duration', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
               >
-                <option value="">All Durations</option>
-                <option value="short">Short (&lt;= 2 hours)</option>
-                <option value="medium">Medium (2-6 hours)</option>
-                <option value="long">Long (&gt; 6 hours)</option>
+                <option className="bg-dark text-dark" value="">All Durations</option>
+                <option className="bg-dark text-dark" value="short">Short (&lt;= 2 hours)</option>
+                <option className="bg-dark text-dark" value="medium">Medium (2-6 hours)</option>
+                <option className="bg-dark text-dark" value="long">Long (&gt; 6 hours)</option>
               </select>
             </div>
 
-            {/* Price Range Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price Range
-              </label>
+              <label className="block text-sm font-medium text-dark mb-2">Price Range</label>
               <select
                 value={filters.priceRange}
                 onChange={(e) => handleFilterChange('priceRange', e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
               >
-                <option value="">Any Price</option>
-                <option value="budget">Budget</option>
-                <option value="mid">Mid Range</option>
-                <option value="premium">Premium</option>
+                <option className="bg-dark text-dark" value="">All Prices</option>
+                <option className="bg-dark text-dark" value="budget">Budget ($0 - $50)</option>
+                <option className="bg-dark text-dark" value="mid">Mid Range ($50 - $150)</option>
+                <option className="bg-dark text-dark" value="premium">Premium ($150+)</option>
               </select>
             </div>
 
-            {/* Max People Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Min Group Size
-              </label>
+              <label className="block text-sm font-medium text-dark mb-2">Group Size</label>
               <select
                 value={filters.maxPeople}
                 onChange={(e) => handleFilterChange('maxPeople', e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
               >
-                <option value="">Any Size</option>
-                <option value="2">2+ People</option>
-                <option value="4">4+ People</option>
-                <option value="6">6+ People</option>
-                <option value="10">10+ People</option>
-                <option value="20">20+ People</option>
+                <option className="bg-dark text-dark" value="">Any Size</option>
+                <option className="bg-dark text-dark" value="2">2+ People</option>
+                <option className="bg-dark text-dark" value="4">4+ People</option>
+                <option className="bg-dark text-dark" value="6">6+ People</option>
+                <option className="bg-dark text-dark" value="10">10+ People</option>
+                <option className="bg-dark text-dark" value="20">20+ People</option>
               </select>
             </div>
           </div>
+
+          {hasActiveFilters && (
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={clearFilters}
+                className="px-4 py-2 text-sm text-dark hover:text-secondary underline"
+              >
+                Clear all filters
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -514,7 +496,7 @@ const ToursPage = () => {
           navigate(`/details?tourId=${tour.id}`, { state: { tourId: tour.id } });
         }
       }}
-      className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden group cursor-pointer"
+      className="bg-dark rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden group cursor-pointer"
     >
       <div className="relative h-24 sm:h-32 md:h-40 overflow-hidden">
         <ImageSlider tour={tour} />
@@ -534,23 +516,23 @@ const ToursPage = () => {
       <div className="p-2 sm:p-3 md:p-4">
         <div className="flex items-center gap-1 mb-1">
           <Star className="h-3 w-3 fill-green-500 text-green-500" />
-          <span className="font-semibold text-xs">
+          <span className="font-semibold text-xs text-dark">
             {tour.averageRating || '0'}
           </span>
-          <span className="text-gray-500 text-xs">
+          <span className="text-secondary text-xs">
             ({tour.reviewCount || '0'})
           </span>
         </div>
 
-        <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1 text-xs sm:text-sm leading-tight">{tour.name}</h3>
+        <h3 className="font-semibold text-dark mb-1 line-clamp-1 text-xs sm:text-sm leading-tight">{tour.name}</h3>
 
         {/* Hide description on mobile, show fewer lines on larger screens */}
-        <p className="hidden sm:block text-xs text-wrap text-gray-600 mb-2 line-clamp-1 md:line-clamp-2 break-words whitespace-normal">{tour.description}</p>
+        <p className="hidden sm:block text-xs text-wrap text-secondary mb-2 line-clamp-1 md:line-clamp-2 break-words whitespace-normal">{tour.description}</p>
 
         {/* Hide additional info on mobile */}
-        <div className="hidden sm:block space-y-1 mb-3 text-xs text-gray-600">
+        <div className="hidden sm:block space-y-1 mb-3 text-xs text-secondary">
           <div className="flex items-center gap-1">
-            <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+            <span className="w-1 h-1 bg-secondary rounded-full"></span>
             <span>Free Cancellation</span>
           </div>
           {tour.spots && (
@@ -561,13 +543,13 @@ const ToursPage = () => {
           )}
           {tour.duration && (
             <div className="flex items-center gap-1">
-              <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+              <span className="w-1 h-1 bg-secondary rounded-full"></span>
               <span>{tour.duration} hours</span>
             </div>
           )}
           {tour.maxPeople && (
             <div className="flex items-center gap-1">
-              <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+              <span className="w-1 h-1 bg-secondary rounded-full"></span>
               <span>Max {tour.maxpeople} people</span>
             </div>
           )}
@@ -576,7 +558,7 @@ const ToursPage = () => {
         <div className="flex items-center justify-between mb-2">
           <div>
 
-            <span className="font-bold text-base sm:text-lg">${tour.price || '99'}</span>
+            <span className="font-bold text-base sm:text-lg text-dark">${tour.price || '99'}</span>
           </div>
         </div>
 
@@ -592,29 +574,25 @@ const ToursPage = () => {
   );
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-dark">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 py-8">
-        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 text-gray-800">Available Tours</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 text-dark">Available Tours</h2>
 
         {/* Filter Section */}
         <div className="mx-auto px-2 sm:px-6 lg:px-8 mt-4 mb-8">
           <div className="relative flex items-center gap-4 pl-0" ref={filterRef}>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors border-custom text-dark bg-dark"
             >
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z" />
-              </svg>
-              <span className="text-gray-700">Filters</span>
+              <Filter className="h-4 w-4" />
+              <span>Filters</span>
               {hasActiveFilters && (
-                <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-                  {Object.values(filters).filter(f => f !== '').length}
+                <span className="bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                  {Object.values(filters).filter(v => v !== '').length}
                 </span>
               )}
-              <svg className={`w-4 h-4 text-gray-600 transition-transform ${showFilters ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              <ChevronDown className={`h-4 w-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
             </button>
 
             <div className="text-sm text-gray-600">
@@ -622,93 +600,87 @@ const ToursPage = () => {
             </div>
 
             {showFilters && (
-              <div className="absolute top-12 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-6 z-[5]">
+              <div className="absolute top-12 left-0 right-0 bg-dark border border-custom rounded-lg shadow-lg p-6 z-[5]">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4">
-                  {/* Rating Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                    <label className="block text-sm font-medium text-dark mb-2">Rating</label>
                     <select
                       value={filters.rating}
                       onChange={(e) => handleFilterChange('rating', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                     >
-                      <option value="">All Ratings</option>
-                      <option value="4.5">4.5+ Stars</option>
-                      <option value="4.0">4+ Stars</option>
-                      <option value="3.5">3.5+ Stars</option>
-                      <option value="3.0">3+ Stars</option>
+                      <option className="bg-dark text-dark" value="">All Ratings</option>
+                      <option className="bg-dark text-dark" value="4.5">4.5+ Stars</option>
+                      <option className="bg-dark text-dark" value="4.0">4+ Stars</option>
+                      <option className="bg-dark text-dark" value="3.5">3.5+ Stars</option>
+                      <option className="bg-dark text-dark" value="3.0">3+ Stars</option>
                     </select>
                   </div>
 
-                  {/* Spots Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Spots</label>
+                    <label className="block text-sm font-medium text-dark mb-2">Spots</label>
                     <select
                       value={filters.spots}
                       onChange={(e) => handleFilterChange('spots', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                     >
-                      <option value="">All Spots</option>
+                      <option className="bg-dark text-dark" value="">All Spots</option>
                       {getUniqueValues('spots').map(spotName => (
-                        <option key={spotName} value={spotName}>{spotName}</option>
+                        <option className="bg-dark text-dark" key={spotName} value={spotName}>{spotName}</option>
                       ))}
                     </select>
                   </div>
 
-                  {/* Duration Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
+                    <label className="block text-sm font-medium text-dark mb-2">Duration</label>
                     <select
                       value={filters.duration}
                       onChange={(e) => handleFilterChange('duration', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                     >
-                      <option value="">All Durations</option>
-                      <option value="short">Short (&lt;= 2 hours)</option>
-                      <option value="medium">Medium (2-6 hours)</option>
-                      <option value="long">Long (&gt; 6 hours)</option>
+                      <option className="bg-dark text-dark" value="">All Durations</option>
+                      <option className="bg-dark text-dark" value="short">Short (&lt;= 2 hours)</option>
+                      <option className="bg-dark text-dark" value="medium">Medium (2-6 hours)</option>
+                      <option className="bg-dark text-dark" value="long">Long (&gt; 6 hours)</option>
                     </select>
                   </div>
 
-                  {/* Price Range Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
+                    <label className="block text-sm font-medium text-dark mb-2">Price Range</label>
                     <select
                       value={filters.priceRange}
                       onChange={(e) => handleFilterChange('priceRange', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                     >
-                      <option value="">All Prices</option>
-                      <option value="budget">Budget ($0 - $50)</option>
-                      <option value="mid">Mid Range ($50 - $150)</option>
-                      <option value="premium">Premium ($150+)</option>
+                      <option className="bg-dark text-dark" value="">All Prices</option>
+                      <option className="bg-dark text-dark" value="budget">Budget ($0 - $50)</option>
+                      <option className="bg-dark text-dark" value="mid">Mid Range ($50 - $150)</option>
+                      <option className="bg-dark text-dark" value="premium">Premium ($150+)</option>
                     </select>
                   </div>
 
-                  {/* Max People Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Group Size</label>
+                    <label className="block text-sm font-medium text-dark mb-2">Group Size</label>
                     <select
                       value={filters.maxPeople}
                       onChange={(e) => handleFilterChange('maxPeople', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                     >
-                      <option value="">Any Size</option>
-                      <option value="2">2+ People</option>
-                      <option value="4">4+ People</option>
-                      <option value="6">6+ People</option>
-                      <option value="10">10+ People</option>
-                      <option value="20">20+ People</option>
+                      <option className="bg-dark text-dark" value="">Any Size</option>
+                      <option className="bg-dark text-dark" value="2">2+ People</option>
+                      <option className="bg-dark text-dark" value="4">4+ People</option>
+                      <option className="bg-dark text-dark" value="6">6+ People</option>
+                      <option className="bg-dark text-dark" value="10">10+ People</option>
+                      <option className="bg-dark text-dark" value="20">20+ People</option>
                     </select>
                   </div>
                 </div>
 
-                {/* Clear Filters Button */}
                 {hasActiveFilters && (
                   <div className="mt-4 flex justify-end">
                     <button
                       onClick={clearFilters}
-                      className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 underline"
+                      className="px-4 py-2 text-sm text-dark hover:text-secondary underline"
                     >
                       Clear all filters
                     </button>
@@ -720,14 +692,14 @@ const ToursPage = () => {
         </div>
 
         {filteredTours.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+          <div className="text-center py-12 bg-dark rounded-lg shadow-sm">
             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2zM12 7v10m5-5H7" />
             </svg>
-            <h3 className="mt-2 text-base font-medium text-gray-900">
+            <h3 className="mt-2 text-base font-medium text-dark">
               {tours.length === 0 ? 'No tours available' : 'No tours match your filters'}
             </h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-secondary">
               {tours.length === 0
                 ? 'Check back later for new tour offerings'
                 : 'Try adjusting your filter criteria'

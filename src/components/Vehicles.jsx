@@ -353,7 +353,7 @@ function Vehicles() {
     <div className="min-h-screen 0 w-full relative pb-10">
       <div className="flex flex-row py-4 sm:py-8 items-center justify-center mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 border-b border-gray-200">
         <div className="flex flex-row items-center">
-          <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold text-gray-800">Available Vehicles</h1>
+          <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold text-dark text-gray-800">Available Vehicles</h1>
         </div>
       </div>
 
@@ -362,14 +362,14 @@ function Vehicles() {
         <div className="relative flex items-center gap-4" ref={filterRef}>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors border-custom text-dark bg-dark"
           >
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z" />
             </svg>
-            <span className="text-gray-700">Filters</span>
+            <span className="text-dark">Filters</span>
             {hasActiveFilters && (
-              <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+              <span className="bg-blue-500 text-white text-dark text-xs px-2 py-1 rounded-full">
                 {Object.values(filters).filter(f => f !== '').length}
               </span>
             )}
@@ -378,132 +378,132 @@ function Vehicles() {
             </svg>
           </button>
 
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-dark text-gray-600">
             Showing {filteredVehicles.length} of {vehicles.length} vehicles
           </div>
 
           {showFilters && (
-            <div className="absolute top-12 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-6 z-[5]">
+            <div className="absolute top-12 left-0 right-0 border border-custom rounded-lg shadow-lg p-6 z-[5] bg-dark">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4">
                 {/* Brand Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Brand</label>
+                  <label className="block text-sm font-medium text-dark mb-2">Brand</label>
                   <select
                     value={filters.brand}
                     onChange={(e) => handleFilterChange('brand', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                   >
-                    <option value="">All Brands</option>
+                    <option className="bg-dark text-dark" value="">All Brands</option>
                     {getUniqueValues('brand').map(brand => (
-                      <option key={brand} value={brand}>{brand}</option>
+                      <option className="bg-dark text-dark" key={brand} value={brand}>{brand}</option>
                     ))}
                   </select>
                 </div>
 
                 {/* Color Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
+                  <label className="block text-sm font-medium text-dark mb-2">Color</label>
                   <select
                     value={filters.color}
                     onChange={(e) => handleFilterChange('color', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                   >
-                    <option value="">All Colors</option>
+                    <option className="bg-dark text-dark" value="">All Colors</option>
                     {getUniqueValues('color').map(color => (
-                      <option key={color} value={color}>{color}</option>
+                      <option className="bg-dark text-dark" key={color} value={color}>{color}</option>
                     ))}
                   </select>
                 </div>
 
                 {/* Price Range Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Price per Day</label>
+                  <label className="block text-sm font-medium text-dark mb-2">Price per Day</label>
                   <select
                     value={filters.priceRange}
                     onChange={(e) => handleFilterChange('priceRange', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                   >
-                    <option value="">All Prices</option>
-                    <option value="under50">Under $50</option>
-                    <option value="50-100">$50 - $100</option>
-                    <option value="100-200">$100 - $200</option>
-                    <option value="over200">Over $200</option>
+                    <option className="bg-dark text-dark" value="">All Prices</option>
+                    <option className="bg-dark text-dark" value="under50">Under $50</option>
+                    <option className="bg-dark text-dark" value="50-100">$50 - $100</option>
+                    <option className="bg-dark text-dark" value="100-200">$100 - $200</option>
+                    <option className="bg-dark text-dark" value="over200">Over $200</option>
                   </select>
                 </div>
 
                 {/* Transmission Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Transmission</label>
+                  <label className="block text-sm font-medium text-dark mb-2">Transmission</label>
                   <select
                     value={filters.transmission}
                     onChange={(e) => handleFilterChange('transmission', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                   >
-                    <option value="">All Types</option>
+                    <option className="bg-dark text-dark" value="">All Types</option>
                     {getUniqueValues('transmission').map(transmission => (
-                      <option key={transmission} value={transmission}>{transmission}</option>
+                      <option className="bg-dark text-dark" key={transmission} value={transmission}>{transmission}</option>
                     ))}
                   </select>
                 </div>
 
                 {/* Fuel Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Fuel Type</label>
+                  <label className="block text-sm font-medium text-dark mb-2">Fuel Type</label>
                   <select
                     value={filters.fuel}
                     onChange={(e) => handleFilterChange('fuel', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                   >
-                    <option value="">All Fuel Types</option>
+                    <option className="bg-dark text-dark" value="">All Fuel Types</option>
                     {getUniqueValues('fuel').map(fuel => (
-                      <option key={fuel} value={fuel}>{fuel}</option>
+                      <option className="bg-dark text-dark" key={fuel} value={fuel}>{fuel}</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Seats</label>
+                  <label className="block text-sm font-medium text-dark mb-2">Seats</label>
                   <select
                     value={filters.seats}
                     onChange={(e) => handleFilterChange('fuel', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                   >
-                    <option value="">All seat types</option>
+                    <option className="bg-dark text-dark" value="">All seat types</option>
                     {getUniqueValues('seats').map(seats => (
-                      <option key={seats} value={seats}>{seats}</option>
+                      <option className="bg-dark text-dark" key={seats} value={seats}>{seats}</option>
                     ))}
                   </select>
                 </div>
 
                 {/* Mileage Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Mileage (MPG)</label>
+                  <label className="block text-sm font-medium text-dark mb-2">Mileage (MPG)</label>
                   <select
                     value={filters.mileageRange}
                     onChange={(e) => handleFilterChange('mileageRange', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                   >
-                    <option value="">All Mileage</option>
-                    <option value="under20">Under 20 MPG</option>
-                    <option value="20-30">20 - 30 MPG</option>
-                    <option value="30-40">30 - 40 MPG</option>
-                    <option value="over40">Over 40 MPG</option>
+                    <option className="bg-dark text-dark" value="">All Mileage</option>
+                    <option className="bg-dark text-dark" value="under20">Under 20 MPG</option>
+                    <option className="bg-dark text-dark" value="20-30">20 - 30 MPG</option>
+                    <option className="bg-dark text-dark" value="30-40">30 - 40 MPG</option>
+                    <option className="bg-dark text-dark" value="over40">Over 40 MPG</option>
                   </select>
                 </div>
 
                 {/* Star Rating Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Rating</label>
+                  <label className="block text-sm font-medium text-dark mb-2">Minimum Rating</label>
                   <select
                     value={filters.starRating}
                     onChange={(e) => handleFilterChange('starRating', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                   >
-                    <option value="">All Ratings</option>
-                    <option value="4">4+ Stars</option>
-                    <option value="3">3+ Stars</option>
-                    <option value="2">2+ Stars</option>
-                    <option value="1">1+ Stars</option>
+                    <option className="bg-dark text-dark" value="">All Ratings</option>
+                    <option className="bg-dark text-dark" value="4">4+ Stars</option>
+                    <option className="bg-dark text-dark" value="3">3+ Stars</option>
+                    <option className="bg-dark text-dark" value="2">2+ Stars</option>
+                    <option className="bg-dark text-dark" value="1">1+ Stars</option>
                   </select>
                 </div>
               </div>
@@ -512,15 +512,15 @@ function Vehicles() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 mt-4">
                 {/* Availability Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Availability</label>
+                  <label className="block text-sm font-medium text-dark mb-2">Availability</label>
                   <select
                     value={filters.availability}
                     onChange={(e) => handleFilterChange('availability', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                   >
-                    <option value="">All Status</option>
+                    <option className="bg-dark text-dark" value="">All Status</option>
                     {getUniqueValues('availability').map(availability => (
-                      <option key={availability} value={availability}>{availability}</option>
+                      <option className="bg-dark text-dark" key={availability} value={availability}>{availability}</option>
                     ))}
                   </select>
                 </div>

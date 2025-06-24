@@ -13,7 +13,9 @@ import {
   Car,
   Gauge,
   Mail,
-  User
+  User,
+  Sun,
+  Moon
 } from "lucide-react";
 import { useHasUnreadMessages } from './hooks/unreadmessages';
 import ProfileImage from "./ProfileImage";
@@ -24,6 +26,37 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isChatPage = location.pathname === '/chat';
+  const [isDark, setIsDark] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme ? savedTheme === 'dark' : document.documentElement.classList.contains('dark');
+  });
+
+  // Add state to track if floating dock should be hidden
+  const [hideFloatingDock, setHideFloatingDock] = useState(false);
+
+  // Add effect to listen for custom event
+  useEffect(() => {
+    const handleInputFocus = (e) => {
+      setHideFloatingDock(e.detail.focused);
+    };
+
+    window.addEventListener('chatInputFocus', handleInputFocus);
+    return () => window.removeEventListener('chatInputFocus', handleInputFocus);
+  }, []);
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDark]);
+
+  const toggleDarkMode = () => {
+    setIsDark(!isDark);
+  };
 
   const desktopNavigationItems = [
     {
@@ -73,7 +106,7 @@ const Header = () => {
 
   return (
     <>
-      <header className="flex items-center justify-between bg-black text-white h-20 px-6 md:px-10 sticky top-0 z-10">
+      <header className="flex bg-[#212121] items-center justify-between text-white h-20 px-6 md:px-10 sticky top-0 z-10">
         {/* Logo */}
         <Link to="/" className="text-3xl font-bold">
           IslandGo
@@ -81,6 +114,19 @@ const Header = () => {
 
         {/* User controls - flex-1 with justify-end pushes to right */}
         <div className="flex items-center space-x-4 md:space-x-6">
+          {/* Dark mode toggle */}
+          <button
+            onClick={toggleDarkMode}
+            className="p-2 rounded-lg hover:bg-gray-700 transition-colors"
+            aria-label="Toggle dark mode"
+          >
+            {isDark ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
+          </button>
+
           {/* Weather Component */}
           <div className="hidden md:block">
             <Weather />
@@ -100,33 +146,33 @@ const Header = () => {
                 <button className="flex items-center focus:outline-none">
                   <ProfileImage user={userDetails} size="md" />
                 </button>
-                <div className="absolute -right-10 w-28 bg-white rounded-lg shadow-lg py-1 z-50 font-semibold hidden group-hover:block">
+                <div className="absolute -right-10 w-28 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 z-50 font-semibold hidden group-hover:block">
                   <Link
                     to="/profile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     Profile
                   </Link>
-                  {userDetails.businessType === 'Taxi' || userDetails.businessType === 'Rental' && (
-                  <button
-                    onClick={() => {
-                      navigate(userDetails.businessType === 'Taxi' ? '/bpf' : '/rpf', {
-                        state: {
-                          businessId: auth.currentUser.uid,
-                          businessName: userDetails.businessName,
-                          businessImage: userDetails.businessImage || userDetails.photoURL,
-                          ownerId: auth.currentUser.uid
-                        }
-                      });
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
+                  {(userDetails.businessType === 'Taxi' || userDetails.businessType === 'Rental') && (
+                    <button
+                      onClick={() => {
+                        navigate(userDetails.businessType === 'Taxi' ? '/bpf' : '/rpf', {
+                          state: {
+                            businessId: auth.currentUser.uid,
+                            businessName: userDetails.businessName,
+                            businessImage: userDetails.businessImage || userDetails.photoURL,
+                            ownerId: auth.currentUser.uid
+                          }
+                        });
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
                       {userDetails.businessType === 'Taxi' ? 'My Tours' : 'My Rentals'}
                     </button>
                   )}
                   <button
                     onClick={logout}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     Sign out
                   </button>
@@ -145,11 +191,13 @@ const Header = () => {
       </header>
 
       {/* Desktop Navigation Dock */}
-      <FloatingDock
-        items={desktopNavigationItems}
-        desktopClassName="translate-y-0"
-        mobileClassName="hidden"
-      />
+      {!hideFloatingDock && (
+        <FloatingDock
+          items={desktopNavigationItems}
+          desktopClassName="translate-y-0"
+          mobileClassName="hidden"
+        />
+      )}
 
       {/* Mobile Navigation Bar */}
       <MobileNavBar items={mobileNavigationItems} />

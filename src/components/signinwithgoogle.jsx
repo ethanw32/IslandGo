@@ -14,7 +14,7 @@ function Signinwithgoogle() {
       </div>
 
       <div
-        className="border-black border-2 w-[60%] max-sm:w-[80%] p-2 rounded-full flex bg-white text-center m-auto my-8 hover:border-red-500 cursor-pointer"
+        className="border-black border-2 dark:border-white w-[60%] max-sm:w-[80%] p-2 rounded-full flex bg-dark text-dark text-center m-auto my-8 hover:border-red-500 dark:hover:border-red-500 cursor-pointer"
         onClick={googleLogin}
       >
         <img

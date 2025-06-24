@@ -129,7 +129,7 @@ function Rpf() {
   };
 
   return (
-    <div className="min-h-screen w-full relative pb-10">
+    <div className="min-h-screen w-full relative pb-10 bg-dark">
       <div className="flex flex-row py-4 sm:py-8 items-center justify-between mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 border-b border-gray-200">
         <div className="flex flex-row items-center flex-1">
           {businessImage && (
@@ -144,7 +144,7 @@ function Rpf() {
               />
             </button>
           )}
-          <h1 className="text-lg sm:text-xl lg:text-2xl font-bold ml-3 sm:ml-4 lg:ml-6 text-gray-800 truncate">{businessName}</h1>
+          <h1 className="text-lg sm:text-xl lg:text-2xl font-bold ml-3 sm:ml-4 lg:ml-6 text-dark truncate">{businessName}</h1>
         </div>
 
         <div className="flex items-center justify-end gap-3 ml-4">
@@ -390,15 +390,15 @@ function Rpf() {
           </>
         ) : (
           <div className="text-center py-8 sm:py-12 lg:py-20">
-            <p className="text-lg sm:text-xl lg:text-2xl text-gray-600">No vehicles added yet.</p>
+            <p className="text-lg sm:text-xl lg:text-2xl text-secondary">No vehicles added yet.</p>
           </div>
         )}
       </div>
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center backdrop-blur-sm transition-opacity z-50 p-4">
-          <div className="bg-white p-6 sm:p-8 rounded-xl w-full max-w-xs sm:max-w-md transform transition-all shadow-2xl">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Are you sure you want to delete this vehicle?</h2>
+          <div className="bg-dark p-6 sm:p-8 rounded-xl w-full max-w-xs sm:max-w-md transform transition-all shadow-2xl">
+            <h2 className="text-xl sm:text-2xl font-bold text-dark mb-4 sm:mb-6">Are you sure you want to delete this vehicle?</h2>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <button
                 onClick={handleDelete}
@@ -408,7 +408,7 @@ function Rpf() {
               </button>
               <button
                 onClick={handleCloseModal}
-                className="flex-1 bg-gray-200 text-gray-800 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg hover:bg-gray-300 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+                className="flex-1 bg-secondary text-dark px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg hover:bg-gray-300 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
               >
                 Cancel
               </button>

@@ -1,4 +1,86 @@
 @tailwind base;
+
+@layer base {
+  :root {
+    /* Light mode colors */
+    --color-primary: #3b82f6;
+    --color-primary-hover: #2563eb;
+    --color-background: #ffffff;
+    --color-background-secondary: #f3f4f6;
+    --color-text: #111827;
+    --color-text-secondary: #4b5563;
+    --color-border: #e5e7eb;
+    --color-input: #f9fafb;
+    --color-input-focus: #ffffff;
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-error: #ef4444;
+    --color-header: #000000;
+  }
+
+  .dark {
+    /* Dark mode colors */
+    --color-primary: #60a5fa;
+    --color-primary-hover: #3b82f6;
+    --color-background: #212121;
+    --color-background-secondary: #262a30;
+    --color-text: #f9fafb;
+    --color-text-secondary: #d1d5db;
+    --color-border: #ffffff;
+    --color-input: #1f2937;
+    --color-input-focus: #374151;
+    --color-success: #34d399;
+    --color-warning: #fbbf24;
+    --color-error: #f87171;
+    --color-header: #111827;
+    --color-message: #555555;
+  }
+
+  /* Apply base colors */
+  body {
+    @apply bg-[var(--color-background)] text-[var(--color-text)];
+  }
+}
+
 @tailwind components;
 @tailwind utilities;
 
+/* Custom utility classes using CSS variables */
+@layer utilities {
+  .bg-dark {
+    background-color: var(--color-background);
+  }
+
+  .bg-hover:hover {
+    background-color: var(--color-background-secondary);
+  }
+
+  .bg-secondary {
+    background-color: var(--color-background-secondary);
+  }
+
+  .text-dark {
+    color: var(--color-text);
+  }
+
+  .text-secondary {
+    color: var(--color-text-secondary);
+  }
+
+  .border {
+    border-color: var(--color-border);
+    border-width: 1px;
+  }
+
+  .hover:hover {
+    background-color: var(--color-background-secondary);
+  }
+
+  .bg-message {
+    background-color: var(--color-message);
+  }
+
+  .input-focused .floating-dock {
+    display: none !important;
+  }
+}

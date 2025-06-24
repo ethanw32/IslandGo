@@ -257,27 +257,27 @@ const AddTour = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">
+    <div className="min-h-screen bg-dark text-dark p-6">
+      <h1 className="text-4xl font-bold text-center mb-8 text-dark">
         {tourToEdit ? "Edit Tour" : "Add New Tour"}
       </h1>
 
-      <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+      <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-dark text-dark p-6 rounded-lg shadow-lg">
         {/* Name Field */}
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Tour Name</label>
+          <label className="block text-dark text-sm font-bold mb-2">Tour Name</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 border-black py-2 border bg-dark text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
         </div>
 
         {/* Weekly Schedule Field */}
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Weekly Schedule</label>
+          <label className="block text-dark text-sm font-bold mb-2">Weekly Schedule</label>
           <div className="flex flex-col space-y-4">
             <div className="flex flex-wrap gap-2">
               {DAYS_OF_WEEK.map(day => (
@@ -287,7 +287,7 @@ const AddTour = () => {
                   onClick={() => toggleDayInSchedule(day.id)}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${weeklySchedule.includes(day.id)
                     ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-dark text-dark border  border-black'
                     }`}
                 >
                   {day.name}
@@ -297,23 +297,23 @@ const AddTour = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <label className="block text-sm font-medium text-dark mb-1">Start Date</label>
                 <DatePicker
                   selected={scheduleStartDate}
                   onChange={date => setScheduleStartDate(date)}
                   minDate={new Date()}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-dark text-dark border-black border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholderText="Select start date"
                   dateFormat="MMMM d, yyyy"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <label className="block text-sm font-medium text-dark mb-1">End Date</label>
                 <DatePicker
                   selected={scheduleEndDate}
                   onChange={date => setScheduleEndDate(date)}
                   minDate={scheduleStartDate || new Date()}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-dark text-dark border-black border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholderText="Select end date"
                   dateFormat="MMMM d, yyyy"
                 />
@@ -333,13 +333,13 @@ const AddTour = () => {
 
         {/* Specific Dates Field */}
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Additional Specific Dates</label>
+          <label className="block text-dark text-sm font-bold mb-2">Additional Specific Dates</label>
           <div className="flex flex-col space-y-4">
             <DatePicker
               selected={selectedDate}
               onChange={handleDateSelect}
               minDate={new Date()}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-dark text-dark border-black border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholderText="Select specific dates"
               dateFormat="MMMM d, yyyy"
             />
@@ -347,7 +347,7 @@ const AddTour = () => {
             {/* Selected Dates List */}
             {availableDates.length > 0 && (
               <div className="mt-2">
-                <h4 className="text-sm font-semibold text-gray-700 mb-2">Selected Dates:</h4>
+                <h4 className="text-sm font-semibold text-dark mb-2">Selected Dates:</h4>
                 <div className="flex flex-wrap gap-2">
                   {availableDates.map((date, index) => {
                     // Ensure we have a valid Date object
@@ -380,64 +380,64 @@ const AddTour = () => {
         </div>
 
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Tour duration/hours</label>
+          <label className="block text-dark text-sm font-bold mb-2">Tour duration/hours</label>
           <input
             type="number"
             value={duration}
             onChange={(e) => setDuration(e.target.value)}
-            className="w-56 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-10"
+            className="w-56 px-3 py-2 bg-dark text-dark border-black border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-10"
             required
           />
         </div>
 
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Description</label>
+          <label className="block text-dark text-sm font-bold mb-2">Description</label>
           <textarea
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
+            className="w-full px-3 py-2 bg-dark text-dark border-black border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
             required
           />
         </div>
 
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Max number of people</label>
+          <label className="block text-dark text-sm font-bold mb-2">Max number of people</label>
           <input
             type="number"
             value={maxpeople}
             onChange={(e) => setMaxpeople(e.target.value)}
-            className="w-56 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-10"
+            className="w-56 px-3 py-2 bg-dark text-dark border-black border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-10"
             required
           />
         </div>
 
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Price</label>
+          <label className="block text-dark text-sm font-bold mb-2">Price</label>
           <input
             type="number"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
-            className="w-56 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-10"
+            className="w-56 px-3 py-2 bg-dark text-dark border-black border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-10"
             required
           />
         </div>
 
         {/* Multiple Image Upload Field */}
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Tour Images</label>
+          <label className="block text-dark text-sm font-bold mb-2">Tour Images</label>
           <input
             type="file"
             accept="image/*"
             multiple
             onChange={handleFileChange}
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 bg-dark text-dark border-black border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           {/* Image Previews */}
           {images.length > 0 && (
             <div className="mt-4">
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">Image Previews:</h4>
+              <h4 className="text-sm font-semibold text-dark mb-2">Image Previews:</h4>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {images.map((image, index) => (
                   <div key={index} className="relative">
@@ -462,8 +462,8 @@ const AddTour = () => {
 
         {/* Spots Field */}
         <div className="mb-4">
-          <div className="flex justify-between items-center mb-4">
-            <label className="block text-gray-700 text-sm font-bold">Tour Spots</label>
+          <div className="flex justify-between items-center mb-4 ">
+            <label className="block text-dark text-sm font-bold">Tour Spots</label>
             <button
               type="button"
               onClick={addSpot}
@@ -474,14 +474,14 @@ const AddTour = () => {
           </div>
 
           {spots.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-dark">
               <p>No spots added yet. Click "Add Spot" to get started.</p>
             </div>
           ) : (
             spots.map((spot, index) => (
-              <div key={index} className="mb-4 p-4 border rounded-lg bg-gray-50">
+              <div key={index} className="mb-4 p-4 border rounded-lg bg-dark text-dark ">
                 <div className="flex justify-between items-center mb-3">
-                  <h4 className="text-lg font-medium text-gray-800">Spot {index + 1}</h4>
+                  <h4 className="text-lg font-medium">Spot {index + 1}</h4>
                   <button
                     type="button"
                     onClick={() => removeSpot(index)}
@@ -492,23 +492,23 @@ const AddTour = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label className="block text-gray-600 text-sm font-medium mb-1">Spot Name</label>
+                  <label className="block text-sm font-medium mb-1">Spot Name</label>
                   <input
                     type="text"
                     value={spot.name}
                     onChange={(e) => updateSpot(index, 'name', e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border-black border bg-dark text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter spot name"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-600 text-sm font-medium mb-1">Description</label>
+                  <label className="block text-sm font-medium mb-1">Description</label>
                   <textarea
                     value={spot.description}
                     onChange={(e) => updateSpot(index, 'description', e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-20"
+                    className="w-full px-3 py-2 border-black border bg-dark text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-20"
                     placeholder="Describe this spot"
                     required
                   />

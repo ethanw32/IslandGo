@@ -642,607 +642,609 @@ const Profile = () => {
 
   // Show user's own profile
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-black text-white shadow-lg m-10 rounded-lg">
-      {businessId ? (
-        viewedBusiness ? (
-          <div>
-            <div className="flex items-center mb-6">
-              <ProfileImage
-                user={{
-                  type: "business",
-                  businessImage: viewedBusiness.businessImage
-                }}
-                size="lg"
-                className="mr-4"
-              />
-              <div>
-                <h1 className="text-2xl font-bold">{viewedBusiness.businessName}</h1>
-                <p className="text-gray-400">{viewedBusiness.businessType}</p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <p><strong>Description:</strong> {viewedBusiness.businessDescription}</p>
-              <p><strong>Phone:</strong> {viewedBusiness.phoneNumber || "Not provided"}</p>
-              <p><strong>Address:</strong> {viewedBusiness.address || "Not provided"}</p>
-            </div>
-          </div>
-        ) : null
-      ) : (
-        <div>
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <div className="relative">
+    <div className="min-h-screen 0 w-full relative pb-10">
+      <div className="max-w-4xl mx-auto p-6 bg-black text-white shadow-lg m-10 rounded-lg">
+        {businessId ? (
+          viewedBusiness ? (
+            <div>
+              <div className="flex items-center mb-6">
                 <ProfileImage
-                  user={userDetails}
-                  size="xl"
+                  user={{
+                    type: "business",
+                    businessImage: viewedBusiness.businessImage
+                  }}
+                  size="lg"
+                  className="mr-4"
                 />
-                <button
-                  onClick={() => fileInputRef.current.click()}
-                  className="absolute bottom-0 right-0 bg-blue-600 text-white p-1.5 rounded-full hover:bg-blue-700 transition-colors"
-                  aria-label="Upload profile picture"
-                >
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                  </svg>
-                </button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  accept="image/*"
-                />
+                <div>
+                  <h1 className="text-2xl font-bold">{viewedBusiness.businessName}</h1>
+                  <p className="text-gray-400">{viewedBusiness.businessType}</p>
+                </div>
               </div>
-              <div className="ml-4">
-                <h1 className="text-2xl font-bold">
-                  {userDetails?.type === "business" ? userDetails?.businessName : userDetails?.name}
-                </h1>
-                <p className="text-gray-400">
-                  {userDetails?.type === "business" ? "Business Account" : "User Account"}
-                </p>
+              <div className="space-y-4">
+                <p><strong>Description:</strong> {viewedBusiness.businessDescription}</p>
+                <p><strong>Phone:</strong> {viewedBusiness.phoneNumber || "Not provided"}</p>
+                <p><strong>Address:</strong> {viewedBusiness.address || "Not provided"}</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              {userDetails?.type === "business" && (
+          ) : null
+        ) : (
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center">
                 <div className="relative">
+                  <ProfileImage
+                    user={userDetails}
+                    size="xl"
+                  />
                   <button
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                    aria-label="Menu"
+                    onClick={() => fileInputRef.current.click()}
+                    className="absolute bottom-0 right-0 bg-blue-600 text-white p-1.5 rounded-full hover:bg-blue-700 transition-colors"
+                    aria-label="Upload profile picture"
                   >
-                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>
                   </button>
-                  {isMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                      <button
-                        onClick={() => {
-                          setIsEditing(true);
-                          setIsMenuOpen(false);
-                        }}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        Edit Profile
-                      </button>
-                      <button
-                        onClick={() => {
-                          navigate(userDetails.businessType === 'Taxi' ? '/bpf' : '/rpf', {
-                            state: {
-                              businessId: auth.currentUser.uid,
-                              businessName: userDetails.businessName,
-                              businessImage: userDetails.businessImage || userDetails.photoURL,
-                              ownerId: auth.currentUser.uid
-                            }
-                          });
-                          setIsMenuOpen(false);
-                        }}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        {userDetails.businessType === 'Taxi' ? 'View Tours' : 'View Rentals'}
-                      </button>
-                      <div className="border-t border-gray-100 my-1"></div>
-                      <button
-                        onClick={() => {
-                          logout();
-                          setIsMenuOpen(false);
-                        }}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  )}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    accept="image/*"
+                  />
                 </div>
-              )}
-              {userDetails?.type !== "business" && (
-                <button
-                  onClick={logout}
-                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-sm sm:text-base"
-                >
-                  Logout
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* PayPal Checkout Button */}
-          {(bookings.length > 0 || tourReservations.length > 0) && (
-            <div className="flex justify-end mb-6 relative z-0">
-              <div className="text-right">
-                <h3 className="text-xl font-semibold mb-4">
-                  {isPaid ? `Balance: $${balance.toFixed(2)}` : `Total Amount: $${totalAmount.toFixed(2)}`}
-                </h3>
-                {!isPaid && totalAmount > 0 && (
-                  <PayPalScriptProvider options={{ "client-id": "AWD8LCSPAdc52fO1971Y41NDCxe3_L-8jEJeDQOc_C3oXAHUTXIiKOLmXruhM1Sa6Vo5Si6L3ExFaD66", currency: "USD" }}>
-                    <PayPalButtons
-                      style={{
-                        layout: "horizontal",
-                        color: "blue",
-                        shape: "rect",
-                        label: "pay"
-                      }}
-                      fundingSource="paypal"
-                      createOrder={(data, actions) => {
-                        return actions.order.create({
-                          purchase_units: [
-                            {
-                              amount: {
-                                value: totalAmount.toFixed(2),
-                              },
-                            },
-                          ],
-                        });
-                      }}
-                      onApprove={async (data, actions) => {
-                        await actions.order.capture();
-
-                        try {
-                          // Update bookings in database
-                          const bookingPromises = bookings.map(async (booking) => {
-                            if (!booking.isPaid && booking.status === 'pending') {
-                              try {
-                                const bookingRef = doc(db, "bookings", booking.id);
-                                await updateDoc(bookingRef, {
-                                  status: 'confirmed',
-                                  isPaid: true
-                                });
-
-                                // Only send email if we have a valid email address
-                                if (booking.email || booking.customerEmail) {
-                                  const emailToUse = booking.email || booking.customerEmail;
-                                  console.log('Sending confirmation email to:', emailToUse);
-
-                                  const bookingEmailResult = await sendBookingConfirmation({
-                                    ...booking,
-                                    customerEmail: emailToUse
-                                  });
-
-                                  if (bookingEmailResult.success) {
-                                    toast.success(`Confirmation email sent to ${emailToUse}`);
-                                  } else {
-                                    toast.warning(`Booking confirmed but email could not be sent: ${bookingEmailResult.message}`);
-                                  }
-                                } else {
-                                  console.warn('No email address available for booking:', booking.id);
-                                  toast.warning('Booking confirmed but no email address available for confirmation');
-                                }
-                              } catch (error) {
-                                console.error('Error processing booking:', error);
-                                toast.error(`Error processing booking: ${error.message}`);
+                <div className="ml-4">
+                  <h1 className="text-2xl font-bold">
+                    {userDetails?.type === "business" ? userDetails?.businessName : userDetails?.name}
+                  </h1>
+                  <p className="text-gray-400">
+                    {userDetails?.type === "business" ? "Business Account" : "User Account"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                {userDetails?.type === "business" && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsMenuOpen(!isMenuOpen)}
+                      className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                      aria-label="Menu"
+                    >
+                      <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                      </svg>
+                    </button>
+                    {isMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                        <button
+                          onClick={() => {
+                            setIsEditing(true);
+                            setIsMenuOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Edit Profile
+                        </button>
+                        <button
+                          onClick={() => {
+                            navigate(userDetails.businessType === 'Taxi' ? '/bpf' : '/rpf', {
+                              state: {
+                                businessId: auth.currentUser.uid,
+                                businessName: userDetails.businessName,
+                                businessImage: userDetails.businessImage || userDetails.photoURL,
+                                ownerId: auth.currentUser.uid
                               }
-                            }
-                          });
-
-                          // Update tour reservations in database
-                          const reservationPromises = tourReservations.map(async (reservation) => {
-                            if (!reservation.isPaid && reservation.status === 'pending') {
-                              try {
-                                const reservationRef = doc(db, "tourReservations", reservation.id);
-                                await updateDoc(reservationRef, {
-                                  status: 'confirmed',
-                                  isPaid: true
-                                });
-
-                                // Only send email if we have a valid email address
-                                if (reservation.email || reservation.customerEmail) {
-                                  const emailToUse = reservation.email || reservation.customerEmail;
-                                  console.log('Sending confirmation email to:', emailToUse);
-
-                                  const reservationEmailResult = await sendTourReservationConfirmation({
-                                    ...reservation,
-                                    customerEmail: emailToUse
-                                  });
-
-                                  if (reservationEmailResult.success) {
-                                    toast.success(`Confirmation email sent to ${emailToUse}`);
-                                  } else {
-                                    toast.warning(`Reservation confirmed but email could not be sent: ${reservationEmailResult.message}`);
-                                  }
-                                } else {
-                                  console.warn('No email address available for reservation:', reservation.id);
-                                  toast.warning('Reservation confirmed but no email address available for confirmation');
-                                }
-                              } catch (error) {
-                                console.error('Error processing reservation:', error);
-                                toast.error(`Error processing reservation: ${error.message}`);
-                              }
-                            }
-                          });
-
-                          // Wait for all updates to complete
-                          await Promise.all([...bookingPromises, ...reservationPromises]);
-
-                          // Update local state
-                          const updatedBookings = bookings.map(booking => ({
-                            ...booking,
-                            status: (!booking.isPaid && booking.status === 'pending') ? 'confirmed' : booking.status,
-                            isPaid: true
-                          }));
-                          setBookings(updatedBookings);
-
-                          const updatedTourReservations = tourReservations.map(reservation => ({
-                            ...reservation,
-                            status: (!reservation.isPaid && reservation.status === 'pending') ? 'confirmed' : reservation.status,
-                            isPaid: true
-                          }));
-                          setTourReservations(updatedTourReservations);
-
-                          setIsPaid(true);
-                          setBalance(0);
-                          toast.success("Payment successful! Your bookings and reservations are now confirmed.");
-                        } catch (error) {
-                          console.error("Error updating status:", error);
-                          toast.error("Payment successful but failed to update status. Please contact support.");
-                        }
-                      }}
-                      onError={(err) => {
-                        toast.error("Payment failed: " + err);
-                      }}
-                    />
-                  </PayPalScriptProvider>
+                            });
+                            setIsMenuOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          {userDetails.businessType === 'Taxi' ? 'View Tours' : 'View Rentals'}
+                        </button>
+                        <div className="border-t border-gray-100 my-1"></div>
+                        <button
+                          onClick={() => {
+                            logout();
+                            setIsMenuOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {userDetails?.type !== "business" && (
+                  <button
+                    onClick={logout}
+                    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-sm sm:text-base"
+                  >
+                    Logout
+                  </button>
                 )}
               </div>
             </div>
-          )}
 
-          {userDetails.type === "business" && (
-            <div className="mb-6">
-              {isEditing ? (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Business Name*</label>
-                    <input
-                      type="text"
-                      value={formData.businessName}
-                      onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
-                      className="w-full p-2 rounded bg-gray-800 border border-gray-700"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Description</label>
-                    <textarea
-                      value={formData.businessDescription}
-                      onChange={(e) => setFormData({ ...formData, businessDescription: e.target.value })}
-                      className="w-full p-2 rounded bg-gray-800 border border-gray-700"
-                      rows="3"
-                      maxLength="500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Phone Number</label>
-                    <input
-                      type="tel"
-                      value={formData.phoneNumber}
-                      onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                      className="w-full p-2 rounded bg-gray-800 border border-gray-700"
-                      pattern="[\d\s+-]+"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Address</label>
-                    <input
-                      type="text"
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      className="w-full p-2 rounded bg-gray-800 border border-gray-700"
-                    />
-                  </div>
-                  <div className="flex space-x-4">
-                    <button
-                      type="submit"
-                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                    >
-                      Save Changes
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsEditing(false)}
-                      className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div className="space-y-4">
-                  <div>
-                    <strong className="block mb-1">Business Description</strong>
-                    <p className="text-gray-300">{userDetails?.businessDescription || "No description provided"}</p>
-                  </div>
-                  <div>
-                    <strong className="block mb-1">Phone Number</strong>
-                    <p className="text-gray-300">{userDetails?.phoneNumber || "No phone number provided"}</p>
-                  </div>
-                  <div>
-                    <strong className="block mb-1">Address</strong>
-                    <p className="text-gray-300">{userDetails?.address || "No address provided"}</p>
-                  </div>
+            {/* PayPal Checkout Button */}
+            {(bookings.length > 0 || tourReservations.length > 0) && (
+              <div className="flex justify-end mb-6 relative z-0">
+                <div className="text-right">
+                  <h3 className="text-xl font-semibold mb-4">
+                    {isPaid ? `Balance: $${balance.toFixed(2)}` : `Total Amount: $${totalAmount.toFixed(2)}`}
+                  </h3>
+                  {!isPaid && totalAmount > 0 && (
+                    <PayPalScriptProvider options={{ "client-id": "AWD8LCSPAdc52fO1971Y41NDCxe3_L-8jEJeDQOc_C3oXAHUTXIiKOLmXruhM1Sa6Vo5Si6L3ExFaD66", currency: "USD" }}>
+                      <PayPalButtons
+                        style={{
+                          layout: "horizontal",
+                          color: "blue",
+                          shape: "rect",
+                          label: "pay"
+                        }}
+                        fundingSource="paypal"
+                        createOrder={(data, actions) => {
+                          return actions.order.create({
+                            purchase_units: [
+                              {
+                                amount: {
+                                  value: totalAmount.toFixed(2),
+                                },
+                              },
+                            ],
+                          });
+                        }}
+                        onApprove={async (data, actions) => {
+                          await actions.order.capture();
+
+                          try {
+                            // Update bookings in database
+                            const bookingPromises = bookings.map(async (booking) => {
+                              if (!booking.isPaid && booking.status === 'pending') {
+                                try {
+                                  const bookingRef = doc(db, "bookings", booking.id);
+                                  await updateDoc(bookingRef, {
+                                    status: 'confirmed',
+                                    isPaid: true
+                                  });
+
+                                  // Only send email if we have a valid email address
+                                  if (booking.email || booking.customerEmail) {
+                                    const emailToUse = booking.email || booking.customerEmail;
+                                    console.log('Sending confirmation email to:', emailToUse);
+
+                                    const bookingEmailResult = await sendBookingConfirmation({
+                                      ...booking,
+                                      customerEmail: emailToUse
+                                    });
+
+                                    if (bookingEmailResult.success) {
+                                      toast.success(`Confirmation email sent to ${emailToUse}`);
+                                    } else {
+                                      toast.warning(`Booking confirmed but email could not be sent: ${bookingEmailResult.message}`);
+                                    }
+                                  } else {
+                                    console.warn('No email address available for booking:', booking.id);
+                                    toast.warning('Booking confirmed but no email address available for confirmation');
+                                  }
+                                } catch (error) {
+                                  console.error('Error processing booking:', error);
+                                  toast.error(`Error processing booking: ${error.message}`);
+                                }
+                              }
+                            });
+
+                            // Update tour reservations in database
+                            const reservationPromises = tourReservations.map(async (reservation) => {
+                              if (!reservation.isPaid && reservation.status === 'pending') {
+                                try {
+                                  const reservationRef = doc(db, "tourReservations", reservation.id);
+                                  await updateDoc(reservationRef, {
+                                    status: 'confirmed',
+                                    isPaid: true
+                                  });
+
+                                  // Only send email if we have a valid email address
+                                  if (reservation.email || reservation.customerEmail) {
+                                    const emailToUse = reservation.email || reservation.customerEmail;
+                                    console.log('Sending confirmation email to:', emailToUse);
+
+                                    const reservationEmailResult = await sendTourReservationConfirmation({
+                                      ...reservation,
+                                      customerEmail: emailToUse
+                                    });
+
+                                    if (reservationEmailResult.success) {
+                                      toast.success(`Confirmation email sent to ${emailToUse}`);
+                                    } else {
+                                      toast.warning(`Reservation confirmed but email could not be sent: ${reservationEmailResult.message}`);
+                                    }
+                                  } else {
+                                    console.warn('No email address available for reservation:', reservation.id);
+                                    toast.warning('Reservation confirmed but no email address available for confirmation');
+                                  }
+                                } catch (error) {
+                                  console.error('Error processing reservation:', error);
+                                  toast.error(`Error processing reservation: ${error.message}`);
+                                }
+                              }
+                            });
+
+                            // Wait for all updates to complete
+                            await Promise.all([...bookingPromises, ...reservationPromises]);
+
+                            // Update local state
+                            const updatedBookings = bookings.map(booking => ({
+                              ...booking,
+                              status: (!booking.isPaid && booking.status === 'pending') ? 'confirmed' : booking.status,
+                              isPaid: true
+                            }));
+                            setBookings(updatedBookings);
+
+                            const updatedTourReservations = tourReservations.map(reservation => ({
+                              ...reservation,
+                              status: (!reservation.isPaid && reservation.status === 'pending') ? 'confirmed' : reservation.status,
+                              isPaid: true
+                            }));
+                            setTourReservations(updatedTourReservations);
+
+                            setIsPaid(true);
+                            setBalance(0);
+                            toast.success("Payment successful! Your bookings and reservations are now confirmed.");
+                          } catch (error) {
+                            console.error("Error updating status:", error);
+                            toast.error("Payment successful but failed to update status. Please contact support.");
+                          }
+                        }}
+                        onError={(err) => {
+                          toast.error("Payment failed: " + err);
+                        }}
+                      />
+                    </PayPalScriptProvider>
+                  )}
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
 
-          {(userDetails?.type === "user" || (userDetails?.type === "business" && userDetails?.businessType === "Rental")) && bookings.length > 0 && (
-            <div className="mt-8">
-              <h2 className="text-xl font-bold mb-4">
-                {userDetails?.type === "business" ? "Your Rentals" : "Your Bookings"}
-              </h2>
-              {console.log("Rendering bookings section. Bookings:", bookings)}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {bookings.map((booking) => (
-                  <div key={booking.id} className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 hover:border-gray-600 transition-all">
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-lg font-semibold text-white">{booking.vehicleDetails.model}</h3>
-                          <p className="text-sm text-gray-300 mb-2">Business: {booking.businessName}</p>
-                          <div className="mt-1 space-y-1">
-                            <p className="text-sm text-gray-400">Brand: {booking.vehicleDetails.brand}</p>
-                            <p className="text-sm text-gray-400">Color: {booking.vehicleDetails.color}</p>
-                            <p className="text-sm text-gray-400">Transmission: {booking.vehicleDetails.transmission}</p>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <span className={`px-3 py-1 text-sm rounded-full ${booking.status === 'cancelled' ? 'bg-red-500/20 text-red-400' :
-                            booking.status === 'confirmed' ? 'bg-green-500/20 text-green-400' :
-                              'bg-yellow-500/20 text-yellow-400'
-                            } font-medium`}>
-                            {booking.status === 'cancelled' ? 'Cancelled' :
-                              booking.status === 'confirmed' ? 'Confirmed' : 'Pending'}
-                          </span>
-                          {booking.status === 'cancelled' && booking.refundRequested && (
-                            <span className="text-xs text-red-400 bg-red-500/10 px-2 py-1 rounded">
-                              Refund in process
-                            </span>
-                          )}
-                        </div>
-                      </div>
+            {userDetails.type === "business" && (
+              <div className="mb-6">
+                {isEditing ? (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Business Name*</label>
+                      <input
+                        type="text"
+                        value={formData.businessName}
+                        onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                        className="w-full p-2 rounded bg-gray-800 border border-gray-700"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Description</label>
+                      <textarea
+                        value={formData.businessDescription}
+                        onChange={(e) => setFormData({ ...formData, businessDescription: e.target.value })}
+                        className="w-full p-2 rounded bg-gray-800 border border-gray-700"
+                        rows="3"
+                        maxLength="500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Phone Number</label>
+                      <input
+                        type="tel"
+                        value={formData.phoneNumber}
+                        onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                        className="w-full p-2 rounded bg-gray-800 border border-gray-700"
+                        pattern="[\d\s+-]+"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Address</label>
+                      <input
+                        type="text"
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        className="w-full p-2 rounded bg-gray-800 border border-gray-700"
+                      />
+                    </div>
+                    <div className="flex space-x-4">
+                      <button
+                        type="submit"
+                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+                      >
+                        Save Changes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditing(false)}
+                        className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <strong className="block mb-1">Business Description</strong>
+                      <p className="text-gray-300">{userDetails?.businessDescription || "No description provided"}</p>
+                    </div>
+                    <div>
+                      <strong className="block mb-1">Phone Number</strong>
+                      <p className="text-gray-300">{userDetails?.phoneNumber || "No phone number provided"}</p>
+                    </div>
+                    <div>
+                      <strong className="block mb-1">Address</strong>
+                      <p className="text-gray-300">{userDetails?.address || "No address provided"}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
-                      <div className="space-y-2">
-                        <div className="flex items-center text-gray-300">
-                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
+            {(userDetails?.type === "user" || (userDetails?.type === "business" && userDetails?.businessType === "Rental")) && bookings.length > 0 && (
+              <div className="mt-8">
+                <h2 className="text-xl font-bold mb-4">
+                  {userDetails?.type === "business" ? "Your Rentals" : "Your Bookings"}
+                </h2>
+                {console.log("Rendering bookings section. Bookings:", bookings)}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {bookings.map((booking) => (
+                    <div key={booking.id} className="bg-gray-800 p-6 rounded-lg shadow-lg hover:border-gray-600 transition-all">
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-start">
                           <div>
-                            <p className="text-sm">Start: {formatDate(booking.startDate)}</p>
-                            <p className="text-sm">End: {formatDate(booking.endDate)}</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center text-gray-300">
-                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <p className="text-lg font-semibold">${booking.totalPrice}</p>
-                        </div>
-                      </div>
-
-                      {booking.specialRequests && (
-                        <div className="text-gray-300">
-                          <p className="text-sm font-medium mb-1">Special Requests:</p>
-                          <p className="text-sm bg-gray-700/50 p-2 rounded">{booking.specialRequests}</p>
-                        </div>
-                      )}
-
-                      {booking.status !== 'cancelled' && (
-                        <button
-                          onClick={() => {
-                            setBookingToCancel(booking.id);
-                            setShowCancelModal(true);
-                          }}
-                          className="w-full mt-4 bg-red-600/20 text-red-400 px-4 py-2 rounded-lg hover:bg-red-600/30 transition-colors flex items-center justify-center space-x-2"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                          <span>Cancel Booking</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Tour Reservations Section */}
-          {userDetails?.type === "user" && tourReservations.length > 0 && (
-            <div className="bg-black/90 rounded-xl p-4 sm:p-6 shadow-lg mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-white mb-6">Your Tour Reservations</h2>
-              {console.log("Rendering tour reservations section. Reservations:", tourReservations)}
-              <div className="grid grid-cols-1 gap-4 sm:gap-6">
-                {tourReservations.map((reservation) => (
-                  <div key={reservation.id} className="bg-white/10 rounded-lg overflow-hidden border border-gray-700/30">
-                    <div className="p-4 sm:p-5">
-                      <div className="flex flex-col sm:flex-row gap-4">
-                        {/* Tour Image */}
-                        <div className="sm:w-1/4 h-32 sm:h-auto">
-                          {reservation.tourImage ? (
-                            <img
-                              src={reservation.tourImage}
-                              alt={reservation.tourName}
-                              className="w-full h-full object-cover rounded-md"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gray-700 rounded-md flex items-center justify-center">
-                              <span className="text-gray-400">No image</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Tour Details */}
-                        <div className="flex-1">
-                          <div className="flex justify-between">
-                            <h3 className="text-lg font-semibold text-white">{reservation.tourName}</h3>
-                            <div className="flex flex-col items-end gap-1">
-                              <span className={`px-2 py-1 text-xs rounded-full ${reservation.status === 'cancelled' ? 'bg-red-500/20 text-red-400' :
-                                reservation.status === 'confirmed' ? 'bg-green-500/20 text-green-400' :
-                                  'bg-yellow-500/20 text-yellow-400'}`}>
-                                {reservation.status === 'cancelled' ? 'Cancelled' :
-                                  reservation.status === 'confirmed' ? 'Confirmed' : 'Pending'}
-                              </span>
-                              {reservation.status === 'cancelled' && reservation.refundRequested && (
-                                <span className="text-xs text-red-400 bg-red-500/10 px-2 py-1 rounded">
-                                  Refund in process
-                                </span>
-                              )}
+                            <h3 className="text-lg font-semibold text-white">{booking.vehicleDetails.model}</h3>
+                            <p className="text-sm text-gray-300 mb-2">Business: {booking.businessName}</p>
+                            <div className="mt-1 space-y-1">
+                              <p className="text-sm text-gray-400">Brand: {booking.vehicleDetails.brand}</p>
+                              <p className="text-sm text-gray-400">Color: {booking.vehicleDetails.color}</p>
+                              <p className="text-sm text-gray-400">Transmission: {booking.vehicleDetails.transmission}</p>
                             </div>
                           </div>
-
-                          <p className="text-sm text-gray-300 mt-1">Business: {reservation.businessName}</p>
-
-                          <div className="mt-3 grid grid-cols-2 gap-y-2 text-sm text-gray-300">
-                            <div>
-                              <span className="text-gray-400">Date: </span>
-                              {reservation.reservationDate ? formatDate(reservation.reservationDate) : 'N/A'}
-                            </div>
-                            <div>
-                              <span className="text-gray-400">Persons: </span>
-                              {reservation.persons}
-                            </div>
-                            <div>
-                              <span className="text-gray-400">Price: </span>
-                              ${reservation.totalPrice || '0.00'}
-                            </div>
-                            <span className={`px-2 py-1 text-xs rounded-full ${reservation.isPrivate ? 'bg-purple-500/20 text-purple-400' : 'bg-blue-500/20 text-blue-400'
-                              }`}>
-                              {reservation.isPrivate ? 'Private Tour' : 'Public Tour'}
+                          <div className="flex flex-col items-end gap-1">
+                            <span className={`px-3 py-1 text-sm rounded-full ${booking.status === 'cancelled' ? 'bg-red-500/20 text-red-400' :
+                              booking.status === 'confirmed' ? 'bg-green-500/20 text-green-400' :
+                                'bg-yellow-500/20 text-yellow-400'
+                              } font-medium`}>
+                              {booking.status === 'cancelled' ? 'Cancelled' :
+                                booking.status === 'confirmed' ? 'Confirmed' : 'Pending'}
                             </span>
+                            {booking.status === 'cancelled' && booking.refundRequested && (
+                              <span className="text-xs text-red-400 bg-red-500/10 px-2 py-1 rounded">
+                                Refund in process
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center text-gray-300">
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <div>
+                              <p className="text-sm">Start: {formatDate(booking.startDate)}</p>
+                              <p className="text-sm">End: {formatDate(booking.endDate)}</p>
+                            </div>
                           </div>
 
-                          {reservation.specialRequests && (
-                            <div className="mt-3 text-gray-300">
-                              <p className="text-sm font-medium mb-1">Special Requests:</p>
-                              <p className="text-sm bg-gray-700/50 p-2 rounded">{reservation.specialRequests}</p>
-                            </div>
-                          )}
+                          <div className="flex items-center text-gray-300">
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p className="text-lg font-semibold">${booking.totalPrice}</p>
+                          </div>
+                        </div>
 
-                          {reservation.status !== 'cancelled' && (
-                            <button
-                              onClick={() => {
-                                setBookingToCancel('tour-' + reservation.id);
-                                setShowCancelModal(true);
-                              }}
-                              className="w-full mt-4 bg-red-600/20 text-red-400 px-4 py-2 rounded-lg hover:bg-red-600/30 transition-colors flex items-center justify-center space-x-2"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                              <span>Cancel Reservation</span>
-                            </button>
-                          )}
+                        {booking.specialRequests && (
+                          <div className="text-gray-300">
+                            <p className="text-sm font-medium mb-1">Special Requests:</p>
+                            <p className="text-sm bg-gray-700/50 p-2 rounded">{booking.specialRequests}</p>
+                          </div>
+                        )}
+
+                        {booking.status !== 'cancelled' && (
+                          <button
+                            onClick={() => {
+                              setBookingToCancel(booking.id);
+                              setShowCancelModal(true);
+                            }}
+                            className="w-full mt-4 bg-red-600/20 text-red-400 px-4 py-2 rounded-lg hover:bg-red-600/30 transition-colors flex items-center justify-center space-x-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            <span>Cancel Booking</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tour Reservations Section */}
+            {userDetails?.type === "user" && tourReservations.length > 0 && (
+              <div className="bg-black/90 rounded-xl p-4 sm:p-6 shadow-lg mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-white mb-6">Your Tour Reservations</h2>
+                {console.log("Rendering tour reservations section. Reservations:", tourReservations)}
+                <div className="grid grid-cols-1 gap-4 sm:gap-6">
+                  {tourReservations.map((reservation) => (
+                    <div key={reservation.id} className="bg-white/10 rounded-lg overflow-hidden">
+                      <div className="p-4 sm:p-5">
+                        <div className="flex flex-col sm:flex-row gap-4">
+                          {/* Tour Image */}
+                          <div className="sm:w-1/4 h-32 sm:h-auto">
+                            {reservation.tourImage ? (
+                              <img
+                                src={reservation.tourImage}
+                                alt={reservation.tourName}
+                                className="w-full h-full object-cover rounded-md"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gray-700 rounded-md flex items-center justify-center">
+                                <span className="text-gray-400">No image</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Tour Details */}
+                          <div className="flex-1">
+                            <div className="flex justify-between">
+                              <h3 className="text-lg font-semibold text-white">{reservation.tourName}</h3>
+                              <div className="flex flex-col items-end gap-1">
+                                <span className={`px-2 py-1 text-xs rounded-full ${reservation.status === 'cancelled' ? 'bg-red-500/20 text-red-400' :
+                                  reservation.status === 'confirmed' ? 'bg-green-500/20 text-green-400' :
+                                    'bg-yellow-500/20 text-yellow-400'}`}>
+                                  {reservation.status === 'cancelled' ? 'Cancelled' :
+                                    reservation.status === 'confirmed' ? 'Confirmed' : 'Pending'}
+                                </span>
+                                {reservation.status === 'cancelled' && reservation.refundRequested && (
+                                  <span className="text-xs text-red-400 bg-red-500/10 px-2 py-1 rounded">
+                                    Refund in process
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <p className="text-sm text-gray-300 mt-1">Business: {reservation.businessName}</p>
+
+                            <div className="mt-3 grid grid-cols-2 gap-y-2 text-sm text-gray-300">
+                              <div>
+                                <span className="text-gray-400">Date: </span>
+                                {reservation.reservationDate ? formatDate(reservation.reservationDate) : 'N/A'}
+                              </div>
+                              <div>
+                                <span className="text-gray-400">Persons: </span>
+                                {reservation.persons}
+                              </div>
+                              <div>
+                                <span className="text-gray-400">Price: </span>
+                                ${reservation.totalPrice || '0.00'}
+                              </div>
+                              <span className={`px-2 py-1 text-xs rounded-full ${reservation.isPrivate ? 'bg-purple-500/20 text-purple-400' : 'bg-blue-500/20 text-blue-400'
+                                }`}>
+                                {reservation.isPrivate ? 'Private Tour' : 'Public Tour'}
+                              </span>
+                            </div>
+
+                            {reservation.specialRequests && (
+                              <div className="mt-3 text-gray-300">
+                                <p className="text-sm font-medium mb-1">Special Requests:</p>
+                                <p className="text-sm bg-gray-700/50 p-2 rounded">{reservation.specialRequests}</p>
+                              </div>
+                            )}
+
+                            {reservation.status !== 'cancelled' && (
+                              <button
+                                onClick={() => {
+                                  setBookingToCancel('tour-' + reservation.id);
+                                  setShowCancelModal(true);
+                                }}
+                                className="w-full mt-4 bg-red-600/20 text-red-400 px-4 py-2 rounded-lg hover:bg-red-600/30 transition-colors flex items-center justify-center space-x-2"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                <span>Cancel Reservation</span>
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {showSuccessModal && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center backdrop-blur-sm transition-opacity z-50 p-4"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.target === e.currentTarget && setShowSuccessModal(false)}
+          >
+            <div className="bg-white p-6 sm:p-8 rounded-xl w-full max-w-xs sm:max-w-md transform transition-all shadow-2xl text-center">
+              {/* Success Icon */}
+              <div className="mx-auto mb-4 w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
+                Cancellation Successful
+              </h2>
+
+              <p className="text-gray-600 mb-6 text-sm sm:text-base">
+                {successMessage}
+              </p>
+
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-all duration-300 font-medium"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+        {showCancelModal && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center backdrop-blur-sm transition-opacity z-50 p-4"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.target === e.currentTarget && setShowCancelModal(false)}
+          >
+            <div className="bg-white p-6 sm:p-8 rounded-xl w-full max-w-xs sm:max-w-md transform transition-all shadow-2xl text-center">
+              <div className="mx-auto mb-4 w-16 h-16 bg-red-500 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
+                Confirm Cancellation
+              </h2>
+
+              <p className="text-gray-600 mb-6 text-sm sm:text-base">
+                Are you sure you want to cancel this {bookingToCancel?.startsWith('tour-') ? 'tour reservation' : 'booking'}?
+                A refund will be processed within 3-5 business days.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => {
+                    if (bookingToCancel?.startsWith('tour-')) {
+                      handleCancelTourReservation(bookingToCancel.replace('tour-', ''));
+                    } else {
+                      handleCancelBooking(bookingToCancel);
+                    }
+                  }}
+                  className="flex-1 bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 font-medium"
+                >
+                  Yes, Cancel
+                </button>
+                <button
+                  onClick={() => setShowCancelModal(false)}
+                  className="flex-1 bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 transition-all duration-300 font-medium"
+                >
+                  No, Keep It
+                </button>
               </div>
             </div>
-          )}
-        </div>
-      )}
-
-      {showSuccessModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center backdrop-blur-sm transition-opacity z-50 p-4"
-          role="dialog"
-          aria-modal="true"
-          onClick={(e) => e.target === e.currentTarget && setShowSuccessModal(false)}
-        >
-          <div className="bg-white p-6 sm:p-8 rounded-xl w-full max-w-xs sm:max-w-md transform transition-all shadow-2xl text-center">
-            {/* Success Icon */}
-            <div className="mx-auto mb-4 w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
-              Cancellation Successful
-            </h2>
-
-            <p className="text-gray-600 mb-6 text-sm sm:text-base">
-              {successMessage}
-            </p>
-
-            <button
-              onClick={() => setShowSuccessModal(false)}
-              className="w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-all duration-300 font-medium"
-            >
-              Close
-            </button>
           </div>
-        </div>
-      )}
-      {showCancelModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center backdrop-blur-sm transition-opacity z-50 p-4"
-          role="dialog"
-          aria-modal="true"
-          onClick={(e) => e.target === e.currentTarget && setShowCancelModal(false)}
-        >
-          <div className="bg-white p-6 sm:p-8 rounded-xl w-full max-w-xs sm:max-w-md transform transition-all shadow-2xl text-center">
-            <div className="mx-auto mb-4 w-16 h-16 bg-red-500 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </div>
-
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
-              Confirm Cancellation
-            </h2>
-
-            <p className="text-gray-600 mb-6 text-sm sm:text-base">
-              Are you sure you want to cancel this {bookingToCancel?.startsWith('tour-') ? 'tour reservation' : 'booking'}?
-              A refund will be processed within 3-5 business days.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={() => {
-                  if (bookingToCancel?.startsWith('tour-')) {
-                    handleCancelTourReservation(bookingToCancel.replace('tour-', ''));
-                  } else {
-                    handleCancelBooking(bookingToCancel);
-                  }
-                }}
-                className="flex-1 bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 font-medium"
-              >
-                Yes, Cancel
-              </button>
-              <button
-                onClick={() => setShowCancelModal(false)}
-                className="flex-1 bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 transition-all duration-300 font-medium"
-              >
-                No, Keep It
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      <ToastContainer position="bottom-right" autoClose={5000} />
+        )}
+        <ToastContainer position="bottom-right" autoClose={5000} />
+      </div>
     </div>
   );
 };

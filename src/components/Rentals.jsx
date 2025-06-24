@@ -115,19 +115,19 @@ const Rentals = () => {
 
   // Skeleton loading component
   const SkeletonCard = () => (
-    <div className="bg-white rounded-xl p-6 shadow-md animate-pulse">
+    <div className="bg-dark rounded-xl p-6 shadow-md animate-pulse">
       <div className="flex gap-6">
         <div className="relative w-32 flex-shrink-0">
-          <div className="aspect-square w-full rounded-full bg-gray-200"></div>
+          <div className="aspect-square w-full rounded-full bg-secondary"></div>
         </div>
         <div className="ml-4 flex flex-col justify-between flex-grow">
           <div>
-            <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+            <div className="h-6 bg-secondary rounded w-3/4 mb-4"></div>
+            <div className="h-4 bg-secondary rounded w-full mb-2"></div>
+            <div className="h-4 bg-secondary rounded w-5/6"></div>
           </div>
           <div className="mt-4">
-            <div className="h-5 bg-gray-200 rounded w-24"></div>
+            <div className="h-5 bg-secondary rounded w-24"></div>
           </div>
         </div>
       </div>
@@ -135,13 +135,13 @@ const Rentals = () => {
   );
 
   return (
-    <div className="h-fit w-full pt-10 p-5 relative">
-      <div className="rounded-3xl font-medium bg-white text-lg h-10 w-40 m-auto">
+    <div className="h-fit w-full pt-10 p-5 relative bg-dark">
+      <div className="rounded-3xl font-medium bg-dark text-lg h-10 w-40 m-auto">
         <div className="flex h-full">
-          <div onClick={() => handleClick("taxis", "/")} className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${activeTab === "taxis" ? "bg-black text-white rounded-3xl" : "bg-white hover:bg-gray-200 rounded-3xl"} transition-all`}>
+          <div onClick={() => handleClick("taxis", "/")} className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${activeTab === "taxis" ? "bg-black text-white rounded-3xl dark:bg-white dark:text-black" : "bg-dark bg-hover rounded-3xl"} transition-all`}>
             Taxis
           </div>
-          <div onClick={() => handleClick("rentals", "/rentals")} className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${activeTab === "rentals" ? "bg-black text-white rounded-3xl" : "bg-white hover:bg-gray-200 rounded-3xl"} transition-all`}>
+          <div onClick={() => handleClick("rentals", "/rentals")} className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${activeTab === "rentals" ? "bg-black text-white rounded-3xl dark:bg-white dark:text-black" : "bg-dark bg-hover rounded-3xl"} transition-all`}>
             Rentals
           </div>
         </div>
@@ -150,7 +150,7 @@ const Rentals = () => {
       <div className="flex justify-center gap-4 mt-8">
         <div className="relative filter-dropdown">
           <button
-            className={`px-6 py-2.5 rounded-full flex items-center gap-2 ${isFilterOpen ? "bg-black text-white" : "bg-white text-gray-700 hover:bg-gray-50"} shadow-md`}
+            className={`px-6 py-2.5 rounded-full flex items-center gap-2 ${isFilterOpen ? "bg-black text-white dark:bg-white dark:text-black" : "bg-dark text-dark bg-hover"} shadow-md`}
             onClick={() => {
               setIsFilterOpen(!isFilterOpen);
               setIsSortOpen(false);
@@ -161,15 +161,15 @@ const Rentals = () => {
             <i className="fa fa-filter text-sm"></i>
           </button>
           {isFilterOpen && (
-            <div className="absolute top-12 left-0 bg-white rounded-xl shadow-xl w-36 z-10 overflow-hidden">
+            <div className="absolute top-12 left-0 bg-dark rounded-xl shadow-xl w-36 z-10 overflow-hidden">
               {[1, 2, 3, 4, 5].map((rating) => (
                 <div
                   key={rating}
-                  className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${filterRating === rating ? "bg-gray-100" : ""}`}
+                  className={`p-3 bg-hover cursor-pointer transition-colors ${filterRating === rating ? "bg-black text-white dark:bg-white dark:text-black" : ""}`}
                   onClick={() => handleFilterChange(rating)}
                 >
                   <div className="flex items-center gap-2">
-                    <span>{rating} {rating === 1 ? "★" : "★"}</span>
+                    <span className={filterRating === rating ? "text-white dark:text-black" : "text-dark"}>{rating} {rating === 1 ? "★" : "★"}</span>
                     {filterRating === rating && (
                       <i className="fas fa-check text-green-500 ml-auto"></i>
                     )}
@@ -182,7 +182,7 @@ const Rentals = () => {
 
         <div className="relative sort-dropdown">
           <button
-            className={`px-6 py-2.5 rounded-full flex items-center gap-2 ${isSortOpen ? "bg-black text-white" : "bg-white text-gray-700 hover:bg-gray-50"} shadow-md`}
+            className={`px-6 py-2.5 rounded-full flex items-center gap-2 ${isSortOpen ? "bg-black text-white dark:bg-white dark:text-black" : "bg-dark text-dark bg-hover"} shadow-md`}
             onClick={() => {
               setIsSortOpen(!isSortOpen);
               setIsFilterOpen(false);
@@ -193,35 +193,35 @@ const Rentals = () => {
             <i className="fa fa-sort text-sm"></i>
           </button>
           {isSortOpen && (
-            <div className="absolute top-12 left-0 bg-white rounded-xl shadow-xl w-36 z-10 overflow-hidden">
+            <div className="absolute top-12 left-0 bg-dark rounded-xl shadow-xl w-36 z-10 overflow-hidden">
               <div
-                className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${sortOrder === "default" ? "bg-gray-100" : ""}`}
+                className={`p-3 bg-hover cursor-pointer transition-colors ${sortOrder === "default" ? "bg-black text-white dark:bg-white dark:text-black" : ""}`}
                 onClick={() => handleSortChange("default")}
               >
                 <div className="flex items-center gap-2">
-                  <span>Default</span>
+                  <span className={sortOrder === "default" ? "text-white dark:text-black" : "text-dark"}>Default</span>
                   {sortOrder === "default" && (
                     <i className="fas fa-check text-green-500 ml-auto"></i>
                   )}
                 </div>
               </div>
               <div
-                className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${sortOrder === "a-z" ? "bg-gray-100" : ""}`}
+                className={`p-3 bg-hover cursor-pointer transition-colors ${sortOrder === "a-z" ? "bg-black text-white dark:bg-white dark:text-black" : ""}`}
                 onClick={() => handleSortChange("a-z")}
               >
                 <div className="flex items-center gap-2">
-                  <span>A-Z</span>
+                  <span className={sortOrder === "a-z" ? "text-white dark:text-black" : "text-dark"}>A-Z</span>
                   {sortOrder === "a-z" && (
                     <i className="fas fa-check text-green-500 ml-auto"></i>
                   )}
                 </div>
               </div>
               <div
-                className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${sortOrder === "z-a" ? "bg-gray-100" : ""}`}
+                className={`p-3 bg-hover cursor-pointer transition-colors ${sortOrder === "z-a" ? "bg-black text-white dark:bg-white dark:text-black" : ""}`}
                 onClick={() => handleSortChange("z-a")}
               >
                 <div className="flex items-center gap-2">
-                  <span>Z-A</span>
+                  <span className={sortOrder === "z-a" ? "text-white dark:text-black" : "text-dark"}>Z-A</span>
                   {sortOrder === "z-a" && (
                     <i className="fas fa-check text-green-500 ml-auto"></i>
                   )}
@@ -234,7 +234,6 @@ const Rentals = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 my-6 sm:my-10 max-w-7xl mx-auto">
         {isLoading ? (
-          // Show skeleton loading when data is loading
           <>
             <SkeletonCard />
             <SkeletonCard />
@@ -242,7 +241,7 @@ const Rentals = () => {
             <SkeletonCard />
           </>
         ) : sortedRentals.length === 0 ? (
-          <div className="col-span-full text-center text-gray-500 py-10">
+          <div className="col-span-full text-center text-secondary py-10">
             No results found
           </div>
         ) : (
@@ -251,7 +250,7 @@ const Rentals = () => {
             return (
               <div
                 key={rental.businessId}
-                className="bg-white rounded-xl p-4 sm:p-6 shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 cursor-pointer"
+                className="bg-dark rounded-xl p-4 sm:p-6 shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 cursor-pointer"
                 onClick={() => {
                   console.log("Navigating to RPF with rental data:", {
                     businessImage: rental.businessImage,
@@ -279,10 +278,10 @@ const Rentals = () => {
                   </div>
                   <div className="ml-2 sm:ml-4 flex flex-col justify-between flex-grow">
                     <div>
-                      <h1 className="font-bold text-xl sm:text-2xl text-gray-800 mb-1 sm:mb-2">
+                      <h1 className="font-bold text-xl sm:text-2xl text-dark mb-1 sm:mb-2">
                         {rental.businessName}
                       </h1>
-                      <p className="text-gray-600 line-clamp-2 text-xs sm:text-sm">
+                      <p className="text-secondary line-clamp-2 text-xs sm:text-sm">
                         {rental.businessDescription}
                       </p>
                     </div>
@@ -290,7 +289,7 @@ const Rentals = () => {
                       <div className="flex items-center">
                         <StarRating rating={Math.round(avgRating)} />
                         {avgRating > 0 && (
-                          <span className="ml-2 text-sm text-gray-600">
+                          <span className="ml-2 text-sm text-secondary">
                             ({avgRating} ★)
                           </span>
                         )}

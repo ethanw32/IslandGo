@@ -114,7 +114,7 @@ const InfiniteMovingCards = ({ items, direction = "left", speed = "fast", pauseO
         {items.map((item, idx) => (
           <div
             key={idx}
-            className="w-[350px] max-w-full relative rounded-2xl border border-neutral-200 dark:border-white/[0.1] bg-white dark:bg-black p-5 shadow-md"
+            className="w-[350px] max-w-full relative rounded-2xl border border-neutral-200/10 bg-black p-5 shadow-md"
           >
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
@@ -596,7 +596,7 @@ const TourDetails = () => {
   const images = tour.images || [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-dark">
       {/* Image Gallery Section */}
       <div className="relative h-96 md:h-[500px] overflow-hidden">
         {images.length > 0 ? (
@@ -672,16 +672,16 @@ const TourDetails = () => {
           {/* Main Content */}
           <div className="lg:col-span-2">
             {/* Tour Header */}
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div className="bg-dark rounded-lg shadow-sm p-6 mb-6">
               <div className="flex items-center gap-2 mb-3">
                 <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                <span className="font-semibold">{tour.averageRating || "New"}</span>
-                <span className="text-gray-500">({tour.reviewCount || 0} reviews)</span>
+                <span className="font-semibold text-dark">{tour.averageRating || "New"}</span>
+                <span className="text-secondary">({tour.reviewCount || 0} reviews)</span>
               </div>
 
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">{tour.name}</h1>
+              <h1 className="text-3xl font-bold text-dark mb-4">{tour.name}</h1>
 
-              <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-4">
+              <div className="flex flex-wrap items-center gap-4 text-secondary mb-4">
                 <div className="flex items-center gap-1">
                   <User className="h-4 w-4" />
                   <button
@@ -713,35 +713,35 @@ const TourDetails = () => {
                 </div>
               </div>
 
-              <p className="text-gray-700 leading-relaxed break-words whitespace-normal">{tour.description}</p>
+              <p className="text-secondary leading-relaxed break-words whitespace-normal">{tour.description}</p>
             </div>
 
             {/* What's Included */}
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-              <h2 className="text-xl font-semibold mb-4">What's Included</h2>
+            <div className="bg-dark rounded-lg shadow-sm p-6 mb-6">
+              <h2 className="text-xl font-semibold mb-4 text-dark">What's Included</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {tour.included?.map((item, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-green-500" />
-                    <span className="text-gray-700">{item}</span>
+                    <span className="text-secondary">{item}</span>
                   </div>
                 )) || (
                     <>
                       <div className="flex items-center gap-2">
                         <Check className="h-4 w-4 text-green-500" />
-                        <span className="text-gray-700">Professional guide</span>
+                        <span className="text-secondary">Professional guide</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Check className="h-4 w-4 text-green-500" />
-                        <span className="text-gray-700">Transportation</span>
+                        <span className="text-secondary">Transportation</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Check className="h-4 w-4 text-green-500" />
-                        <span className="text-gray-700">Entry fees</span>
+                        <span className="text-secondary">Entry fees</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Check className="h-4 w-4 text-green-500" />
-                        <span className="text-gray-700">Free cancellation</span>
+                        <span className="text-secondary">Free cancellation</span>
                       </div>
                     </>
                   )}
@@ -750,18 +750,18 @@ const TourDetails = () => {
 
             {/* Tour Spots */}
             {tour.spots && tour.spots.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                <h2 className="text-xl font-semibold mb-4">Tour Highlights</h2>
+              <div className="bg-dark rounded-lg shadow-sm p-6 mb-6">
+                <h2 className="text-xl font-semibold mb-4 text-dark">Tour Highlights</h2>
                 <div className="space-y-3">
                   {tour.spots.map((spot, index) => (
-                    <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div key={index} className="flex items-start gap-3 p-3 bg-secondary rounded-lg">
                       <div className="w-6 h-6 bg-blue-500 text-white text-sm rounded-full flex items-center justify-center font-semibold">
                         {index + 1}
                       </div>
                       <div>
-                        <h3 className="font-medium text-gray-900">{spot.name}</h3>
+                        <h3 className="font-medium text-dark">{spot.name}</h3>
                         {spot.description && (
-                          <p className="text-gray-600 text-sm mt-1">{spot.description}</p>
+                          <p className="text-secondary text-sm mt-1">{spot.description}</p>
                         )}
                       </div>
                     </div>
@@ -771,9 +771,9 @@ const TourDetails = () => {
             )}
 
             {/* Reviews Section */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="bg-dark rounded-lg shadow-sm p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">
+                <h2 className="text-xl font-semibold text-dark">
                   Reviews ({reviews.length})
                 </h2>
                 {currentUser && (
@@ -788,9 +788,9 @@ const TourDetails = () => {
 
               {/* Review Form */}
               {showReviewForm && (
-                <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                <div className="bg-secondary p-4 rounded-lg mb-6">
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-dark mb-2">
                       Your Rating
                     </label>
                     <div className="flex">
@@ -804,7 +804,7 @@ const TourDetails = () => {
                           <Star
                             className={`h-6 w-6 ${star <= reviewRating
                               ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-gray-300'
+                              : 'text-secondary'
                               }`}
                           />
                         </button>
@@ -812,14 +812,14 @@ const TourDetails = () => {
                     </div>
                   </div>
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-dark mb-2">
                       Your Review
                     </label>
                     <textarea
                       value={reviewComment}
                       onChange={(e) => setReviewComment(e.target.value)}
                       rows="4"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                       placeholder="Share your experience with this tour..."
                     ></textarea>
                   </div>
@@ -836,7 +836,7 @@ const TourDetails = () => {
               )}
 
               {reviews.length > 0 ? (
-                <div className="h-[400px] rounded-md flex flex-col antialiased bg-white items-center justify-center relative overflow-hidden">
+                <div className="h-[400px] rounded-md flex flex-col antialiased bg-dark items-center justify-center relative overflow-hidden">
                   <InfiniteMovingCards
                     items={reviews}
                     direction="right"
@@ -846,10 +846,10 @@ const TourDetails = () => {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <div className="text-gray-400 mb-2">
+                  <div className="text-secondary mb-2 ">
                     <Star className="h-12 w-12 mx-auto" />
                   </div>
-                  <p className="text-gray-500">No reviews yet. Be the first to review!</p>
+                  <p className="text-secondary">No reviews yet. Be the first to review!</p>
                 </div>
               )}
             </div>
@@ -857,24 +857,24 @@ const TourDetails = () => {
 
           {/* Reservation Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-4">
+            <div className="bg-dark rounded-lg shadow-sm p-6 sticky top-4">
               <div className="text-center mb-6">
-                <div className="text-3xl font-bold text-gray-900">
+                <div className="text-3xl font-bold text-dark">
                   ${tour.price || 99}
-                  <span className="text-lg font-normal text-gray-500"> / person</span>
+                  <span className="text-lg font-normal text-secondary"> / person</span>
                 </div>
               </div>
 
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-dark mb-2">
                     <Calendar className="h-4 w-4 inline mr-1" />
                     Select Date
                   </label>
                   <select
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                   >
                     <option value="">Select a date</option>
                     {availableDates.map((date, index) => {
@@ -910,18 +910,18 @@ const TourDetails = () => {
                   </select>
                 </div>
                 {selectedDate && !isDateFullyBooked(selectedDate) && (
-                  <div className="mt-2 text-sm text-gray-600">
+                  <div className="mt-2 text-sm text-secondary">
                     {getAvailableSpots(selectedDate)} spots available for this date
                   </div>
                 )}
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm font-medium text-dark">
                     Private Tour
                   </label>
                   <button
                     type="button"
                     onClick={() => setIsPrivateTour(!isPrivateTour)}
-                    className={`${isPrivateTour ? 'bg-blue-500' : 'bg-gray-200'
+                    className={`${isPrivateTour ? 'bg-blue-500' : 'bg-secondary'
                       } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
                   >
                     <span
@@ -932,14 +932,14 @@ const TourDetails = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-dark mb-2">
                     <Users className="h-4 w-4 inline mr-1" />
                     Guests
                   </label>
                   <select
                     value={guestCount}
                     onChange={(e) => setGuestCount(parseInt(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                   >
                     {[...Array(parseInt(tour.maxpeople) || 10)].map((_, i) => (
                       <option key={i + 1} value={i + 1}>
@@ -950,8 +950,8 @@ const TourDetails = () => {
                 </div>
               </div>
 
-              <div className="border-t pt-4 mb-4">
-                <div className="flex justify-between items-center text-lg font-semibold">
+              <div className="border-t pt-4 mb-4 border-custom">
+                <div className="flex justify-between items-center text-lg font-semibold text-dark">
                   <span>Total:</span>
                   <span>${totalPrice}</span>
                 </div>
@@ -964,7 +964,7 @@ const TourDetails = () => {
                 Reserve Now
               </button>
 
-              <p className="text-xs text-gray-500 text-center mt-3">
+              <p className="text-xs text-secondary text-center mt-3">
                 Free cancellation up to 24 hours before the tour
               </p>
             </div>
@@ -975,12 +975,12 @@ const TourDetails = () => {
       {/* Reservation Confirmation Modal */}
       {showReservationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="bg-dark rounded-lg max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Confirm Reservation</h3>
+              <h3 className="text-lg font-semibold text-dark">Confirm Reservation</h3>
               <button
                 onClick={() => setShowReservationModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-secondary hover:text-dark"
                 disabled={isSubmittingReservation}
               >
                 <X className="h-6 w-6" />
@@ -989,20 +989,20 @@ const TourDetails = () => {
 
             <div className="space-y-3 mb-6">
               <div className="flex justify-between">
-                <span className="text-gray-600">Tour:</span>
-                <span className="font-medium">{tour.name}</span>
+                <span className="text-secondary">Tour:</span>
+                <span className="font-medium text-dark">{tour.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Date:</span>
-                <span className="font-medium">{selectedDate}</span>
+                <span className="text-secondary">Date:</span>
+                <span className="font-medium text-dark">{selectedDate}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Guests:</span>
-                <span className="font-medium">{guestCount}</span>
+                <span className="text-secondary">Guests:</span>
+                <span className="font-medium text-dark">{guestCount}</span>
               </div>
-              <div className="flex justify-between text-lg font-semibold border-t pt-3">
-                <span>Total:</span>
-                <span>${totalPrice}</span>
+              <div className="flex justify-between text-lg font-semibold border-t pt-3 border-custom">
+                <span className="text-dark">Total:</span>
+                <span className="text-dark">${totalPrice}</span>
               </div>
             </div>
 
@@ -1010,7 +1010,7 @@ const TourDetails = () => {
               <button
                 onClick={() => setShowReservationModal(false)}
                 disabled={isSubmittingReservation}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 border border-custom text-dark rounded-lg hover:bg-secondary transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>

@@ -672,12 +672,12 @@ const PickupSpots = () => {
   }
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+    <div className="container h-screen mx-auto px-2 sm:px-4 py-4 sm:py-8">
       <div className="mb-4 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+        <h1 className="text-2xl sm:text-3xl font-bold text-dark">
           {userDetails?.businessType === 'Taxi' ? 'Meetup Spots' : 'Pickup Spots'}
         </h1>
-        <p className="text-sm sm:text-base text-gray-600 mt-2">
+        <p className="text-sm sm:text-base text-dark mt-2">
           {userDetails?.businessType === 'Taxi'
             ? 'Manage your tour meetup locations in Grenada'
             : 'Manage your vehicle pickup locations in Grenada'
@@ -692,55 +692,55 @@ const PickupSpots = () => {
       )}
 
       {isAdding ? (
-        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
+        <div className="bg-dark rounded-lg shadow-lg p-3 sm:p-6">
           <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
             {isEditing ? 'Edit Meetup Spot' : 'Add Meetup Spot'}
           </h2>
 
           {selectedBooking && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
-              <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
+              <div className="flex items-center space-x-2 p-2 rounded-lg">
                 <User className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
                 <div>
-                  <p className="text-xs sm:text-sm text-gray-600">Customer</p>
+                  <p className="text-xs sm:text-sm text-dark">Customer</p>
                   <p className="text-sm sm:text-base font-medium">{selectedBooking.customerName}</p>
                   {selectedBooking.groupBookings && selectedBooking.groupBookings.length > 1 && (
-                    <p className="text-xs sm:text-sm text-gray-500">
+                    <p className="text-xs sm:text-sm text-dark">
                       +{selectedBooking.groupBookings.length - 1} more customers
                     </p>
                   )}
                 </div>
               </div>
-              <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
+              <div className="flex items-center space-x-2 p-2 rounded-lg">
                 <Map className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
                 <div>
-                  <p className="text-xs sm:text-sm text-gray-600">Tour Details</p>
+                  <p className="text-xs sm:text-sm text-dark">Tour Details</p>
                   <p className="text-sm sm:text-base font-medium">{selectedBooking.vehicleDetails}</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
+              <div className="flex items-center space-x-2 p-2 rounded-lg">
                 <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
                 <div>
-                  <p className="text-xs sm:text-sm text-gray-600">Tour Date</p>
+                  <p className="text-xs sm:text-sm text-dark">Tour Date</p>
                   <p className="text-sm sm:text-base font-medium">{selectedBooking.startDate}</p>
                 </div>
               </div>
             </div>
           )}
 
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-3 bg-dark sm:space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Location Name</label>
-              <div className="flex space-x-2">
+              <label className="block text-sm font-medium text-dark">Location Name</label>
+              <div className="flex space-x-2 ">
                 <input
                   type="text"
                   value={locationName}
                   onChange={(e) => setLocationName(e.target.value)}
                   placeholder="Enter location name (e.g., Maurice Bishop International Airport, Grenada)"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm sm:text-base"
+                  className="mt-1 px-2 capitalize block w-full bg-dark rounded-md border-2 border-white shadow-sm text-sm sm:text-base"
                 />
               </div>
-              <p className="mt-2 text-xs sm:text-sm text-gray-500">
+              <p className="mt-2 text-xs sm:text-sm text-dark">
                 Please enter a clear, recognizable location name in Grenada. This will help customers find the meetup spot easily.
               </p>
             </div>
@@ -750,7 +750,7 @@ const PickupSpots = () => {
                 center={mapCenter}
                 zoom={mapZoom}
                 style={{ height: '100%', width: '100%' }}
-                className="z-0"
+                className="z-0 rounded-lg"
               >
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -796,18 +796,18 @@ const PickupSpots = () => {
       ) : (
         <>
           {allBookings.length > 0 ? (
-            <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-4 sm:space-y-6 shadow-xl">
               {allBookings.map((booking) => (
-                <div key={booking.bookingId} className="bg-white rounded-lg shadow-md p-3 sm:p-6">
+                <div key={booking.bookingId} className="bg-dark text-dark rounded-lg shadow-md p-3 sm:p-6">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-3 sm:space-y-0">
                     <div>
                       <h3 className="text-base sm:text-lg font-semibold text-gray-900">{booking.customerName}</h3>
-                      <p className="text-sm sm:text-base text-gray-600">{booking.vehicleDetails}</p>
-                      <p className="text-xs sm:text-sm text-gray-500">
+                      <p className="text-sm sm:text-base capitalize">{booking.vehicleDetails}</p>
+                      <p className="text-xs sm:text-sm text-dark">
                         {userDetails?.businessType === 'Taxi' ? booking.startDate : `${booking.startDate} - ${booking.endDate}`}
                       </p>
                       {booking.groupBookings && booking.groupBookings.length > 1 && (
-                        <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                        <p className="text-xs sm:text-sm text-dark mt-1">
                           Group Tour: {booking.groupBookings.length} customers
                         </p>
                       )}

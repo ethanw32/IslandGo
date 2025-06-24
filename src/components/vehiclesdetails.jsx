@@ -126,7 +126,7 @@ const InfiniteMovingCards = ({ items, direction = "left", speed = "fast", pauseO
         {items.map((item, idx) => (
           <div
             key={idx}
-            className="w-[350px] max-w-full relative rounded-2xl border border-neutral-200 dark:border-white/[0.1] bg-white dark:bg-black p-5 shadow-md"
+            className="w-[350px] max-w-full relative rounded-2xl border border-neutral-200/10 bg-black p-5 shadow-md"
           >
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
@@ -557,7 +557,7 @@ const VehicleDetails = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-dark">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
@@ -565,7 +565,7 @@ const VehicleDetails = () => {
 
   if (error || !vehicle) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-dark">
         <div className="bg-red-50 p-6 rounded-lg shadow-lg">
           <h2 className="text-red-800 text-xl font-semibold mb-2">Error</h2>
           <p className="text-red-600">{error || 'Vehicle not found'}</p>
@@ -581,7 +581,7 @@ const VehicleDetails = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-dark">
       {/* Image Gallery Section */}
       <div className="relative h-48 sm:h-80 md:h-[500px] overflow-hidden bg-black">
         {images.length > 0 ? (
@@ -722,18 +722,18 @@ const VehicleDetails = () => {
           {/* Main Content */}
           <div className="lg:col-span-2">
             {/* Vehicle Header */}
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div className="bg-dark rounded-lg shadow-sm p-6 mb-6">
               <div className="flex items-center gap-2 mb-3">
                 <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                <span className="font-semibold">{vehicle.averageRating || "New"}</span>
-                <span className="text-gray-500">({vehicle.reviewCount || 0} Reviews)</span>
+                <span className="font-semibold text-dark">{vehicle.averageRating || "New"}</span>
+                <span className="text-secondary">({vehicle.reviewCount || 0} Reviews)</span>
 
               </div>
 
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{vehicle.vehicle.brand} {vehicle.vehicle.model}</h1>
-              <h2 className="text-xl text-gray-600 mb-4">{vehicle.vehicle.year}</h2>
+              <h1 className="text-3xl font-bold text-dark mb-2">{vehicle.vehicle.brand} {vehicle.vehicle.model}</h1>
+              <h2 className="text-xl text-secondary mb-4">{vehicle.vehicle.year}</h2>
 
-              <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-4">
+              <div className="flex flex-wrap items-center gap-4 text-secondary mb-4">
                 <div className="flex items-center gap-1">
                   <User className="h-4 w-4" />
                   <button
@@ -766,7 +766,7 @@ const VehicleDetails = () => {
 
               </div>
 
-              <p className="text-gray-700 leading-relaxed mb-4">
+              <p className="text-secondary leading-relaxed mb-4">
                 {vehicle.vehicle.description || 'No description available'}
               </p>
 
@@ -775,15 +775,15 @@ const VehicleDetails = () => {
                 <div className="flex items-center gap-2">
                   <Fuel className="h-5 w-5 text-blue-500" />
                   <div>
-                    <div className="text-sm text-gray-500">Fuel Type</div>
-                    <div className="font-medium">{vehicle.vehicle.fuel || 'Gasoline'}</div>
+                    <div className="text-sm text-secondary">Fuel Type</div>
+                    <div className="font-medium text-dark">{vehicle.vehicle.fuel || 'Gasoline'}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Gauge className="h-5 w-5 text-blue-500" />
                   <div>
-                    <div className="text-sm text-gray-500">Mileage</div>
-                    <div className="font-medium">
+                    <div className="text-sm text-secondary">Mileage</div>
+                    <div className="font-medium text-dark">
                       {vehicle.vehicle.mileage ? `${vehicle.vehicle.mileage.toLocaleString()} km` : 'N/A'}
                     </div>
                   </div>
@@ -791,48 +791,48 @@ const VehicleDetails = () => {
                 <div className="flex items-center gap-2">
                   <Gear className="h-5 w-5 text-blue-500" />
                   <div>
-                    <div className="text-sm text-gray-500">Transmission</div>
-                    <div className="font-medium">{vehicle.vehicle.transmission || 'Automatic'}</div>
+                    <div className="text-sm text-secondary">Transmission</div>
+                    <div className="font-medium text-dark">{vehicle.vehicle.transmission || 'Automatic'}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Snowflake className="h-5 w-5 text-blue-500" />
                   <div>
-                    <div className="text-sm text-gray-500">AC</div>
-                    <div className="font-medium">{vehicle.vehicle.hasAC ? 'No' : 'Yes'}</div>
+                    <div className="text-sm text-secondary">AC</div>
+                    <div className="font-medium text-dark">{vehicle.vehicle.hasAC ? 'No' : 'Yes'}</div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Features */}
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-              <h2 className="text-xl font-semibold mb-4">Features & Amenities</h2>
+            <div className="bg-dark rounded-lg shadow-sm p-6 mb-6">
+              <h2 className="text-xl font-semibold mb-4 text-dark">Features & Amenities</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {vehicle.vehicle.features?.length > 0 ? (
                   vehicle.vehicle.features.map((feature, index) => (
                     <div key={index} className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-green-500" />
-                      <span className="text-gray-700">{feature}</span>
+                      <span className="text-secondary">{feature}</span>
                     </div>
                   ))
                 ) : (
                   <>
                     <div className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-green-500" />
-                      <span className="text-gray-700">Air Conditioning</span>
+                      <span className="text-secondary">Air Conditioning</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-green-500" />
-                      <span className="text-gray-700">Bluetooth</span>
+                      <span className="text-secondary">Bluetooth</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-green-500" />
-                      <span className="text-gray-700">Navigation System</span>
+                      <span className="text-secondary">Navigation System</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-green-500" />
-                      <span className="text-gray-700">USB Ports</span>
+                      <span className="text-secondary">USB Ports</span>
                     </div>
                   </>
                 )}
@@ -840,28 +840,28 @@ const VehicleDetails = () => {
             </div>
 
             {/* Rental Policies */}
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-              <h2 className="text-xl font-semibold mb-4">Rental Policies</h2>
+            <div className="bg-dark rounded-lg shadow-sm p-6 mb-6">
+              <h2 className="text-xl font-semibold mb-4 text-dark">Rental Policies</h2>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <Shield className="h-5 w-5 text-blue-500 mt-0.5" />
                   <div>
-                    <h3 className="font-medium">Insurance</h3>
-                    <p className="text-gray-600 text-sm">Comprehensive insurance included with every rental</p>
+                    <h3 className="font-medium text-dark">Insurance</h3>
+                    <p className="text-secondary text-sm">Comprehensive insurance included with every rental</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Clock className="h-5 w-5 text-blue-500 mt-0.5" />
                   <div>
-                    <h3 className="font-medium">Cancellation</h3>
-                    <p className="text-gray-600 text-sm">Free cancellation up to 24 hours before pickup</p>
+                    <h3 className="font-medium text-dark">Cancellation</h3>
+                    <p className="text-secondary text-sm">Free cancellation up to 24 hours before pickup</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <CarFront className="h-5 w-5 text-blue-500 mt-0.5" />
                   <div>
-                    <h3 className="font-medium">Pickup & Return</h3>
-                    <p className="text-gray-600 text-sm">Vehicle must be returned with the same fuel level</p>
+                    <h3 className="font-medium text-dark">Pickup & Return</h3>
+                    <p className="text-secondary text-sm">Vehicle must be returned with the same fuel level</p>
                   </div>
                 </div>
               </div>
@@ -870,11 +870,11 @@ const VehicleDetails = () => {
 
           {/* Reservation Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-4">
+            <div className="bg-dark rounded-lg shadow-sm p-6 sticky top-4">
               <div className="text-center mb-6">
-                <div className="text-3xl font-bold text-gray-900">
+                <div className="text-3xl font-bold text-dark">
                   ${vehicle.vehicle.price || 99}
-                  <span className="text-lg font-normal text-gray-500"> / day</span>
+                  <span className="text-lg font-normal text-secondary"> / day</span>
                 </div>
                 <div className="text-sm text-gray-500 mt-1">
                   {vehicle.vehicle.availability === "Available" ? (
@@ -889,7 +889,7 @@ const VehicleDetails = () => {
 
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-dark mb-2">
                     <Calendar className="h-4 w-4 inline mr-1" />
                     Pickup Date
                   </label>
@@ -898,12 +898,12 @@ const VehicleDetails = () => {
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                     min={new Date().toISOString().split('T')[0]}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-dark mb-2">
                     <Calendar className="h-4 w-4 inline mr-1" />
                     Return Date
                   </label>
@@ -912,19 +912,19 @@ const VehicleDetails = () => {
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                     min={startDate || new Date().toISOString().split('T')[0]}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-dark mb-2">
                     <Users className="h-4 w-4 inline mr-1" />
                     Passengers
                   </label>
                   <select
                     value={guestCount}
                     onChange={(e) => setGuestCount(parseInt(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-dark text-dark"
                   >
                     {[...Array(vehicle.vehicle.capacity || 5)].map((_, i) => (
                       <option key={i + 1} value={i + 1}>
@@ -935,16 +935,16 @@ const VehicleDetails = () => {
                 </div>
               </div>
 
-              <div className="border-t pt-4 mb-4">
-                <div className="flex justify-between items-center text-gray-600 mb-1">
+              <div className="border-t pt-4 mb-4 border-custom">
+                <div className="flex justify-between items-center text-secondary mb-1">
                   <span>${vehicle.vehicle.price || 99} x {calculateRentalDays()} days</span>
                   <span>${(vehicle.vehicle.price || 99) * calculateRentalDays()}</span>
                 </div>
-                <div className="flex justify-between items-center text-gray-600 mb-1">
+                <div className="flex justify-between items-center text-secondary mb-1">
                   <span>Service fee</span>
                   <span>$15.00</span>
                 </div>
-                <div className="flex justify-between items-center text-lg font-semibold mt-3 pt-3 border-t">
+                <div className="flex justify-between items-center text-lg font-semibold mt-3 pt-3 border-t border-custom text-dark">
                   <span>Total:</span>
                   <span>${calculateTotalPrice()}</span>
                 </div>
@@ -967,7 +967,7 @@ const VehicleDetails = () => {
                     : 'Unavailable'}
               </button>
 
-              <p className="text-xs text-gray-500 text-center mt-3">
+              <p className="text-xs text-secondary text-center mt-3">
                 Free cancellation up to 24 hours before pickup
               </p>
             </div>
@@ -975,16 +975,16 @@ const VehicleDetails = () => {
         </div>
 
         {/* Enhanced Review Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mt-8">
+        <div className="bg-dark rounded-lg shadow-sm p-6 mt-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Customer Reviews</h2>
+              <h2 className="text-2xl font-bold text-dark">Customer Reviews</h2>
               <div className="flex items-center mt-2">
                 <div className="flex items-center mr-4">
                   <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                  <span className="ml-1 font-semibold">{vehicle.averageRating || "0"}</span>
-                  <span className="mx-1">·</span>
-                  <span className="text-gray-600">{reviews.length} reviews</span>
+                  <span className="ml-1 font-semibold text-dark">{vehicle.averageRating || "0"}</span>
+                  <span className="mx-1 text-secondary">·</span>
+                  <span className="text-secondary">{reviews.length} reviews</span>
                 </div>
               </div>
             </div>
@@ -1005,8 +1005,8 @@ const VehicleDetails = () => {
           ) : reviews.length === 0 ? (
             <div className="text-center py-8">
               <Star className="mx-auto h-8 w-8 text-gray-300" />
-              <h3 className="mt-2 text-lg font-medium text-gray-900">No reviews yet</h3>
-              <p className="mt-1 text-gray-500">
+              <h3 className="mt-2 text-lg font-medium text-dark">No reviews yet</h3>
+              <p className="mt-1 text-secondary">
                 {currentUser ? "Be the first to review this vehicle" : "Sign in to leave a review"}
               </p>
               {!currentUser && (
@@ -1019,7 +1019,7 @@ const VehicleDetails = () => {
               )}
             </div>
           ) : (
-            <div className="h-[400px] rounded-md flex flex-col antialiased bg-white items-center justify-center relative overflow-hidden">
+            <div className="h-[400px] rounded-md flex flex-col antialiased bg-dark items-center justify-center relative overflow-hidden">
               <InfiniteMovingCards
                 items={reviews}
                 direction="right"
@@ -1034,12 +1034,12 @@ const VehicleDetails = () => {
       {/* Reservation Confirmation Modal */}
       {showReservationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="bg-dark rounded-lg max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Confirm Reservation</h3>
+              <h3 className="text-lg font-semibold text-dark">Confirm Reservation</h3>
               <button
                 onClick={() => setShowReservationModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-secondary hover:text-dark"
                 disabled={isSubmittingReservation}
               >
                 <X className="h-6 w-6" />
@@ -1048,12 +1048,12 @@ const VehicleDetails = () => {
 
             <div className="space-y-3 mb-6">
               <div className="flex justify-between">
-                <span className="text-gray-600">Vehicle:</span>
-                <span className="font-medium">{vehicle.vehicle.brand} {vehicle.vehicle.model}</span>
+                <span className="text-secondary">Vehicle:</span>
+                <span className="font-medium text-dark">{vehicle.vehicle.brand} {vehicle.vehicle.model}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Pickup:</span>
-                <span className="font-medium">
+                <span className="text-secondary">Pickup:</span>
+                <span className="font-medium text-dark">
                   {new Date(startDate).toLocaleDateString('en-US', {
                     weekday: 'short',
                     month: 'short',
@@ -1062,8 +1062,8 @@ const VehicleDetails = () => {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Return:</span>
-                <span className="font-medium">
+                <span className="text-secondary">Return:</span>
+                <span className="font-medium text-dark">
                   {new Date(endDate).toLocaleDateString('en-US', {
                     weekday: 'short',
                     month: 'short',
@@ -1072,12 +1072,12 @@ const VehicleDetails = () => {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Passengers:</span>
-                <span className="font-medium">{guestCount}</span>
+                <span className="text-secondary">Passengers:</span>
+                <span className="font-medium text-dark">{guestCount}</span>
               </div>
-              <div className="flex justify-between text-lg font-semibold border-t pt-3">
-                <span>Total:</span>
-                <span>${calculateTotalPrice()}</span>
+              <div className="flex justify-between text-lg font-semibold border-t pt-3 border-custom">
+                <span className="text-dark">Total:</span>
+                <span className="text-dark">${calculateTotalPrice()}</span>
               </div>
             </div>
 
@@ -1085,7 +1085,7 @@ const VehicleDetails = () => {
               <button
                 onClick={() => setShowReservationModal(false)}
                 disabled={isSubmittingReservation}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 border border-custom text-dark rounded-lg hover:bg-secondary transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -1104,12 +1104,12 @@ const VehicleDetails = () => {
       {/* Review Form Modal */}
       {isReviewOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="bg-dark rounded-lg max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Write a Review</h3>
+              <h3 className="text-lg font-semibold text-dark">Write a Review</h3>
               <button
                 onClick={() => setIsReviewOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-secondary hover:text-dark"
                 disabled={isSubmittingReview}
               >
                 <X className="h-6 w-6" />
@@ -1117,7 +1117,7 @@ const VehicleDetails = () => {
             </div>
 
             <div className="flex items-center mb-4">
-              <span className="mr-2 text-gray-700">Rating:</span>
+              <span className="mr-2 text-dark">Rating:</span>
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
@@ -1127,7 +1127,7 @@ const VehicleDetails = () => {
                   disabled={isSubmittingReview}
                 >
                   <Star
-                    className={`h-6 w-6 ${star <= reviewRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                    className={`h-6 w-6 ${star <= reviewRating ? 'fill-yellow-400 text-yellow-400' : 'text-secondary'}`}
                   />
                 </button>
               ))}
@@ -1137,7 +1137,7 @@ const VehicleDetails = () => {
               value={reviewComment}
               onChange={(e) => setReviewComment(e.target.value)}
               placeholder="Share your experience with this vehicle..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"
+              className="w-full px-3 py-2 border border-custom rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] bg-dark text-dark"
               rows="4"
               disabled={isSubmittingReview}
             />
@@ -1146,7 +1146,7 @@ const VehicleDetails = () => {
               <button
                 onClick={() => setIsReviewOpen(false)}
                 disabled={isSubmittingReview}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 border border-custom text-dark rounded-lg hover:bg-secondary transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>

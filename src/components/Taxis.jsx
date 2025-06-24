@@ -112,13 +112,13 @@ const Taxis = () => {
   });
 
   return (
-    <div className="h-screen w-full pt-10 p-5 relative">
-      <div className="rounded-3xl font-medium bg-white text-lg h-10 w-40 m-auto">
+    <div className="min-h-screen w-full pt-10 p-5 relative bg-dark">
+      <div className="rounded-3xl font-medium bg-dark text-lg h-10 w-40 m-auto">
         <div className="flex h-full">
-          <div onClick={() => handleClick("taxis", "/")} className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${activeTab === "taxis" ? "bg-black text-white rounded-3xl" : "bg-white hover:bg-gray-200 rounded-3xl"} transition-all`}>
+          <div onClick={() => handleClick("taxis", "/")} className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${activeTab === "taxis" ? "bg-black text-white rounded-3xl dark:bg-white dark:text-black" : "bg-dark bg-hover rounded-3xl"} transition-all`}>
             Taxis
           </div>
-          <div onClick={() => handleClick("rentals", "/rentals")} className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${activeTab === "rentals" ? "bg-black text-white rounded-3xl" : "bg-white hover:bg-gray-200 rounded-3xl"} transition-all`}>
+          <div onClick={() => handleClick("rentals", "/rentals")} className={`w-1/2 h-full flex items-center justify-center cursor-pointer ${activeTab === "rentals" ? "bg-black text-white rounded-3xl dark:bg-white dark:text-black" : "bg-dark bg-hover rounded-3xl"} transition-all`}>
             Rentals
           </div>
         </div>
@@ -127,7 +127,7 @@ const Taxis = () => {
       <div className="flex justify-center gap-4 mt-8">
         <div className="relative filter-dropdown">
           <button
-            className={`px-6 py-2.5 rounded-full flex items-center gap-2 ${isFilterOpen ? "bg-black text-white" : "bg-white text-gray-700 hover:bg-gray-50"} shadow-md`}
+            className={`px-6 py-2.5 rounded-full flex items-center gap-2 ${isFilterOpen ? "bg-black text-white dark:bg-white dark:text-black" : "bg-dark text-dark bg-hover"} shadow-md`}
             onClick={() => {
               setIsFilterOpen(!isFilterOpen);
               setIsSortOpen(false);
@@ -138,15 +138,15 @@ const Taxis = () => {
             <i className="fa fa-filter text-sm"></i>
           </button>
           {isFilterOpen && (
-            <div className="absolute top-12 left-0 bg-white rounded-xl shadow-xl w-36 z-10 overflow-hidden">
+            <div className="absolute top-12 left-0 bg-dark rounded-xl shadow-xl w-36 z-10 overflow-hidden">
               {[1, 2, 3, 4, 5].map((rating) => (
                 <div
                   key={rating}
-                  className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${filterRating === rating ? "bg-gray-100" : ""}`}
+                  className={`p-3 bg-hover cursor-pointer transition-colors ${filterRating === rating ? "bg-black text-white dark:bg-white dark:text-black" : ""}`}
                   onClick={() => handleFilterChange(rating)}
                 >
                   <div className="flex items-center gap-2">
-                    <span>{rating} {rating === 1 ? "★" : "★"}</span>
+                    <span className={filterRating === rating ? "text-white dark:text-black" : "text-dark"}>{rating} {rating === 1 ? "★" : "★"}</span>
                     {filterRating === rating && (
                       <i className="fas fa-check text-green-500 ml-auto"></i>
                     )}
@@ -159,7 +159,7 @@ const Taxis = () => {
 
         <div className="relative sort-dropdown">
           <button
-            className={`px-6 py-2.5 rounded-full flex items-center gap-2 ${isSortOpen ? "bg-black text-white" : "bg-white text-gray-700 hover:bg-gray-50"} shadow-md`}
+            className={`px-6 py-2.5 rounded-full flex items-center gap-2 ${isSortOpen ? "bg-black text-white dark:bg-white dark:text-black" : "bg-dark text-dark bg-hover"} shadow-md`}
             onClick={() => {
               setIsSortOpen(!isSortOpen);
               setIsFilterOpen(false);
@@ -170,35 +170,35 @@ const Taxis = () => {
             <i className="fa fa-sort text-sm"></i>
           </button>
           {isSortOpen && (
-            <div className="absolute top-12 left-0 bg-white rounded-xl shadow-xl w-36 z-10 overflow-hidden">
+            <div className="absolute top-12 left-0 bg-dark rounded-xl shadow-xl w-36 z-10 overflow-hidden">
               <div
-                className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${sortOrder === "default" ? "bg-gray-100" : ""}`}
+                className={`p-3 bg-hover cursor-pointer transition-colors ${sortOrder === "default" ? "bg-black text-white dark:bg-white dark:text-black" : ""}`}
                 onClick={() => handleSortChange("default")}
               >
                 <div className="flex items-center gap-2">
-                  <span>Default</span>
+                  <span className={sortOrder === "default" ? "text-white dark:text-black" : "text-dark"}>Default</span>
                   {sortOrder === "default" && (
                     <i className="fas fa-check text-green-500 ml-auto"></i>
                   )}
                 </div>
               </div>
               <div
-                className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${sortOrder === "a-z" ? "bg-gray-100" : ""}`}
+                className={`p-3 bg-hover cursor-pointer transition-colors ${sortOrder === "a-z" ? "bg-black text-white dark:bg-white dark:text-black" : ""}`}
                 onClick={() => handleSortChange("a-z")}
               >
                 <div className="flex items-center gap-2">
-                  <span>A-Z</span>
+                  <span className={sortOrder === "a-z" ? "text-white dark:text-black" : "text-dark"}>A-Z</span>
                   {sortOrder === "a-z" && (
                     <i className="fas fa-check text-green-500 ml-auto"></i>
                   )}
                 </div>
               </div>
               <div
-                className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${sortOrder === "z-a" ? "bg-gray-100" : ""}`}
+                className={`p-3 bg-hover cursor-pointer transition-colors ${sortOrder === "z-a" ? "bg-white text-black dark:bg-black dark:text-white" : ""}`}
                 onClick={() => handleSortChange("z-a")}
               >
                 <div className="flex items-center gap-2">
-                  <span>Z-A</span>
+                  <span className={sortOrder === "z-a" ? "text-white dark:text-black" : "text-dark"}>Z-A</span>
                   {sortOrder === "z-a" && (
                     <i className="fas fa-check text-green-500 ml-auto"></i>
                   )}
@@ -211,21 +211,20 @@ const Taxis = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
         {loading ? (
-          // Loading skeleton
           Array(4).fill(0).map((_, index) => (
-            <div key={index} className="bg-white rounded-xl p-4 sm:p-6 shadow-md animate-pulse">
+            <div key={index} className="bg-dark rounded-xl p-4 sm:p-6 shadow-md animate-pulse">
               <div className="flex gap-3 sm:gap-6">
-                <div className="w-20 sm:w-32 h-20 sm:h-32 rounded-full bg-gray-200"></div>
+                <div className="w-20 sm:w-32 h-20 sm:h-32 rounded-full bg-secondary"></div>
                 <div className="flex-1">
-                  <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                  <div className="h-6 bg-secondary rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-secondary rounded w-full mb-2"></div>
+                  <div className="h-4 bg-secondary rounded w-2/3"></div>
                 </div>
               </div>
             </div>
           ))
         ) : sortedTaxis.length === 0 ? (
-          <div className="col-span-full text-center text-gray-500 py-10">
+          <div className="col-span-full text-center text-secondary py-10">
             No results found
           </div>
         ) : (
@@ -234,7 +233,7 @@ const Taxis = () => {
             return (
               <div
                 key={taxi.id}
-                className="bg-white rounded-xl p-4 sm:p-6 shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 cursor-pointer"
+                className="bg-dark rounded-xl p-4 sm:p-6 shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 cursor-pointer"
                 onClick={() =>
                   navigate("/bpf", {
                     state: {
@@ -256,14 +255,14 @@ const Taxis = () => {
                   </div>
                   <div className="ml-2 sm:ml-4 flex flex-col justify-between flex-grow">
                     <div>
-                      <h1 className="font-bold text-xl sm:text-2xl text-gray-800 mb-1 sm:mb-2">{taxi.businessName}</h1>
-                      <p className="text-gray-600 line-clamp-2 text-xs sm:text-sm">{taxi.businessDescription}</p>
+                      <h1 className="font-bold text-xl sm:text-2xl mb-1 sm:mb-2 text-dark">{taxi.businessName}</h1>
+                      <p className="line-clamp-2 text-xs sm:text-sm text-secondary">{taxi.businessDescription}</p>
                     </div>
                     <div className="mt-1 sm:mt-2">
                       <div className="flex items-center">
                         <StarRating rating={Math.round(avgRating)} />
                         {avgRating > 0 && (
-                          <span className="ml-2 text-sm text-gray-600">
+                          <span className="ml-2 text-sm text-secondary">
                             ({avgRating} ★)
                           </span>
                         )}
